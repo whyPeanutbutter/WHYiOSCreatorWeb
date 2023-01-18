@@ -29,7 +29,7 @@
                 </div>
             </el-checkbox-group>
         </el-form-item>
-        <el-form-item label="title">
+        <el-form-item label="title" >
             <el-switch v-model="form.data.haveTitle" />
             <div v-if="form.data.haveTitle">
                 <el-input style="margin-left: 5px;" placeholder="文字" v-model="form.data.titleName" />
@@ -40,6 +40,16 @@
                     <el-radio-button label="Center"/>
                     <el-radio-button label="Right" />
                 </el-radio-group>
+            </div>
+        </el-form-item>
+        <el-form-item label="attributedText">
+            <el-switch v-model="form.data.haveAttributedText" />
+            <div v-if="form.data.haveAttributedText" style="width:100%">
+                <el-checkbox-group class="flex-col-start" v-model="form.data.attributedTextSettings">
+                <el-checkbox label="局部变色" />
+                <el-checkbox label="局部font"/>
+                <el-checkbox label="paragraphStyle"/>
+            </el-checkbox-group>
             </div>
         </el-form-item>
         <el-form-item label="masonrys">
@@ -89,6 +99,8 @@ var form = reactive({
         backgroundColor: '#fff',
         borderColor: 'borderColor',
         haveTitle: false,
+        haveAttributedText:false,
+        attributedTextSettings:[],
         titleSize: '',
         titleColor: '',
         titleName: '',
@@ -108,6 +120,8 @@ const resetForm = () => {
         backgroundColor: '#fff',
         borderColor: 'borderColor',
         haveTitle: false,
+        haveAttributedText:false,
+        attributedTextSettings:[],
         titleSize: '',
         titleColor: '',
         titleName: '',
@@ -142,13 +156,13 @@ const onCreate = (formData, needCopy = false) => {
     let border = commonSettings.indexOf('border') > -1 ? `[${formData.name}.layer setBorderColor:${$utils.getColor(formData.borderColor)}.CGColor];\n[${formData.name}.layer setBorderWidth:<#1.0#>];\n` : '';
     let numberOfLine = commonSettings.indexOf('numberOfLine') > -1 ? `${formData.name}.numberOfLines = ${formData.numberOfLine};\n`:'';
     let title = formData.haveTitle ? `[${formData.name} setTitle:@"${formData.titleName}" forState:UIControlStateNormal];\n${formData.name}.titleLabel.textAlignment = NSTextAlignment${formData.textAlign};\n[${formData.name} setTitleColor:${$utils.getColor(formData.titleColor)} forState:UIControlStateNormal];\n${formData.name}.titleLabel.font = ${$utils.getFont(formData.titleSize)};\n` : ''
-
+    let haveAttributedText = formData.haveAttributedText ? $utils.getAttributedText(formData.name + 'AttributedString',formData.attributedTextSettings):'';
     let mansoryStr = $utils.getMansorys(formData.masonrys);
     let masonry = formData.masonrys?.length > 0 ? `[${formData.name} mas_makeConstraints:^(MASConstraintMaker *make) {
         ${mansoryStr}
     }];\n`: ''
     var result = `UILabel *${formData.name} = [[UILabel alloc]init];\n` +
-        `${frame}${addSubView}${numberOfLine}${title}${conrnerRadius}${backgroundColor}${border}${masonry}${click}\n`
+        `${frame}${addSubView}${numberOfLine}${title}${haveAttributedText}${conrnerRadius}${backgroundColor}${border}${masonry}${click}\n`
     console.log(result);
     form.result = result;
     emits('create', result)

@@ -56,6 +56,25 @@ export const copy = async (text) => {
     }
 };
 
-// export const createResult = async (settings,type) => {
+export const getAttributedText = (name,attributedTextSettings) => {
+    if (attributedTextSettings.length == 0) {
+        return ''
+    }
    
-// };
+    let dict = {
+        "init": `NSStering * titleString = <#content#>;\nNSMutableAttributedString *${name} = [[NSMutableAttributedString alloc] initWithString:titleString];`,
+    "局部变色": `[${name} addAttribute:NSForegroundColorAttributeName value:${getColor('')} range:NSMakeRange(0, titleString.length)];\n[${name} addAttribute:NSForegroundColorAttributeName value:${getColor('')} range:NSMakeRange(0, 2)];`,
+    "paragraphStyle": `NSMutableParagraphStyle *paragraphStyle = [[NSMutableParagraphStyle alloc] init];\nparagraphStyle.lineSpacing = 8;\n[${name} addAttribute:NSParagraphStyleAttributeName value:paragraphStyle range:NSMakeRange(0, titleString.length)];`,
+    "局部font": `[${name} addAttribute:NSFontAttributeName value:messageLbl.font range:NSMakeRange(0, [titleString length])];`,
+    };
+    var re = dict['init'];
+    var i = 0
+    for (let str of attributedTextSettings) {
+        re = re + (attributedTextSettings.indexOf(str) > -1 ? dict[str] : '')
+        if (i != attributedTextSettings.length - 1) {
+            re = re + '\n'
+        }
+        i++;
+    }
+    return re
+};
