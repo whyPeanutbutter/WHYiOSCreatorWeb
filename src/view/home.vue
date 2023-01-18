@@ -198,7 +198,7 @@ body {
 }
 
 .main-phone {
-  height: calc(100vh - 160px);
+  min-height: calc(100vh - 160px);
   border: 2px solid #000;
   background: #e7e5e5;
   width: 375px;
