@@ -35,7 +35,7 @@
                 <el-input style="margin-left: 5px;" placeholder="文字" v-model="form.data.titleName" />
                 <el-input style="margin-left: 5px;" placeholder="颜色" v-model="form.data.titleColor" />
                 <el-input style="margin-left: 5px;" placeholder="大小" v-model="form.data.titleSize" />
-                <el-radio-group v-model="form.data.textAlign">
+                <el-radio-group v-model="form.data.textAlign" style="width:100%">
                     <el-radio-button label="Left" />
                     <el-radio-button label="Center"/>
                     <el-radio-button label="Right" />
