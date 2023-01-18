@@ -1,25 +1,20 @@
 <template>
     <el-form :model="form" label-width="120px">
         <div style="margin-bottom: 10px">
-            UIView设置
+            设置
         </div>
         <el-form-item label="名称">
             <el-input v-model="form.data.name" />
         </el-form-item>
         <el-form-item label="常用简单属性">
             <el-checkbox-group class="flex-col-start" v-model="form.data.commonSettings">
-                <el-checkbox label="addSubView" name="addSubView" />
-                <el-checkbox label="frame" name="frame" />
-                <el-checkbox label="delegate" name="delegate"></el-checkbox>
-                <el-checkbox label="@available(iOS 11.0, *)" name="@available(iOS 11.0, *)"></el-checkbox>
+                
                 <div class="flex-row">
-                    <el-checkbox label="conrnerRadius" name="conrnerRadius"></el-checkbox>
-                    <el-input style="margin-left: 5px;" placeholder="6" v-model="form.data.conrnerRadius" />
+                    <el-checkbox label=".h文件"></el-checkbox>
+                    <el-switch style="margin-left: 5px;" active-text="包含delegate" v-model="form.data.haveDelegate" />
                 </div>
-                <div class="flex-row">
-                    <el-checkbox label="backgroundColor" name="backgroundColor"></el-checkbox>
-                    <el-input style="margin-left: 5px;" placeholder="#fff" v-model="form.data.backgroundColor" />
-                </div>
+                <el-checkbox label=".m文件" />
+                <el-checkbox label="纯delegate代码" />
             </el-checkbox-group>
         </el-form-item>
         <el-form-item label="masonrys">
@@ -63,10 +58,9 @@ const props = defineProps({
 // do not use same name with ref
 var form = reactive({
     data: {
-        name: 'scrollView',
+        name: 'tableViewCell',
         commonSettings: ["addSubView"],
-        conrnerRadius: '4',
-        backgroundColor: '#fff',
+        haveDelegate: false,
         masonrys: []
     },
     result: '点击create生成代码'
@@ -75,10 +69,9 @@ var form = reactive({
 const resetForm = () => {
     console.log('reset');
     form.data = {
-        name: 'scrollView',
+        name: 'tableViewCell',
         commonSettings: ["addSubView"],
-        conrnerRadius: '4',
-        backgroundColor: '#fff',
+        haveDelegate: false,
         masonrys: []
     }
 };
@@ -96,18 +89,16 @@ watch(() => props.form, (newValue, oldValue) => {
 
 const onCreate = (formData, needCopy = false) => {
     let commonSettings = formData.commonSettings;
-    let addSubView = commonSettings.indexOf('addSubView') > -1 ? `[<#self#> addSubview:${formData.name}]\n` : '';
-    let aviIOS11 = commonSettings.indexOf('@available(iOS 11.0, *)') > -1 ? `if (@available(iOS 11.0, *)) {\n${formData.name}.insetsLayoutMarginsFromSafeArea = NO;\n${formData.name}.contentInsetAdjustmentBehavior = UIScrollViewContentInsetAdjustmentNever;\n} <#else {\n self.automaticallyAdjustsScrollViewInsets = NO;\n}#>\n` : '';
-    let frame = commonSettings.indexOf('frame') > -1 ? `${formData.name}.frame = CGRectMake(<#CGFloat x#>, <#CGFloat y#>, <#CGFloat width#>, <#CGFloat height#>);\n` : '';
-    let delegate = commonSettings.indexOf('delegate') > -1 ? `UIScrollViewDelegate \n${formData.name}.delegate = self;\n` : '';
-    let conrnerRadius = commonSettings.indexOf('conrnerRadius') > -1 ? `${formData.name}.layer.cornerRadius = ${formData.conrnerRadius};\n${formData.name}.layer.masksToBounds = YES;\n` : '';
-    let backgroundColor = commonSettings.indexOf('backgroundColor') > -1 ? `${formData.name}.backgroundColor = ${$utils.getColor(formData.backgroundColor)};\n` : '';
-    let mansoryStr = $utils.getMansorys(formData.masonrys);
-    let masonry = formData.masonrys?.length > 0 ? `[${formData.name} mas_makeConstraints:^(MASConstraintMaker *make) {
-        ${mansoryStr}
-    }];\n`: ''
-    var result = `UIScrollView *${formData.name} = [[UIScrollView alloc]init];\n${formData.name}.showsVerticalScrollIndicator = NO;\n${formData.name}.showsHorizontalScrollIndicator = NO;\n` +
-        `${frame}${addSubView}${conrnerRadius}${aviIOS11}${backgroundColor}${delegate}${masonry}\n`
+    let upperFirst = formData.name.charAt(0).toUpperCase()+ formData.name.slice(1);
+    let hCode = commonSettings.indexOf('.h文件') > -1 ? `@interface ${upperFirst} : UITableViewCell\n` : '';
+    
+    if(formData.haveDelegate && hCode.length > 0){
+        hCode = `@protocol ${upperFirst}Delegate<NSObject>\n@optional\n- (void)${formData.name}Clicked;\n@end\n\n`+ hCode + `@property (weak, nonatomic) id<${upperFirst}Delegate> delegate;\n`
+    }
+    hCode = hCode +(hCode.length > 0 ?  '@end\n': '')
+    let mCode = commonSettings.indexOf('.m文件') > -1 ? `@interface ${upperFirst}(){\n\n}@end\n@implementation ${upperFirst}\n - (instancetype)initWithStyle:(UITableViewCellStyle)style reuseIdentifier:(NSString *)reuseIdentifier{\nif (self = [super initWithStyle:style reuseIdentifier:reuseIdentifier]) {\nself.selectionStyle = UITableViewCellSelectionStyleNone;\n[self setupUI];\n}\nreturn self;\n}\n\n- (void)setupUI {\n<#content#>\n}\n@end` : '';
+    let pureDelegateCode = commonSettings.indexOf('纯delegate代码') > -1 ? `@protocol ${upperFirst}Delegate<NSObject>\n@optional\n- (void)${formData.name}Clicked;\n@end\n\n@property (weak, nonatomic) id<${upperFirst}Delegate> delegate;\n` : '';
+    var result =  `${hCode}${mCode}${pureDelegateCode}\n`
     console.log(result);
     form.result = result;
     emits('create', result)

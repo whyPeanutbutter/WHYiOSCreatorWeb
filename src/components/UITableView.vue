@@ -10,37 +10,23 @@
             <el-checkbox-group class="flex-col-start" v-model="form.data.commonSettings">
                 <el-checkbox label="addSubView" name="addSubView" />
                 <el-checkbox label="frame" name="frame" />
-                <el-checkbox label="click" name="click" />
-                <div class="flex-row">
-                    <el-checkbox label="conrnerRadius" name="conrnerRadius"></el-checkbox>
-                    <el-input style="margin-left: 5px;" placeholder="6" v-model="form.data.conrnerRadius" />
-                </div>
+                <el-checkbox label="registerClass" />
                 <div class="flex-row">
                     <el-checkbox label="backgroundColor" name="backgroundColor"></el-checkbox>
                     <el-input style="margin-left: 5px;" placeholder="#fff" v-model="form.data.backgroundColor" />
                 </div>
                 <div class="flex-row">
-                    <el-checkbox label="numberOfLine" name="numberOfLine"></el-checkbox>
-                    <el-input style="margin-left: 5px;" placeholder="1" v-model="form.data.numberOfLine" />
+                    <el-checkbox label="estimatedRowHeight" name="estimatedRowHeight"></el-checkbox>
+                    <el-input style="margin-left: 5px;" placeholder="65" v-model="form.data.estimatedRowHeight" />
                 </div>
-                <div class="flex-row">
-                    <el-checkbox label="border" name="border"></el-checkbox>
-                    <el-input style="margin-left: 5px;" placeholder="borderColor" v-model="form.data.borderColor" />
-                </div>
+                <el-checkbox label="sectionNum" />
+                <el-checkbox label="rowHeight" />
+                <el-checkbox label="cellView" />
+                <el-checkbox label="headerView" />
+                <el-checkbox label="footerView" />
+                <el-checkbox label="selectCell" />
+                
             </el-checkbox-group>
-        </el-form-item>
-        <el-form-item label="title">
-            <el-switch v-model="form.data.haveTitle" />
-            <div v-if="form.data.haveTitle">
-                <el-input style="margin-left: 5px;" placeholder="文字" v-model="form.data.titleName" />
-                <el-input style="margin-left: 5px;" placeholder="颜色" v-model="form.data.titleColor" />
-                <el-input style="margin-left: 5px;" placeholder="大小" v-model="form.data.titleSize" />
-                <el-radio-group v-model="form.data.textAlign">
-                    <el-radio-button label="Left" />
-                    <el-radio-button label="Center"/>
-                    <el-radio-button label="Right" />
-                </el-radio-group>
-            </div>
         </el-form-item>
         <el-form-item label="masonrys">
             <el-checkbox-group class="flex-row flex-wrap" v-model="form.data.masonrys">
@@ -63,7 +49,7 @@
             <el-button @click="onDelete">删除视图</el-button>
         </el-form-item>
     </el-form>
-    <el-input v-model="form.result" type="textarea" :rows="10" />
+    <el-input v-model="form.result" type="textarea" :rows="10"/>
 </template>
 
 <script setup>
@@ -83,17 +69,10 @@ const props = defineProps({
 // do not use same name with ref
 var form = reactive({
     data: {
-        name: 'label',
+        name: 'tableView',
         commonSettings: ["addSubView"],
-        conrnerRadius: '4',
         backgroundColor: '#fff',
-        borderColor: 'borderColor',
-        haveTitle: false,
-        titleSize: '',
-        titleColor: '',
-        titleName: '',
-        textAlign:'Center',
-        numberOfLine:'1',
+        estimatedRowHeight:'',
         masonrys: []
     },
     result: '点击create生成代码'
@@ -102,30 +81,20 @@ var form = reactive({
 const resetForm = () => {
     console.log('reset');
     form.data = {
-        name: 'label',
+        name: 'tableView',
         commonSettings: ["addSubView"],
-        conrnerRadius: '4',
         backgroundColor: '#fff',
-        borderColor: 'borderColor',
-        haveTitle: false,
-        titleSize: '',
-        titleColor: '',
-        titleName: '',
-        textAlign:'Center',
-        numberOfLine:'1',
+        estimatedRowHeight:'',
         masonrys: []
     }
 };
 
 watch(() => props.form, (newValue, oldValue) => {
-    console.log('props');
-    console.log(newValue);
     if (newValue.name) {
         form.data = newValue
     } else {
         resetForm()
-        console.log('reset');
-    }
+        }
 }, {
     deep: true,
     immediate: true
@@ -135,20 +104,24 @@ const onCreate = (formData, needCopy = false) => {
     let commonSettings = formData.commonSettings;
     let addSubView = commonSettings.indexOf('addSubView') > -1 ? `[<#self#> addSubview:${formData.name}]\n` : '';
     let frame = commonSettings.indexOf('frame') > -1 ? `${formData.name}.frame = CGRectMake(<#CGFloat x#>, <#CGFloat y#>, <#CGFloat width#>, <#CGFloat height#>);\n` : '';
-    let click = commonSettings.indexOf('click') > -1 ? `[${formData.name} addTarget:self action:@selector(<#${formData.name}Clicked:#>) forControlEvents:UIControlEventTouchUpInside];\n\n- (void)${formData.name}Clicked:(UIButton *)button{\n\n}\n` : '';
-    let image = commonSettings.indexOf('image') > -1 ? `[${formData.name} setImage:[UIImage imageNamed:@"${formData.imageName}"] forState:UIControlStateNormal];\n` : '';
-    let conrnerRadius = commonSettings.indexOf('conrnerRadius') > -1 ? `${formData.name}.layer.cornerRadius = ${formData.conrnerRadius};\n${formData.name}.layer.masksToBounds = YES;\n` : '';
     let backgroundColor = commonSettings.indexOf('backgroundColor') > -1 ? `${formData.name}.backgroundColor = ${$utils.getColor(formData.backgroundColor)};\n` : '';
-    let border = commonSettings.indexOf('border') > -1 ? `[${formData.name}.layer setBorderColor:${$utils.getColor(formData.borderColor)}.CGColor];\n[${formData.name}.layer setBorderWidth:<#1.0#>];\n` : '';
-    let numberOfLine = commonSettings.indexOf('numberOfLine') > -1 ? `${formData.name}.numberOfLines = ${formData.numberOfLine};\n`:'';
-    let title = formData.haveTitle ? `[${formData.name} setTitle:@"${formData.titleName}" forState:UIControlStateNormal];\n${formData.name}.titleLabel.textAlignment = NSTextAlignment${formData.textAlign};\n[${formData.name} setTitleColor:${$utils.getColor(formData.titleColor)} forState:UIControlStateNormal];\n${formData.name}.titleLabel.font = ${$utils.getFont(formData.titleSize)};\n` : ''
-
+    let upperFirst = formData.name.charAt(0).toUpperCase()+ formData.name.slice(1);
+    let estimatedRowHeight = commonSettings.indexOf('estimatedRowHeight') > -1 ? `${formData.name}.estimatedRowHeight = ${formData.estimatedRowHeight};\n${formData.name}.rowHeight = UITableViewAutomaticDimension;\n` : '';
+    let registerClass = commonSettings.indexOf('registerClass') > -1 ? `static NSString* const ${upperFirst}CellIdentifier = @"${upperFirst}CellIdentifier";\n[${formData.name} registerClass:[<#${upperFirst}Cell#> class] forCellReuseIdentifier:${upperFirst}CellIdentifier];\n` : '';
+    let sectionNum = commonSettings.indexOf('sectionNum') > -1 ? `- (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView{\nreturn 1;\n}\n` : '';
+    let rowNum = commonSettings.indexOf('rowHeight') > -1 ? `- (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section{\nreturn .count;\n}\n` : '';
+    let rowHeight = commonSettings.indexOf('rowHeight') > -1 ? `- (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath{\nreturn 103;\n}\n` : '';
+    let cellView = commonSettings.indexOf('cellView') > -1 ? `- (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath{\n${upperFirst}Cell *cell = [tableView dequeueReusableCellWithIdentifier:${upperFirst}CellIdentifier];\nreturn cell;\n}\n` : '';
+    let headerView = commonSettings.indexOf('headerView') > -1 ? `- (UIView *)tableView:(UITableView *)tableView viewForHeaderInSection:(NSInteger)section{\nUIView *view = [[UIView alloc]init];\nreturn view;}\n\n- (CGFloat)tableView:(UITableView *)tableView heightForHeaderInSection:(NSInteger)section\n{\nreturn 0.0001f;\n}\n` : '';
+    let footerView = commonSettings.indexOf('footerView') > -1 ? `- (UIView *)tableView:(UITableView *)tableView viewForFooterInSection:(NSInteger)section{\nUIView *view = [[UIView alloc] init];\nreturn view;\n}\n\n- (CGFloat)tableView:(UITableView *)tableView heightForFooterInSection:(NSInteger)section{\nreturn 0.0001f;\n}\n` : '';
+    let selectCell = commonSettings.indexOf('selectCell') > -1 ? `- (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {\n[tableView deselectRowAtIndexPath:indexPath animated:NO];\n}\n` : '';
     let mansoryStr = $utils.getMansorys(formData.masonrys);
     let masonry = formData.masonrys?.length > 0 ? `[${formData.name} mas_makeConstraints:^(MASConstraintMaker *make) {
         ${mansoryStr}
     }];\n`: ''
-    var result = `UILabel *${formData.name} = [[UILabel alloc]init];\n` +
-        `${frame}${addSubView}${numberOfLine}${title}${conrnerRadius}${backgroundColor}${border}${masonry}${click}\n`
+    var result = `UITableViewDataSource,UITableViewDelegate\nUITableView *${formData.name} = [[UITableView alloc]initWithFrame:CGRectZero style:UITableViewStyleGrouped];\n${frame} \ntableView.dataSource = self;\ntableView.delegate = self;\n${formData.name}.separatorStyle = UITableViewCellSeparatorStyleNone;\n${formData.name}.showsVerticalScrollIndicator = NO;\nif (@available(iOS 15.0, *)) {\n${formData.name}.sectionHeaderTopPadding = 0;\n}\n` +
+        `${addSubView}${estimatedRowHeight}${backgroundColor}${registerClass}${masonry}
+        /*${sectionNum}${rowNum}${rowHeight}${cellView}${headerView}${footerView}${selectCell}*/\n`
     console.log(result);
     form.result = result;
     emits('create', result)
@@ -165,7 +138,6 @@ const onReset = () => {
 const onDelete = () => {
     emits('delete')
 };
-
 
 watch(() => form.data, (newValue, oldValue) => {
     emits('update', newValue)

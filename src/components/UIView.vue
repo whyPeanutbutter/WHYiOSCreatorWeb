@@ -34,6 +34,7 @@
                 <el-checkbox label="width" />
                 <el-checkbox label="height" />
                 <el-checkbox label="size" />
+                <el-checkbox label="edges" />
                 <el-checkbox label="centerX" />
                 <el-checkbox label="centerY" />
                 <el-checkbox label="center" />

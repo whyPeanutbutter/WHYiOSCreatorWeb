@@ -46,6 +46,12 @@
             <UIScrollView v-if="state.currentShowViews[state.currentSelectIndex].type == 'UIScrollView'"
               :form="state.currentShowViews[state.currentSelectIndex].setting" @update="settingUpdate"
               @delete="settingDelete" @create="settingCreate" />
+            <UITableView v-if="state.currentShowViews[state.currentSelectIndex].type == 'UITableView'"
+              :form="state.currentShowViews[state.currentSelectIndex].setting" @update="settingUpdate"
+              @delete="settingDelete" @create="settingCreate" />
+              <UITableViewCell v-if="state.currentShowViews[state.currentSelectIndex].type == 'UITableViewCell'"
+              :form="state.currentShowViews[state.currentSelectIndex].setting" @update="settingUpdate"
+              @delete="settingDelete" @create="settingCreate" />
           </div>
         </el-aside>
       </el-container>
@@ -61,6 +67,8 @@ import UIView from '../components/UIView.vue';
 import UILabel from '../components/UILabel.vue';
 import UIImageView from '../components/UIImageView.vue';
 import UIScrollView from '../components/UIScrollView.vue';
+import UITableView from '../components/UITableView.vue';
+import UITableViewCell from '../components/UITableViewCell.vue';
 import * as $utils from '../components/Utils';
 import { reactive, ref } from 'vue'
 
@@ -82,6 +90,12 @@ const state = reactive({
   }, {
     name: "UIScrollView",
     type: 'UIScrollView'
+  }, {
+    name: "UITableView",
+    type: 'UITableView'
+  }, {
+    name: "UITableViewCell",
+    type: 'UITableViewCell'
   }],
   currentSelectIndex: -1
 })
