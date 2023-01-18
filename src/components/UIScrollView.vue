@@ -1,7 +1,7 @@
 <template>
     <el-form :model="form" label-width="120px">
         <div style="margin-bottom: 10px">
-            UIView设置
+            设置
         </div>
         <el-form-item label="名称">
             <el-input v-model="form.data.name" />

@@ -233,12 +233,13 @@ body {
   width: 105px;
   height: 100px;
   margin: 5px;
-  background-color: #3a8ee6;
+  background-color: #afb9c3;
 
   display: flex;
   align-items: center;
   justify-content: center;
   flex-direction: column;
+  word-break: break-all;
 
 
 }
