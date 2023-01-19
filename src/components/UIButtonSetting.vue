@@ -140,7 +140,7 @@ watch(() => props.form, (newValue, oldValue) => {
 
 const onCreate = (formData, needCopy = false) => {
     let commonSettings = formData.commonSettings;
-    let addSubView = commonSettings.indexOf('addSubView') > -1 ? `[<#self#> addSubview:${formData.name}]\n` : '';
+    let addSubView = commonSettings.indexOf('addSubView') > -1 ? `[<#self#> addSubview:${formData.name}];\n` : '';
     let frame = commonSettings.indexOf('frame') > -1 ? `${formData.name}.frame = CGRectMake(<#CGFloat x#>, <#CGFloat y#>, <#CGFloat width#>, <#CGFloat height#>);\n` : '';
     let btnClick = commonSettings.indexOf('btnClick') > -1 ? `[${formData.name} addTarget:self action:@selector(<#${formData.name}Clicked:#>) forControlEvents:UIControlEventTouchUpInside];\n\n- (void)${formData.name}Clicked:(UIButton *)button{\n\n}\n` : '';
     let image = commonSettings.indexOf('image') > -1 ? `[${formData.name} setImage:[UIImage imageNamed:@"${formData.imageName}"] forState:UIControlStateNormal];\n` : '';

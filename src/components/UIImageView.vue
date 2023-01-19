@@ -110,9 +110,9 @@ watch(() => props.form, (newValue, oldValue) => {
 
 const onCreate = (formData, needCopy = false) => {
     let commonSettings = formData.commonSettings;
-    let addSubView = commonSettings.indexOf('addSubView') > -1 ? `[<#self#> addSubview:${formData.name}]\n` : '';
+    let addSubView = commonSettings.indexOf('addSubView') > -1 ? `[<#self#> addSubview:${formData.name}];\n` : '';
     let frame = commonSettings.indexOf('frame') > -1 ? `${formData.name}.frame = CGRectMake(<#CGFloat x#>, <#CGFloat y#>, <#CGFloat width#>, <#CGFloat height#>);\n` : '';
-    let image = commonSettings.indexOf('image') > -1 ? `${formData.name}.image = [UIImage imageNamed:@"${formData.imageName}"]];\n` : '';
+    let image = commonSettings.indexOf('image') > -1 ? `${formData.name}.image = [UIImage imageNamed:@"${formData.imageName}"];\n` : '';
     let click = commonSettings.indexOf('click') > -1 ? `${formData.name}.userInteractionEnabled = YES;\nUITapGestureRecognizer *${formData.name}TapGestureRecognizer = [[UITapGestureRecognizer alloc]initWithTarget:self action:@selector(${formData.name}Tap:)];\n[${formData.name} addGestureRecognizer:${formData.name}TapGestureRecognizer];\n\n-(void)${formData.name}Tap:(UITapGestureRecognizer *)tap{\ntap.view\n}` : '';
     let conrnerRadius = commonSettings.indexOf('conrnerRadius') > -1 ? `${formData.name}.layer.cornerRadius = ${formData.conrnerRadius};\n${formData.name}.layer.masksToBounds = YES;\n` : '';
     let imageUrl = commonSettings.indexOf('imageUrl') > -1 ? `#import "UIImageView+WebCache.h"\n [${formData.name} sd_setImageWithURL:[NSURL URLWithString:${formData.imageName}] placeholderImage:[UIImage imageNamed: @"jsbcDefault"]];\n` : '';

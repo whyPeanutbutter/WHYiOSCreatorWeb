@@ -102,7 +102,7 @@ watch(() => props.form, (newValue, oldValue) => {
 
 const onCreate = (formData, needCopy = false) => {
     let commonSettings = formData.commonSettings;
-    let addSubView = commonSettings.indexOf('addSubView') > -1 ? `[<#self#> addSubview:${formData.name}]\n` : '';
+    let addSubView = commonSettings.indexOf('addSubView') > -1 ? `[<#self#> addSubview:${formData.name}];\n` : '';
     let frame = commonSettings.indexOf('frame') > -1 ? `${formData.name}.frame = CGRectMake(<#CGFloat x#>, <#CGFloat y#>, <#CGFloat width#>, <#CGFloat height#>);\n` : '';
     let backgroundColor = commonSettings.indexOf('backgroundColor') > -1 ? `${formData.name}.backgroundColor = ${$utils.getColor(formData.backgroundColor)};\n` : '';
     let upperFirst = formData.name.charAt(0).toUpperCase()+ formData.name.slice(1);
@@ -119,7 +119,7 @@ const onCreate = (formData, needCopy = false) => {
     let masonry = formData.masonrys?.length > 0 ? `[${formData.name} mas_makeConstraints:^(MASConstraintMaker *make) {
         ${mansoryStr}
     }];\n`: ''
-    var result = `UITableViewDataSource,UITableViewDelegate\nUITableView *${formData.name} = [[UITableView alloc]initWithFrame:CGRectZero style:UITableViewStyleGrouped];\n${frame} \ntableView.dataSource = self;\ntableView.delegate = self;\n${formData.name}.separatorStyle = UITableViewCellSeparatorStyleNone;\n${formData.name}.showsVerticalScrollIndicator = NO;\nif (@available(iOS 15.0, *)) {\n${formData.name}.sectionHeaderTopPadding = 0;\n}\n` +
+    var result = `UITableViewDataSource,UITableViewDelegate\nUITableView *${formData.name} = [[UITableView alloc]initWithFrame:CGRectZero style:UITableViewStyleGrouped];\n${frame}tableView.dataSource = self;\ntableView.delegate = self;\n${formData.name}.separatorStyle = UITableViewCellSeparatorStyleNone;\n${formData.name}.showsVerticalScrollIndicator = NO;\nif (@available(iOS 15.0, *)) {\n${formData.name}.sectionHeaderTopPadding = 0;\n}\n` +
         `${addSubView}${estimatedRowHeight}${backgroundColor}${registerClass}${masonry}
         /*${sectionNum}${rowNum}${rowHeight}${cellView}${headerView}${footerView}${selectCell}*/\n`
     console.log(result);
