@@ -18,7 +18,9 @@ export const getMansorys = (mansorys) => {
         "size": "make.size.equalTo(@16);",
         "centerX": "make.centerX.equalTo(@0);",
         "centerY": "make.centerY.equalTo(@0);",
-        "center": "make.center.equalTo(@0);"
+        "center": "make.center.equalTo(@0);",
+        "left-view": "make.left.equalTo(<#view#>.mas_right).offset(0);",
+        "top-view": "make.top.equalTo(<#view#>.mas_bottom).offset(0);"
     };
     var i = 0
     for (let str of mansorys) {
@@ -33,13 +35,13 @@ export const getMansorys = (mansorys) => {
 }
 
 export const getFont = (font) => {
-    return `[UIFont systemFontOfSize:${font}];`
+    return `[UIFont systemFontOfSize:${font}]`
 
 }
 
 export const getColor = (color) => {
 
-    return `[ColorUtility colorWithString:@"${color}"];`
+    return `[ColorUtility colorWithString:@"${color}"]`
 
 }
 

@@ -65,6 +65,8 @@
                 <el-checkbox label="centerX" />
                 <el-checkbox label="centerY" />
                 <el-checkbox label="center" />
+                <el-checkbox label="left-View" />
+                <el-checkbox label="top-View" />
             </el-checkbox-group>
         </el-form-item>
         <el-form-item>
@@ -155,7 +157,7 @@ const onCreate = (formData, needCopy = false) => {
     let backgroundColor = commonSettings.indexOf('backgroundColor') > -1 ? `${formData.name}.backgroundColor = ${$utils.getColor(formData.backgroundColor)};\n` : '';
     let border = commonSettings.indexOf('border') > -1 ? `[${formData.name}.layer setBorderColor:${$utils.getColor(formData.borderColor)}.CGColor];\n[${formData.name}.layer setBorderWidth:<#1.0#>];\n` : '';
     let numberOfLine = commonSettings.indexOf('numberOfLine') > -1 ? `${formData.name}.numberOfLines = ${formData.numberOfLine};\n`:'';
-    let title = formData.haveTitle ? `[${formData.name} setTitle:@"${formData.titleName}" forState:UIControlStateNormal];\n${formData.name}.titleLabel.textAlignment = NSTextAlignment${formData.textAlign};\n[${formData.name} setTitleColor:${$utils.getColor(formData.titleColor)} forState:UIControlStateNormal];\n${formData.name}.titleLabel.font = ${$utils.getFont(formData.titleSize)};\n` : ''
+    let title = formData.haveTitle ? `${formData.name}.text = @"${formData.titleName}";\n${formData.name}.textAlignment = NSTextAlignment${formData.textAlign};\n[${formData.name}.textColor:${$utils.getColor(formData.titleColor)};\n${formData.name}.font = ${$utils.getFont(formData.titleSize)};\n` : ''
     let haveAttributedText = formData.haveAttributedText ? $utils.getAttributedText(formData.name + 'AttributedString',formData.attributedTextSettings):'';
     let mansoryStr = $utils.getMansorys(formData.masonrys);
     let masonry = formData.masonrys?.length > 0 ? `[${formData.name} mas_makeConstraints:^(MASConstraintMaker *make) {
