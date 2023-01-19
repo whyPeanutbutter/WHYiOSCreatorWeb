@@ -17,9 +17,13 @@
         <el-main class="main-view">
           <div class="main-phone">
             <template v-for="(item, index) in state.currentShowViews" :key="index">
-              <div class="content-view" @click="contentViewClick(item, index)" :style="item.style">{{
-                item.setting.name
-              }}</div>
+              <div :class="{
+                'content-view': true,
+                'selected': index == state.currentSelectIndex
+              }" @click="contentViewClick(item, index)"
+                :style="item.style">{{
+                  item.setting.name
+                }}</div>
             </template>
           </div>
           <div>
@@ -49,7 +53,7 @@
             <UITableView v-if="state.currentShowViews[state.currentSelectIndex].type == 'UITableView'"
               :form="state.currentShowViews[state.currentSelectIndex].setting" @update="settingUpdate"
               @delete="settingDelete" @create="settingCreate" />
-              <UITableViewCell v-if="state.currentShowViews[state.currentSelectIndex].type == 'UITableViewCell'"
+            <UITableViewCell v-if="state.currentShowViews[state.currentSelectIndex].type == 'UITableViewCell'"
               :form="state.currentShowViews[state.currentSelectIndex].setting" @update="settingUpdate"
               @delete="settingDelete" @create="settingCreate" />
           </div>
@@ -107,7 +111,7 @@ const leftBtnClick = (item) => {
     state.currentShowViews.push({
       type: item.type,
       setting: {},
-      style:'',
+      style: '',
       createResult: '',
       postion: {
         top: 0,
@@ -120,7 +124,7 @@ const leftBtnClick = (item) => {
     state.currentShowViews.push({
       type: item.type,
       setting: {},
-      style:'',
+      style: '',
       createResult: '',
       postion: {
         top: 0,
@@ -151,7 +155,7 @@ const contentViewClick = (item, index) => {
 const settingUpdate = (setting) => {
   if (state.currentSelectIndex > -1) {
     state.currentShowViews[state.currentSelectIndex].setting = setting;
-    state.currentShowViews[state.currentSelectIndex].style = `background:${setting.backgroundColor};border-radius:${setting.conrnerRadius}px ;`;
+    state.currentShowViews[state.currentSelectIndex].style = `background-color:${setting.backgroundColor};border-radius:${setting.conrnerRadius}px ;`;
   }
 }
 
@@ -208,7 +212,7 @@ body {
   align-items: center;
   justify-content: center;
   flex-direction: column;
-  
+
 }
 
 .main-phone {
@@ -224,7 +228,7 @@ body {
   justify-content: flex-start;
   flex-direction: row;
   flex-wrap: wrap;
-  align-content:flex-start;
+  align-content: flex-start;
 
 }
 
@@ -242,5 +246,23 @@ body {
   word-break: break-all;
 
 
+}
+
+.selected {
+  // border: 1px solid #333;
+  background:
+    linear-gradient(90deg, #333 50%, transparent 0) repeat-x,
+    linear-gradient(90deg, #333 50%, transparent 0) repeat-x,
+    linear-gradient(0deg, #333 50%, transparent 0) repeat-y,
+    linear-gradient(0deg, #333 50%, transparent 0) repeat-y;
+  background-size: 4px 1px, 4px 1px, 1px 4px, 1px 4px;
+  background-position: 0 0, 0 100%, 0 0, 100% 0;
+  animation: linearGradientMove .3s infinite linear;
+}
+
+@keyframes linearGradientMove {
+  100% {
+    background-position: 4px 0, -4px 100%, 0 -4px, 100% 4px;
+  }
 }
 </style>
