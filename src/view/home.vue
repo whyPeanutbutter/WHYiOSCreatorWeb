@@ -9,32 +9,13 @@
         </h1>
       </el-header>
       <el-container>
-        <el-aside class="left-aside" width="20%">
+        <el-aside class="left-aside" width="150px">
           <template v-for="(item, index) in state.leftBtns" :key="index">
             <el-button type="primary" class="left-btn" @click="leftBtnClick(item)">{{ item.name }}</el-button>
           </template>
         </el-aside>
         <el-main class="main-view">
-          <div class="main-phone">
-            <template v-for="(item, index) in state.currentShowViews" :key="index">
-              <div :class="{
-                'content-view': true,
-                'selected': index == state.currentSelectIndex
-              }" @click="contentViewClick(item, index)"
-                :style="item.style">{{
-                  item.setting.name
-                }}</div>
-            </template>
-          </div>
-          <div>
-            <el-button type="primary" size="large" @click="onMergeCreate()">合并生成</el-button>
-            <el-button size="large" @click="onDeleteAll()">删除所有</el-button>
-          </div>
-
-
-        </el-main>
-        <el-aside class="left-aside" width="35%">
-          <div v-if="state.currentSelectIndex > -1">
+          <div v-if="state.currentSelectIndex > -1" class="right-view">
             <UIbutton v-if="state.currentShowViews[state.currentSelectIndex].type == 'UIButton'"
               :form="state.currentShowViews[state.currentSelectIndex].setting" @update="settingUpdate"
               @delete="settingDelete" @create="settingCreate" />
@@ -57,7 +38,22 @@
               :form="state.currentShowViews[state.currentSelectIndex].setting" @update="settingUpdate"
               @delete="settingDelete" @create="settingCreate" />
           </div>
-        </el-aside>
+          <div class="flex-col">
+            <div class="main-phone">
+              <template v-for="(item, index) in state.currentShowViews" :key="index">
+                <div :class="{
+                  'content-view': true,
+                  'selected': index == state.currentSelectIndex
+                }" @click="contentViewClick(item, index)" :style="item.style">{{item.setting.name}}</div>
+              </template>
+            </div>
+            <div>
+              <el-button type="primary" size="large" @click="onMergeCreate()">合并生成</el-button>
+              <el-button size="large" @click="onDeleteAll()">删除所有</el-button>
+            </div>
+          </div>
+          
+        </el-main>
       </el-container>
     </el-container>
   </div>
@@ -198,7 +194,7 @@ body {
 
 .left-btn {
 
-  width: 43%;
+  width: 95%;
   margin-bottom: 5px;
   margin-right: 5px;
   height: 60px;
@@ -207,16 +203,16 @@ body {
 
 .main-view {
   height: 100%;
-  background: #3c5774;
+  background: #ffffff;
   display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-direction: column;
+  align-items: flex-start;
+  justify-content: flex-start;
+  flex-direction: row;
 
 }
 
 .main-phone {
-  min-height: calc(100vh - 160px);
+  min-height: calc(100vh - 200px);
   border: 2px solid #000;
   background: #e7e5e5;
   width: 375px;
@@ -232,6 +228,15 @@ body {
 
 }
 
+.flex-col{
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  flex-direction: column;
+  word-break: break-all;
+
+}
+
 .content-view {
   // position: absolute;
   width: 105px;
@@ -244,8 +249,17 @@ body {
   justify-content: center;
   flex-direction: column;
   word-break: break-all;
+}
 
-
+.right-view{
+  display: flex;
+  align-items: flex-start;
+  justify-content: flex-start;
+  flex-direction: column;
+  word-break: break-all;
+  width: 400px;
+  border: 2px solid #333;
+  margin-right: 10px;
 }
 
 .selected {
