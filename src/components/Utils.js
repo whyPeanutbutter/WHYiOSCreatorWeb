@@ -20,7 +20,8 @@ export const getMansorys = (mansorys) => {
         "centerY": "make.centerY.equalTo(@0);",
         "center": "make.center.equalTo(@0);",
         "left-View": "make.left.equalTo(<#view#>.mas_right).offset(0);",
-        "top-View": "make.top.equalTo(<#view#>.mas_bottom).offset(0);"
+        "top-View": "make.top.equalTo(<#view#>.mas_bottom).offset(0);",
+        "right-View": "make.right.equalTo(<#view#>.mas_left).offset(0);"
     };
     var i = 0
     for (let str of mansorys) {

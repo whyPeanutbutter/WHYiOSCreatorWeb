@@ -49,6 +49,7 @@
                 <el-checkbox label="center" />
                 <el-checkbox label="left-View" />
                 <el-checkbox label="top-View" />
+                <el-checkbox label="right-View" />
             </el-checkbox-group>
         </el-form-item>
         <el-form-item>
