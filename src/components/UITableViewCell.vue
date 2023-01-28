@@ -17,24 +17,7 @@
                 <el-checkbox label="纯delegate代码" />
             </el-checkbox-group>
         </el-form-item>
-        <el-form-item label="masonrys">
-            <el-checkbox-group class="flex-row flex-wrap" v-model="form.data.masonrys">
-                <el-checkbox label="top" />
-                <el-checkbox label="left" />
-                <el-checkbox label="right" />
-                <el-checkbox label="bottom" />
-                <el-checkbox label="width" />
-                <el-checkbox label="height" />
-                <el-checkbox label="size" />
-                <el-checkbox label="edges" />
-                <el-checkbox label="centerX" />
-                <el-checkbox label="centerY" />
-                <el-checkbox label="center" />
-                <el-checkbox label="left-View" />
-                <el-checkbox label="top-View" />
-                <el-checkbox label="right-View" />
-            </el-checkbox-group>
-        </el-form-item>
+        
         <el-form-item>
             <el-button type="primary" @click="onCreate(form.data, true)">Create</el-button>
             <el-button @click="onReset">Reset</el-button>
@@ -63,8 +46,7 @@ var form = reactive({
     data: {
         name: 'tableViewCell',
         commonSettings: ["addSubView"],
-        haveDelegate: false,
-        masonrys: []
+        haveDelegate: false
     },
     result: '点击create生成代码'
 });
@@ -74,8 +56,7 @@ const resetForm = () => {
     form.data = {
         name: 'tableViewCell',
         commonSettings: ["addSubView"],
-        haveDelegate: false,
-        masonrys: []
+        haveDelegate: false
     }
 };
 
