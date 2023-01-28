@@ -31,10 +31,12 @@
                 <el-checkbox label="left" />
                 <el-checkbox label="right" />
                 <el-checkbox label="bottom" />
+                <div style="width:100px"></div>
                 <el-checkbox label="width" />
                 <el-checkbox label="height" />
                 <el-checkbox label="size" />
                 <el-checkbox label="edges" />
+                <div style="width:100px"></div>
                 <el-checkbox label="centerX" />
                 <el-checkbox label="centerY" />
                 <el-checkbox label="center" />
