@@ -59,16 +59,16 @@ export const copy = async (text) => {
     }
 };
 
-export const getAttributedText = (name,attributedTextSettings) => {
+export const getAttributedText = (name, attributedTextSettings) => {
     if (attributedTextSettings.length == 0) {
         return ''
     }
-   
+
     let dict = {
-        "init": `NSStering * titleString = <#content#>;\nNSMutableAttributedString *${name} = [[NSMutableAttributedString alloc] initWithString:titleString];`,
-    "局部变色": `[${name} addAttribute:NSForegroundColorAttributeName value:${getColor('')} range:NSMakeRange(0, titleString.length)];\n[${name} addAttribute:NSForegroundColorAttributeName value:${getColor('')} range:NSMakeRange(0, 2)];`,
-    "paragraphStyle": `NSMutableParagraphStyle *paragraphStyle = [[NSMutableParagraphStyle alloc] init];\nparagraphStyle.lineSpacing = 8;\n[${name} addAttribute:NSParagraphStyleAttributeName value:paragraphStyle range:NSMakeRange(0, titleString.length)];`,
-    "局部font": `[${name} addAttribute:NSFontAttributeName value:messageLbl.font range:NSMakeRange(0, [titleString length])];`,
+        "init": `NSString * titleString = <#content#>;\nNSMutableAttributedString *${name} = [[NSMutableAttributedString alloc] initWithString:titleString];\n`,
+        "局部变色": `[${name} addAttribute:NSForegroundColorAttributeName value:${getColor('')} range:NSMakeRange(0, titleString.length)];\n[${name} addAttribute:NSForegroundColorAttributeName value:${getColor('')} range:NSMakeRange(0, 2)];\n`,
+        "paragraphStyle": `NSMutableParagraphStyle *paragraphStyle = [[NSMutableParagraphStyle alloc] init];\nparagraphStyle.lineSpacing = 8;\n[${name} addAttribute:NSParagraphStyleAttributeName value:paragraphStyle range:NSMakeRange(0, titleString.length)];\n`,
+        "局部font": `[${name} addAttribute:NSFontAttributeName value:messageLbl.font range:NSMakeRange(0, [titleString length])];\n`,
     };
     var re = dict['init'];
     var i = 0
@@ -80,4 +80,39 @@ export const getAttributedText = (name,attributedTextSettings) => {
         i++;
     }
     return re
+};
+
+
+export const  analyViewData = (str) => {
+    let dataarr = JSON.parse(str)
+    console.log(dataarr);
+   
+    var result = {};
+    if (!dataarr.length) {
+        console.log("解析失败");
+    return result;
+    }
+    let data = dataarr[0]
+    result.titleName = data.baseInfo.name;
+    if(data.baseInfo.radius.length > 0){
+     result.conrnerRadius =  parseFloat(data.baseInfo.radius);
+    }
+    result.titleColor = findValueOf(data.codeInfo.codes, 'color').slice(0, -1);
+    // result.titleSize = findValueOf(data.codeInfo.codes, 'font-size').replace(/[^0-9]/ig, "");
+    result.titleSize =  parseFloat(findValueOf(data.codeInfo.codes, 'font-size'));
+    let backgroundColor = findValueOf(data.codeInfo.codes, 'background').slice(0, -1);
+    if(backgroundColor.length > 0){
+        result.backgroundColor = backgroundColor;
+    }
+   
+    return result
+};
+
+const findValueOf = (arr, key) => {
+    for (const item of arr) {
+        if (item.name == key) {
+            return item.value;
+        }
+    }
+    return ' '
 };

@@ -6,6 +6,12 @@
         <el-form-item label="名称">
             <el-input v-model="form.data.name" />
         </el-form-item>
+          <el-form-item label="帮我解析">
+            <div class="flex-row">
+                <el-input v-model="form.helpMe" placeholder="粘贴数据"/>
+                <el-button @click="onHelpMe">解析</el-button>
+            </div>
+        </el-form-item>
         <el-form-item label="常用简单属性">
             <el-checkbox-group class="flex-col-start" v-model="form.data.commonSettings">
                 <el-checkbox label="addSubView" name="addSubView" />
@@ -20,6 +26,7 @@
                     <el-input style="margin-left: 5px;" placeholder="65" v-model="form.data.estimatedRowHeight" />
                 </div>
                 <el-checkbox label="sectionNum" />
+                <el-checkbox label="rownNum" />
                 <el-checkbox label="rowHeight" />
                 <el-checkbox label="cellView" />
                 <el-checkbox label="headerView" />
@@ -78,13 +85,14 @@ var form = reactive({
         estimatedRowHeight:'',
         masonrys: []
     },
+    helpMe:'',
     result: '点击create生成代码'
 });
 
 const resetForm = () => {
     console.log('reset');
     form.data = {
-        name: 'tableView',
+        name: 'TableView',
         commonSettings: ["addSubView"],
         backgroundColor: '#fff',
         estimatedRowHeight:'',
@@ -112,7 +120,7 @@ const onCreate = (formData, needCopy = false) => {
     let estimatedRowHeight = commonSettings.indexOf('estimatedRowHeight') > -1 ? `${formData.name}.estimatedRowHeight = ${formData.estimatedRowHeight};\n${formData.name}.rowHeight = UITableViewAutomaticDimension;\n` : '';
     let registerClass = commonSettings.indexOf('registerClass') > -1 ? `static NSString* const ${upperFirst}CellIdentifier = @"${upperFirst}CellIdentifier";\n[${formData.name} registerClass:[<#${upperFirst}Cell#> class] forCellReuseIdentifier:${upperFirst}CellIdentifier];\n` : '';
     let sectionNum = commonSettings.indexOf('sectionNum') > -1 ? `- (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView{\nreturn 1;\n}\n` : '';
-    let rowNum = commonSettings.indexOf('rowHeight') > -1 ? `- (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section{\nreturn .count;\n}\n` : '';
+    let rowNum = commonSettings.indexOf('rownNum') > -1 ? `- (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section{\nreturn .count;\n}\n` : '';
     let rowHeight = commonSettings.indexOf('rowHeight') > -1 ? `- (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath{\nreturn 103;\n}\n` : '';
     let cellView = commonSettings.indexOf('cellView') > -1 ? `- (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath{\n${upperFirst}Cell *cell = [tableView dequeueReusableCellWithIdentifier:${upperFirst}CellIdentifier];\nreturn cell;\n}\n` : '';
     let headerView = commonSettings.indexOf('headerView') > -1 ? `- (UIView *)tableView:(UITableView *)tableView viewForHeaderInSection:(NSInteger)section{\nUIView *view = [[UIView alloc]init];\nreturn view;}\n\n- (CGFloat)tableView:(UITableView *)tableView heightForHeaderInSection:(NSInteger)section\n{\nreturn 0.0001f;\n}\n` : '';
@@ -150,6 +158,16 @@ watch(() => form.data, (newValue, oldValue) => {
     immediate: true
 });
 
+const onHelpMe = async() => {
+    let re = $utils.analyViewData(form.helpMe)
+    console.log(re);
+    for (let key in form.data) {
+  if (re.hasOwnProperty(key)) {
+    form.data[key] = re[key];
+    console.log(key);
+  }
+}
+};
 
 </script>
 

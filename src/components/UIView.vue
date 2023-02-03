@@ -6,11 +6,18 @@
         <el-form-item label="名称">
             <el-input v-model="form.data.name" />
         </el-form-item>
+          <el-form-item label="帮我解析">
+            <div class="flex-row">
+                <el-input v-model="form.helpMe" placeholder="粘贴数据"/>
+                <el-button @click="onHelpMe">解析</el-button>
+            </div>
+        </el-form-item>
         <el-form-item label="常用简单属性">
             <el-checkbox-group class="flex-col-start" v-model="form.data.commonSettings">
                 <el-checkbox label="addSubView" name="addSubView" />
                 <el-checkbox label="frame" name="frame" />
                 <el-checkbox label="click" name="click" />
+                <el-checkbox label="下侧圆角" name="下侧圆角" />
                 <div class="flex-row">
                     <el-checkbox label="conrnerRadius" name="conrnerRadius"></el-checkbox>
                     <el-input style="margin-left: 5px;" placeholder="6" v-model="form.data.conrnerRadius" />
@@ -78,13 +85,14 @@ var form = reactive({
         borderColor: 'borderColor',
         masonrys: []
     },
+    helpMe:'',
     result: '点击create生成代码'
 });
 
 const resetForm = () => {
     console.log('reset');
     form.data = {
-        name: 'view',
+        name: 'View',
         commonSettings: ["addSubView"],
         conrnerRadius: '4',
         backgroundColor: '#fff',
@@ -112,12 +120,17 @@ const onCreate = (formData, needCopy = false) => {
     let conrnerRadius = commonSettings.indexOf('conrnerRadius') > -1 ? `${formData.name}.layer.cornerRadius = ${formData.conrnerRadius};\n${formData.name}.layer.masksToBounds = YES;\n` : '';
     let backgroundColor = commonSettings.indexOf('backgroundColor') > -1 ? `${formData.name}.backgroundColor = ${$utils.getColor(formData.backgroundColor)};\n` : '';
     let border = commonSettings.indexOf('border') > -1 ? `[${formData.name}.layer setBorderColor:${$utils.getColor(formData.borderColor)}.CGColor];\n[${formData.name}.layer setBorderWidth:<#1.0#>];\n` : '';
+    let bottomCor = commonSettings.indexOf('下侧圆角') > -1 ? `  UIBezierPath *maskPath = [UIBezierPath bezierPathWithRoundedRect:${formData.name}.bounds<#CGRectMake(0, 0, 100, 100)#> byRoundingCorners:UIRectCornerBottomLeft | UIRectCornerBottomRight cornerRadii:CGSizeMake(10, 10)];
+    CAShapeLayer *maskLayer = [[CAShapeLayer alloc] init];
+    maskLayer.frame = ${formData.name}.bounds;
+    maskLayer.path = maskPath.CGPath;
+    ${formData.name}.layer.mask = maskLayer;` : '';
     let mansoryStr = $utils.getMansorys(formData.masonrys);
     let masonry = formData.masonrys?.length > 0 ? `[${formData.name} mas_makeConstraints:^(MASConstraintMaker *make) {
         ${mansoryStr}
     }];\n`: ''
     var result = `UIView *${formData.name} = [[UIView alloc] init];\n` +
-        `${frame}${addSubView}${conrnerRadius}${backgroundColor}${border}${masonry}${click}\n`
+        `${frame}${addSubView}${conrnerRadius}${bottomCor}${backgroundColor}${border}${masonry}${click}\n`
     console.log(result);
     form.result = result;
     emits('create', result)
@@ -143,6 +156,16 @@ watch(() => form.data, (newValue, oldValue) => {
     immediate: true
 });
 
+const onHelpMe = async() => {
+    let re = $utils.analyViewData(form.helpMe)
+    console.log(re);
+    for (let key in form.data) {
+  if (re.hasOwnProperty(key)) {
+    form.data[key] = re[key];
+    console.log(key);
+  }
+}
+};
 
 </script>
 

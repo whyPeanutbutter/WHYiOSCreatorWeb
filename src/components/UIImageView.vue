@@ -6,6 +6,12 @@
         <el-form-item label="名称">
             <el-input v-model="form.data.name" />
         </el-form-item>
+          <el-form-item label="帮我解析">
+            <div class="flex-row">
+                <el-input v-model="form.helpMe" placeholder="粘贴数据"/>
+                <el-button @click="onHelpMe">解析</el-button>
+            </div>
+        </el-form-item>
         <el-form-item label="常用简单属性">
             <el-checkbox-group class="flex-col-start" v-model="form.data.commonSettings">
                 <el-checkbox label="addSubView" name="addSubView" />
@@ -78,20 +84,21 @@ const props = defineProps({
 // do not use same name with ref
 var form = reactive({
     data: {
-        name: 'imageView',
+        name: 'ImgView',
         commonSettings: ["addSubView"],
         conrnerRadius: '4',
         imageName: 'imageName',
         contentMode: 'UIViewContentModeScaleAspectFit',
         masonrys: []
     },
+    helpMe:'',
     result: '点击create生成代码'
 });
 
 const resetForm = () => {
     console.log('reset');
     form.data = {
-        name: 'imageView',
+        name: 'ImgView',
         commonSettings: ["addSubView"],
         conrnerRadius: '4',
         imageName: 'imageName',
@@ -152,6 +159,16 @@ watch(() => form.data, (newValue, oldValue) => {
     immediate: true
 });
 
+const onHelpMe = async() => {
+    let re = $utils.analyViewData(form.helpMe)
+    console.log(re);
+    for (let key in form.data) {
+  if (re.hasOwnProperty(key)) {
+    form.data[key] = re[key];
+    console.log(key);
+  }
+}
+};
 
 </script>
 
