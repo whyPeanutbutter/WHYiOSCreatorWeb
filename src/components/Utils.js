@@ -11,7 +11,7 @@ export const getMansorys = (mansorys) => {
         "left": "make.left.equalTo(@16);",
         "right": "make.right.equalTo(@-16);",
         "top": "make.top.equalTo(@16);",
-        "bottom": "make.bottom.equalTo(@0);",
+        "bottom": "make.bottom.equalTo(@-0);",
         "width": "make.width.equalTo(@0);",
         "height": "make.height.equalTo(@0);",
         "edges": "make.edges.equalTo(@0);",
@@ -21,7 +21,7 @@ export const getMansorys = (mansorys) => {
         "center": "make.center.equalTo(@0);",
         "left-View": "make.left.equalTo(<#view#>.mas_right).offset(0);",
         "top-View": "make.top.equalTo(<#view#>.mas_bottom).offset(0);",
-        "right-View": "make.right.equalTo(<#view#>.mas_left).offset(0);"
+        "right-View": "make.right.equalTo(<#view#>.mas_left).offset(-0);"
     };
     var i = 0
     for (let str of mansorys) {

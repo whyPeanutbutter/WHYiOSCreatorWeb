@@ -9,6 +9,7 @@
           <el-form-item label="帮我解析">
             <div class="flex-row">
                 <el-input v-model="form.helpMe" placeholder="粘贴数据"/>
+                <el-button @click="onAddClip">粘贴</el-button>
                 <el-button @click="onHelpMe">解析</el-button>
             </div>
         </el-form-item>
@@ -142,6 +143,12 @@ watch(() => form.data, (newValue, oldValue) => {
     deep: true,
     immediate: true
 });
+
+
+const onAddClip = async() => {
+    form.helpMe = await navigator.clipboard.readText()
+    onHelpMe()
+};
 
 const onHelpMe = async() => {
     let re = $utils.analyViewData(form.helpMe)
