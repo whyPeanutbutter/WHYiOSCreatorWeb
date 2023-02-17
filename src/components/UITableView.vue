@@ -15,6 +15,7 @@
         </el-form-item>
         <el-form-item label="常用简单属性">
             <el-checkbox-group class="flex-col-start" v-model="form.data.commonSettings">
+                <el-checkbox label="init" name="init" />
                 <el-checkbox label="addSubView" name="addSubView" />
                 <el-checkbox label="frame" name="frame" />
                 <el-checkbox label="registerClass" />
@@ -81,7 +82,7 @@ const props = defineProps({
 var form = reactive({
     data: {
         name: 'tableView',
-        commonSettings: ["addSubView"],
+        commonSettings: ["addSubView","init"],
         backgroundColor: '#fff',
         estimatedRowHeight:'',
         masonrys: []
@@ -94,7 +95,7 @@ const resetForm = () => {
     console.log('reset');
     form.data = {
         name: 'TableView',
-        commonSettings: ["addSubView"],
+        commonSettings: ["addSubView","init"],
         backgroundColor: '#fff',
         estimatedRowHeight:'',
         masonrys: []
@@ -114,8 +115,10 @@ watch(() => props.form, (newValue, oldValue) => {
 
 const onCreate = (formData, needCopy = false) => {
     let commonSettings = formData.commonSettings;
-    let addSubView = commonSettings.indexOf('addSubView') > -1 ? `[<#self#> addSubview:${formData.name}];\n` : '';
     let frame = commonSettings.indexOf('frame') > -1 ? `${formData.name}.frame = CGRectMake(<#CGFloat x#>, <#CGFloat y#>, <#CGFloat width#>, <#CGFloat height#>);\n` : '';
+
+    let init = commonSettings.indexOf('init') > -1 ? `UITableViewDataSource,UITableViewDelegate\nUITableView *${formData.name} = [[UITableView alloc]initWithFrame:CGRectZero style:UITableViewStyleGrouped];\n${frame}tableView.dataSource = self;\ntableView.delegate = self;\n${formData.name}.separatorStyle = UITableViewCellSeparatorStyleNone;\n${formData.name}.showsVerticalScrollIndicator = NO;\nif (@available(iOS 15.0, *)) {\n${formData.name}.sectionHeaderTopPadding = 0;\n}\n` : '';
+    let addSubView = commonSettings.indexOf('addSubView') > -1 ? `[<#self#> addSubview:${formData.name}];\n` : '';
     let backgroundColor = commonSettings.indexOf('backgroundColor') > -1 ? `${formData.name}.backgroundColor = ${$utils.getColor(formData.backgroundColor)};\n` : '';
     let upperFirst = formData.name.charAt(0).toUpperCase()+ formData.name.slice(1);
     let estimatedRowHeight = commonSettings.indexOf('estimatedRowHeight') > -1 ? `${formData.name}.estimatedRowHeight = ${formData.estimatedRowHeight};\n${formData.name}.rowHeight = UITableViewAutomaticDimension;\n` : '';
@@ -131,8 +134,7 @@ const onCreate = (formData, needCopy = false) => {
     let masonry = formData.masonrys?.length > 0 ? `[${formData.name} mas_makeConstraints:^(MASConstraintMaker *make) {
         ${mansoryStr}
     }];\n`: ''
-    var result = `UITableViewDataSource,UITableViewDelegate\nUITableView *${formData.name} = [[UITableView alloc]initWithFrame:CGRectZero style:UITableViewStyleGrouped];\n${frame}tableView.dataSource = self;\ntableView.delegate = self;\n${formData.name}.separatorStyle = UITableViewCellSeparatorStyleNone;\n${formData.name}.showsVerticalScrollIndicator = NO;\nif (@available(iOS 15.0, *)) {\n${formData.name}.sectionHeaderTopPadding = 0;\n}\n` +
-        `${addSubView}${estimatedRowHeight}${backgroundColor}${registerClass}${masonry}
+    var result = `${init}${addSubView}${estimatedRowHeight}${backgroundColor}${registerClass}${masonry}
         /*${sectionNum}${rowNum}${rowHeight}${cellView}${headerView}${footerView}${selectCell}*/\n`
     console.log(result);
     form.result = result;

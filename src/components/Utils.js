@@ -122,7 +122,8 @@ const findValueOf = (arr, key) => {
 
 const analyOCCode = (code) => {
     var data = {}
-    var result = /ng alloc] initWithString:@"(.*)"/g.exec(code);
+    var result = /initWithString:@"(.*?)"/g.exec(code);
+    console.log(result)
     if (result) {
         data.titleName = result[1];
     }
@@ -134,11 +135,10 @@ const analyOCCode = (code) => {
 
     result = /NSForegroundColorAttributeName: \[UIColor colorWithRed:(\w+)\/255.0 green:(\w+)\/255.0 blue:(\w+)\/255/.exec(code);
     if (result) {
-        data.backgroundColor = rgbToHex(`rgb(${result[1]},${result[2]},${result[3]})`);
+        data.titleColor = rgbToHex(`rgb(${result[1]},${result[2]},${result[3]})`);
     }
 
     result = /size: (.*)],/g.exec(code); 
-    console.log(result)
     if (result) {
         data.titleSize = result[1];
     }

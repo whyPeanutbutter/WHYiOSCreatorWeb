@@ -15,6 +15,7 @@
         </el-form-item>
         <el-form-item label="常用简单属性">
             <el-checkbox-group class="flex-col-start" v-model="form.data.commonSettings">
+                <el-checkbox label="init" name="init" />
                 <el-checkbox label="addSubView" name="addSubView" />
                 <el-checkbox label="frame" name="frame" />
                 <div class="flex-row">
@@ -86,7 +87,7 @@ const props = defineProps({
 var form = reactive({
     data: {
         name: 'ImgView',
-        commonSettings: ["addSubView"],
+        commonSettings: ["addSubView","init"],
         conrnerRadius: '4',
         imageName: 'imageName',
         contentMode: 'UIViewContentModeScaleAspectFit',
@@ -100,7 +101,7 @@ const resetForm = () => {
     console.log('reset');
     form.data = {
         name: 'ImgView',
-        commonSettings: ["addSubView"],
+        commonSettings: ["addSubView","init"],
         conrnerRadius: '4',
         imageName: 'imageName',
         contentMode: 'UIViewContentModeScaleAspectFit',
@@ -121,6 +122,7 @@ watch(() => props.form, (newValue, oldValue) => {
 
 const onCreate = (formData, needCopy = false) => {
     let commonSettings = formData.commonSettings;
+    let init = commonSettings.indexOf('init') > -1 ?  `UIImageView *${formData.name} = [[UIImageView alloc] init];\n` : '';
     let addSubView = commonSettings.indexOf('addSubView') > -1 ? `[<#self#> addSubview:${formData.name}];\n` : '';
     let frame = commonSettings.indexOf('frame') > -1 ? `${formData.name}.frame = CGRectMake(<#CGFloat x#>, <#CGFloat y#>, <#CGFloat width#>, <#CGFloat height#>);\n` : '';
     let image = commonSettings.indexOf('image') > -1 ? `${formData.name}.image = [UIImage imageNamed:@"${formData.imageName}"];\n` : '';
@@ -132,8 +134,8 @@ const onCreate = (formData, needCopy = false) => {
     let masonry = formData.masonrys?.length > 0 ? `[${formData.name} mas_makeConstraints:^(MASConstraintMaker *make) {
         ${mansoryStr}
     }];\n`: ''
-    var result = `UIImageView *${formData.name} = [[UIImageView alloc] init];\n` +
-        `${frame}${image}${imageUrl}${conrnerRadius}${contentMode}${addSubView}${masonry}${click}\n`
+    var result = 
+        `${init}${frame}${image}${imageUrl}${conrnerRadius}${contentMode}${addSubView}${masonry}${click}\n`
     console.log(result);
     form.result = result;
     emits('create', result)

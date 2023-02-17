@@ -52,7 +52,7 @@ const props = defineProps({
 var form = reactive({
     data: {
         name: 'tableViewCell',
-        commonSettings: ["addSubView"],
+        commonSettings: ["addSubView","init"],
         haveDelegate: false
     },
     helpMe:'',
@@ -62,8 +62,8 @@ var form = reactive({
 const resetForm = () => {
     console.log('reset');
     form.data = {
-        name: 'tableViewCell',
-        commonSettings: ["addSubView"],
+        name: 'TableViewCell',
+        commonSettings: ["addSubView","init"],
         haveDelegate: false
     }
 };
@@ -82,14 +82,15 @@ watch(() => props.form, (newValue, oldValue) => {
 const onCreate = (formData, needCopy = false) => {
     let commonSettings = formData.commonSettings;
     let upperFirst = formData.name.charAt(0).toUpperCase()+ formData.name.slice(1);
+    let lowerFirst = formData.name.charAt(0).toLowerCase()+ formData.name.slice(1);
     let hCode = commonSettings.indexOf('.h文件') > -1 ? `@interface ${upperFirst} : UITableViewCell\n` : '';
     
     if(formData.haveDelegate && hCode.length > 0){
-        hCode = `@protocol ${upperFirst}Delegate<NSObject>\n@optional\n- (void)${formData.name}Clicked;\n@end\n\n`+ hCode + `@property (weak, nonatomic) id<${upperFirst}Delegate> delegate;\n`
+        hCode = `@protocol ${upperFirst}Delegate<NSObject>\n@optional\n- (void)${lowerFirst}Clicked;\n@end\n\n`+ hCode + `@property (weak, nonatomic) id<${upperFirst}Delegate> delegate;\n`
     }
     hCode = hCode +(hCode.length > 0 ?  '@end\n': '')
     let mCode = commonSettings.indexOf('.m文件') > -1 ? `@interface ${upperFirst}(){\n\n}@end\n@implementation ${upperFirst}\n - (instancetype)initWithStyle:(UITableViewCellStyle)style reuseIdentifier:(NSString *)reuseIdentifier{\nif (self = [super initWithStyle:style reuseIdentifier:reuseIdentifier]) {\nself.selectionStyle = UITableViewCellSelectionStyleNone;\n[self setupUI];\n}\nreturn self;\n}\n\n- (void)setupUI {\n<#content#>\n}\n@end` : '';
-    let pureDelegateCode = commonSettings.indexOf('纯delegate代码') > -1 ? `@protocol ${upperFirst}Delegate<NSObject>\n@optional\n- (void)${formData.name}Clicked;\n@end\n\n@property (weak, nonatomic) id<${upperFirst}Delegate> delegate;\n` : '';
+    let pureDelegateCode = commonSettings.indexOf('纯delegate代码') > -1 ? `@protocol ${upperFirst}Delegate<NSObject>\n@optional\n- (void)${lowerFirst}Clicked;\n@end\n\n@property (weak, nonatomic) id<${upperFirst}Delegate> delegate;\n` : '';
     var result =  `${hCode}${mCode}${pureDelegateCode}\n`
     console.log(result);
     form.result = result;

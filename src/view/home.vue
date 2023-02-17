@@ -37,13 +37,16 @@
             <UITableViewCell v-if="state.currentShowViews[state.currentSelectIndex].type == 'UITableViewCell'"
               :form="state.currentShowViews[state.currentSelectIndex].setting" @update="settingUpdate"
               @delete="settingDelete" @create="settingCreate" />
+            <!-- <HelpMeView v-if="state.currentShowViews[state.currentSelectIndex].type == 'HelpMe'"/> -->
+            <AnalyCodeView v-if="state.currentShowViews[state.currentSelectIndex].type == 'AnalyCodeView'"/>
           </div>
           <div class="flex-col">
             <div class="main-phone">
               <template v-for="(item, index) in state.currentShowViews" :key="index">
                 <div :class="{
                   'content-view': true,
-                  'selected': index == state.currentSelectIndex
+                  'selected': index == state.currentSelectIndex,
+                  'displayNone':item.type == 'AnalyCodeView'
                 }" @click="contentViewClick(item, index)" :style="item.style">{{item.setting.name}}</div>
               </template>
             </div>
@@ -69,8 +72,10 @@ import UIImageView from '../components/UIImageView.vue';
 import UIScrollView from '../components/UIScrollView.vue';
 import UITableView from '../components/UITableView.vue';
 import UITableViewCell from '../components/UITableViewCell.vue';
+import HelpMeView from '../components/HelpMeView.vue';
 import * as $utils from '../components/Utils';
 import { reactive, ref } from 'vue'
+import AnalyCodeView from '../components/AnalyCodeView.vue';
 
 // do not use same name with ref
 const state = reactive({
@@ -96,7 +101,17 @@ const state = reactive({
   }, {
     name: "UITableViewCell",
     type: 'UITableViewCell'
-  }],
+  },
+  {
+    name: "代码解析",
+    type: 'AnalyCodeView'
+  }
+  
+  //  {
+  //   name: "帮帮我",
+  //   type: 'HelpMe'
+  // }
+],
   currentSelectIndex: -1
 })
 
@@ -151,7 +166,7 @@ const contentViewClick = (item, index) => {
 const settingUpdate = (setting) => {
   if (state.currentSelectIndex > -1) {
     state.currentShowViews[state.currentSelectIndex].setting = setting;
-    state.currentShowViews[state.currentSelectIndex].style = `background-color:${setting.backgroundColor};border-radius:${setting.conrnerRadius}px ;`;
+    state.currentShowViews[state.currentSelectIndex].style = `background-color:${setting.backgroundColor};border-radius:${setting.conrnerRadius}px ;color:${setting.titleColor};`;
   }
 }
 
@@ -278,5 +293,9 @@ body {
   100% {
     background-position: 4px 0, -4px 100%, 0 -4px, 100% 4px;
   }
+}
+
+.displayNone{
+display: none;
 }
 </style>

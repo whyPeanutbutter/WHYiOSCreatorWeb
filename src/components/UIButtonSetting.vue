@@ -15,6 +15,7 @@
         </el-form-item>
         <el-form-item label="常用简单属性">
             <el-checkbox-group class="flex-col-start" v-model="form.data.commonSettings">
+                <el-checkbox label="init" name="init" />
                 <el-checkbox label="addSubView" name="addSubView" />
                 <el-checkbox label="frame" name="frame" />
                 <el-checkbox label="btnClick" name="btnClick" />
@@ -101,7 +102,7 @@ const props = defineProps({
 var form = reactive({
     data: {
         name: 'Btn',
-        commonSettings: ["addSubView"],
+        commonSettings: ["addSubView","init"],
         imageName: 'imageName',
         conrnerRadius: '4',
         backgroundColor: '#fff',
@@ -121,7 +122,7 @@ const resetForm = () => {
     console.log('reset');
     form.data = {
         name: 'Btn',
-        commonSettings: ["addSubView"],
+        commonSettings: ["addSubView","init"],
         imageName: 'imageName',
         conrnerRadius: '4',
         backgroundColor: '#fff',
@@ -151,6 +152,7 @@ watch(() => props.form, (newValue, oldValue) => {
 
 const onCreate = (formData, needCopy = false) => {
     let commonSettings = formData.commonSettings;
+    let init = commonSettings.indexOf('init') > -1 ?  `UIButton *${formData.name} = [UIButton buttonWithType:UIButtonTypeCustom];\n` : '';
     let addSubView = commonSettings.indexOf('addSubView') > -1 ? `[<#self#> addSubview:${formData.name}];\n` : '';
     let frame = commonSettings.indexOf('frame') > -1 ? `${formData.name}.frame = CGRectMake(<#CGFloat x#>, <#CGFloat y#>, <#CGFloat width#>, <#CGFloat height#>);\n` : '';
     let btnClick = commonSettings.indexOf('btnClick') > -1 ? `[${formData.name} addTarget:self action:@selector(<#${formData.name}Clicked:#>) forControlEvents:UIControlEventTouchUpInside];\n\n- (void)${formData.name}Clicked:(UIButton *)button{\n\n}\n` : '';
@@ -163,8 +165,8 @@ const onCreate = (formData, needCopy = false) => {
     let masonry = formData.masonrys?.length > 0 ? `[${formData.name} mas_makeConstraints:^(MASConstraintMaker *make) {
         ${mansoryStr}
     }];\n`: ''
-    var result = `UIButton *${formData.name} = [UIButton buttonWithType:UIButtonTypeCustom];\n` +
-        `${frame}${addSubView}${image}${title}${conrnerRadius}${backgroundColor}${border}${masonry}${btnClick}\n`
+    var result = 
+        `${init}${frame}${addSubView}${image}${title}${conrnerRadius}${backgroundColor}${border}${masonry}${btnClick}\n`
     console.log(result);
     form.result = result;
     emits('create', result)
