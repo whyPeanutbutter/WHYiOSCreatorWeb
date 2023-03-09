@@ -5,8 +5,10 @@
       <el-header>
         <h1 class="tit">
           WHY iOS creator
+          <el-switch v-model="state.isOCTag" class="switch-border" active-text="OC" inactive-text="Swift"  style="--el-switch-off-color:#ff4949;"/>
           <div class="border"></div>
         </h1>
+
       </el-header>
       <el-container>
         <el-aside class="left-aside" width="150px">
@@ -15,7 +17,7 @@
           </template>
         </el-aside>
         <el-main class="main-view">
-          <div v-if="state.currentSelectIndex > -1" class="right-view">
+          <div v-if="state.currentSelectIndex > -1" class="right-view" :style="state.currentShowViews[state.currentSelectIndex].type == 'HelpMe' ? 'width: 800px;': 'width: 400px;'">
             <UIbutton v-if="state.currentShowViews[state.currentSelectIndex].type == 'UIButton'"
               :form="state.currentShowViews[state.currentSelectIndex].setting" @update="settingUpdate"
               @delete="settingDelete" @create="settingCreate" />
@@ -37,8 +39,8 @@
             <UITableViewCell v-if="state.currentShowViews[state.currentSelectIndex].type == 'UITableViewCell'"
               :form="state.currentShowViews[state.currentSelectIndex].setting" @update="settingUpdate"
               @delete="settingDelete" @create="settingCreate" />
-            <!-- <HelpMeView v-if="state.currentShowViews[state.currentSelectIndex].type == 'HelpMe'"/> -->
-            <AnalyCodeView v-if="state.currentShowViews[state.currentSelectIndex].type == 'AnalyCodeView'"/>
+            <HelpMeView v-if="state.currentShowViews[state.currentSelectIndex].type == 'HelpMe'"/>
+            <AnalyCodeView v-if="state.currentShowViews[state.currentSelectIndex].type == 'AnalyCodeView'" />
           </div>
           <div class="flex-col">
             <div class="main-phone">
@@ -46,8 +48,8 @@
                 <div :class="{
                   'content-view': true,
                   'selected': index == state.currentSelectIndex,
-                  'displayNone':item.type == 'AnalyCodeView'
-                }" @click="contentViewClick(item, index)" :style="item.style">{{item.setting.name}}</div>
+                  'displayNone': item.type == 'AnalyCodeView'
+                }" @click="contentViewClick(item, index)" :style="item.style">{{ item.setting.name }}</div>
               </template>
             </div>
             <div>
@@ -55,7 +57,7 @@
               <el-button size="large" @click="onDeleteAll()">删除所有</el-button>
             </div>
           </div>
-          
+
         </el-main>
       </el-container>
     </el-container>
@@ -74,11 +76,13 @@ import UITableView from '../components/UITableView.vue';
 import UITableViewCell from '../components/UITableViewCell.vue';
 import HelpMeView from '../components/HelpMeView.vue';
 import * as $utils from '../components/Utils';
-import { reactive, ref } from 'vue'
+import { reactive, ref, getCurrentInstance, watch } from 'vue'
 import AnalyCodeView from '../components/AnalyCodeView.vue';
+const { proxy } = getCurrentInstance();
 
 // do not use same name with ref
 const state = reactive({
+  isOCTag: proxy.isOCTag,
   currentShowViews: [],
   leftBtns: [{
     name: "UIButton",
@@ -105,15 +109,22 @@ const state = reactive({
   {
     name: "代码解析",
     type: 'AnalyCodeView'
-  }
-  
-  //  {
-  //   name: "帮帮我",
-  //   type: 'HelpMe'
-  // }
-],
+  },
+  {
+      name: "帮帮我",
+      type: 'HelpMe'
+    }
+  ],
   currentSelectIndex: -1
 })
+
+watch(() => state.isOCTag, (newValue, oldValue) => {
+  proxy.isOCTag = newValue;
+  console.log(proxy.isOCTag);
+}, {
+  deep: true,
+  immediate: true
+});
 
 const leftBtnClick = (item) => {
   if (state.currentShowViews.length > 0) {
@@ -243,7 +254,7 @@ body {
 
 }
 
-.flex-col{
+.flex-col {
   display: flex;
   align-items: center;
   justify-content: flex-start;
@@ -266,7 +277,7 @@ body {
   word-break: break-all;
 }
 
-.right-view{
+.right-view {
   display: flex;
   align-items: flex-start;
   justify-content: flex-start;
@@ -295,7 +306,13 @@ body {
   }
 }
 
-.displayNone{
-display: none;
+.displayNone {
+  display: none;
+}
+
+.switch-border{
+  border: 1px solid #409eff;
+  border-radius: 4px;
+  padding: 2px 6px;
 }
 </style>

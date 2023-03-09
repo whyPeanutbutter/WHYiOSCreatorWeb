@@ -88,9 +88,17 @@ const onCreate = (formData, needCopy = false) => {
     if(formData.haveDelegate && hCode.length > 0){
         hCode = `@protocol ${upperFirst}Delegate<NSObject>\n@optional\n- (void)${lowerFirst}Clicked;\n@end\n\n`+ hCode + `@property (weak, nonatomic) id<${upperFirst}Delegate> delegate;\n`
     }
+    var useDelegateCode = `- (void)${lowerFirst}Clicked {
+        if (self.delegate && [self.delegate respondsToSelector:@selector(${lowerFirst}Clicked)]) {
+        [self.delegate ${lowerFirst}Clicked];}
+        }\n`
+    var  mDelegateCode = ''
+    if(formData.haveDelegate){
+        mDelegateCode = useDelegateCode
+    }
     hCode = hCode +(hCode.length > 0 ?  '@end\n': '')
-    let mCode = commonSettings.indexOf('.m文件') > -1 ? `@interface ${upperFirst}(){\n\n}@end\n@implementation ${upperFirst}\n - (instancetype)initWithStyle:(UITableViewCellStyle)style reuseIdentifier:(NSString *)reuseIdentifier{\nif (self = [super initWithStyle:style reuseIdentifier:reuseIdentifier]) {\nself.selectionStyle = UITableViewCellSelectionStyleNone;\n[self setupUI];\n}\nreturn self;\n}\n\n- (void)setupUI {\n<#content#>\n}\n@end` : '';
-    let pureDelegateCode = commonSettings.indexOf('纯delegate代码') > -1 ? `@protocol ${upperFirst}Delegate<NSObject>\n@optional\n- (void)${lowerFirst}Clicked;\n@end\n\n@property (weak, nonatomic) id<${upperFirst}Delegate> delegate;\n` : '';
+    let mCode = commonSettings.indexOf('.m文件') > -1 ? `@interface ${upperFirst}(){\n\n}@end\n@implementation ${upperFirst}\n - (instancetype)initWithStyle:(UITableViewCellStyle)style reuseIdentifier:(NSString *)reuseIdentifier{\nif (self = [super initWithStyle:style reuseIdentifier:reuseIdentifier]) {\nself.selectionStyle = UITableViewCellSelectionStyleNone;\n[self setupUI];\n}\nreturn self;\n}\n\n- (void)setupUI {\n<#content#>\n}\n${mDelegateCode}@end` : '';
+    let pureDelegateCode = commonSettings.indexOf('纯delegate代码') > -1 ? `@protocol ${upperFirst}Delegate<NSObject>\n@optional\n- (void)${lowerFirst}Clicked;\n@end\n\n@property (weak, nonatomic) id<${upperFirst}Delegate> delegate;\n\n${useDelegateCode}` : '';
     var result =  `${hCode}${mCode}${pureDelegateCode}\n`
     console.log(result);
     form.result = result;

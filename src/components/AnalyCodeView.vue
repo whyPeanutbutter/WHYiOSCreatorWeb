@@ -1,5 +1,5 @@
 <template>
-    <el-form :model="form" label-width="120px">
+    <el-form :model="form" label-width="90px">
         <div style="margin-bottom: 10px">
             代码解析
         </div>
@@ -11,6 +11,9 @@
             <el-radio-group class="flex-col-start" v-model="form.data.analycodeRadioSelect">
                 <el-tooltip class="box-item" effect="dark" content="如：UIView *name;" placement="right">
                     <el-radio label="提取类及名" name="提取类及名" border :disabled="form.codeText?.length == 0" />
+                </el-tooltip>
+                <el-tooltip class="box-item" effect="dark" content="将接口文档转换为属性" placement="right">
+                    <el-radio label="api转属性" name="api转属性" border :disabled="form.codeText?.length == 0" />
                 </el-tooltip>
             </el-radio-group>
         </el-form-item>
@@ -48,13 +51,14 @@ const onCreate = (formData, needCopy = false) => {
                     nameStr = nameStr + name + ';\n';
                     console.log(name);
                 }
-                result  = nameStr + result;
+                result = nameStr + result;
                 break;
+            case "api转属性":
+                result = convertApi(form.codeText)
             default:
                 break;
         }
         if (needCopy) {
-            console.log(2222);
             $utils.copy(result)
             form.result = '已复制到剪切板\n' + result;
         }
@@ -89,6 +93,57 @@ const onCreate = (formData, needCopy = false) => {
     // }
 };
 
+const convertApi = (apiText) => {
+    var result = ''
+    apiText = apiText.replaceAll('\t\n', '\n');
+    apiText = apiText.replaceAll('\t', '##')
+    var lineArr = apiText.split("\n");
+    lineArr.filter(word => word.length > 6);
+    var noInferString = "以下是程序无法推断的属性或是不需要的注释:"
+    for (let index = 0; index < lineArr.length; index++) {
+        const lineElement = lineArr[index];
+        var lineEleArr = lineElement.split('##')
+        //预处理
+        lineEleArr = lineEleArr.filter(word => word.length > 0 || word != '可选' || word != '必选' || word != 'true' || word != 'false');
+        if (lineEleArr?.length == 0 || lineArr[0] == '参数') {
+            continue
+        }
+
+        var lineEleArrLower = [...lineEleArr]
+        for (let i = 0; i < lineEleArrLower.length; i++) {
+            lineEleArrLower[i] = lineEleArrLower[i].toLowerCase()
+        }
+
+        var propertyName = lineEleArr[0].charAt(0).toLowerCase() + lineEleArr[0].slice(1);
+        var propertyDes = ''
+        if (lineEleArr.length > 1) {
+            propertyDes = '//' + lineEleArr[1];
+        }
+
+        console.log('lineEleArrLower '+lineEleArrLower);
+        console.log('propertyName '+propertyName);
+        if (lineEleArrLower.length > 1) {
+            if (['string'].filter(v => lineEleArrLower.includes(v)).length > 0) {
+                result = `${result}\n@property (nonatomic, strong) NSString *${propertyName};${propertyDes}`
+            } else if (['int', 'long', 'datetime', 'number', 'integer', 'date'].filter(v => lineEleArrLower.includes(v)).length > 0) {
+                result = `${result}\n@property (nonatomic, strong) NSString *${propertyName};${propertyDes}`
+            } else if (['bool', 'boolean'].filter(v => lineEleArrLower.includes(v)).length > 0) {
+                result = `${result}\n@property (nonatomic, assign) BOOL ${propertyName};${propertyDes}`
+            } else if (['double', 'float', 'integer(int32)', 'integer(int64)'].filter(v => lineEleArrLower.includes(v)).length > 0) {
+                result = `${result}\n@property (nonatomic, strong) NSString *${propertyName};${propertyDes}`
+            } else if (lineEleArrLower[1].indexOf('list<') > -1) {
+                result = `${result}\n@property (nonatomic, strong) NSArray<${lineEleArr[1].slice(5, -1)}*> *${propertyName};(这是推测类型)${propertyDes}`
+            } else {
+                result = `${result}\n@property (nonatomic, strong) ${lineEleArr[1]} *${propertyName};(这是推测类型)${propertyDes}`
+            }
+        } else {
+            result = `${result}\n${lineEleArr[1]}//未知，请改进`
+        }
+    }
+    return result
+
+};
+
 watch(() => form.data, (newValue, oldValue) => {
     onCreate(newValue, true)
 }, {
@@ -97,7 +152,6 @@ watch(() => form.data, (newValue, oldValue) => {
 });
 
 watch(() => form.codeText, (newValue, oldValue) => {
-    console.log(111111);
     form.data.analycodeRadioSelect = ''
 }, {
     deep: true,
@@ -127,9 +181,13 @@ const onAddClip = async () => {
 }
 
 .flex-col-start {
-    display: flex;
-    align-items: flex-start;
+    display: flex !important;
+    align-items: flex-start !important;
     justify-content: flex-start;
     flex-direction: column;
+}
+
+.box-item{
+    margin-top: 5px;
 }
 </style>

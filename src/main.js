@@ -8,4 +8,6 @@ import store from './store/index'
 // 引入element-plus
 import ElementPlus from 'element-plus'
 import '../node_modules/element-plus/theme-chalk/index.css'
-createApp(App).use(router).use(store).use(ElementPlus).mount('#app')
+const app= createApp(App);
+app.config.globalProperties.isOCTag = true;
+app.use(router).use(store).use(ElementPlus).mount('#app')

@@ -175,6 +175,23 @@ const onCreate = (formData, needCopy = false) => {
         form.result = '已复制到剪切板\n' + result;
     }
 };
+// let nameBtn = UIButton(type: .custom)
+// self.addSubview(nameBtn)
+// nameBtn.setImage(UIImage(named: "imageName"), for: .normal)
+// nameBtn.setTitle("文字", for: .normal)
+// nameBtn.titleLabel?.textAlignment = .center
+// nameBtn.setTitleColor(ColorUtility.colorWithString("ffffff"), for: .normal)
+// nameBtn.titleLabel?.font = UIFont.systemFont(ofSize: 14)
+// nameBtn.layer.cornerRadius = 4
+// nameBtn.layer.masksToBounds = true
+// nameBtn.backgroundColor = ColorUtility.colorWithString("#fff")
+// nameBtn.layer.borderColor = ColorUtility.colorWithString("borderColor").cgColor
+// nameBtn.layer.borderWidth = 1.0
+// nameBtn.addTarget(self, action: #selector(nameBtnClicked(_:)), for: .touchUpInside)
+
+// @objc func nameBtnClicked(_ button: UIButton) {
+//     // 按钮点击事件处理
+// }
 
 const onReset = () => {
     resetForm()
