@@ -57,6 +57,7 @@
                 <el-checkbox label="局部变色" />
                 <el-checkbox label="局部font"/>
                 <el-checkbox label="paragraphStyle"/>
+                <el-checkbox label="划线"/>
             </el-checkbox-group>
             </div>
         </el-form-item>

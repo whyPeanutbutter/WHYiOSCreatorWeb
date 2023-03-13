@@ -69,6 +69,8 @@ export const getAttributedText = (name, attributedTextSettings) => {
         "局部变色": `[${name} addAttribute:NSForegroundColorAttributeName value:${getColor('')} range:NSMakeRange(0, titleString.length)];\n[${name} addAttribute:NSForegroundColorAttributeName value:${getColor('')} range:NSMakeRange(0, 2)];\n`,
         "paragraphStyle": `NSMutableParagraphStyle *paragraphStyle = [[NSMutableParagraphStyle alloc] init];\nparagraphStyle.lineSpacing = 8;\n[${name} addAttribute:NSParagraphStyleAttributeName value:paragraphStyle range:NSMakeRange(0, titleString.length)];\n`,
         "局部font": `[${name} addAttribute:NSFontAttributeName value:messageLbl.font range:NSMakeRange(0, [titleString length])];\n`,
+        "中划线":` [${name} addAttribute:NSStrikethroughStyleAttributeName value:[NSNumber numberWithInteger:NSUnderlineStyleSingle] range:{0,[titleString length]}];//中划线 [btn setAttributedTitle:${name} forState:UIControlStateNormal];`,
+        "下划线":` [${name} addAttribute:NSUnderlineStyleAttributeName value:[NSNumber numberWithInteger:NSUnderlineStyleSingle] range:{0,[titleString length]}];//下划线 [btn setAttributedTitle:${name} forState:UIControlStateNormal];`
     };
     var re = dict['init'];
     var i = 0

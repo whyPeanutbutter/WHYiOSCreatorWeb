@@ -106,7 +106,7 @@ const getResponse = async () => {
     var OPENAI_API_KEY = getPassword()
     form.wait = true
     var oHttp = new XMLHttpRequest();
-    oHttp.open("POST", "https://api.openai.com/v1/completions");
+    oHttp.open("POST", "https://api.openai.com/v1/chat/completions");
     oHttp.setRequestHeader("Accept", "application/json");
     oHttp.setRequestHeader("Content-Type", "application/json");
     oHttp.setRequestHeader("Authorization", "Bearer " + OPENAI_API_KEY)
@@ -114,7 +114,6 @@ const getResponse = async () => {
     oHttp.onreadystatechange = function () {
         console.log(2222222222222);
         form.wait = false
-        this.statusText.wait
         if (oHttp.readyState === 4) {
             var oJson = {}
             if (form.result != "") form.result += "\n";
@@ -128,22 +127,22 @@ const getResponse = async () => {
 
             if (oJson.error && oJson.error.message) {
                 form.result += "错误: " + oJson.error.message;
-            } else if (oJson.choices && oJson.choices[0].text) {
-                var s = oJson.choices[0].text;
+            } else if (oJson.choices && oJson.choices[0].message) {
+                var s = oJson.choices[0].message.content;
 
                 if (s == "") s = "无响应";
                 form.result += "ChatGPT: " + s;
             }
         }
     };
-    var sModel = 'text-davinci-003';//gpt-3.5-turbo
-    var iMaxTokens = 600;
+    var sModel = 'gpt-3.5-turbo'//'text-davinci-003';//
+    var iMaxTokens = 1000;
     var sUserId = "1";
     var dTemperature = 0.5;
     var sQuestion = form.question
     var data = {
         model: sModel,
-        prompt: form.question,
+        messages: [{"role": "user", "content": form.question}],
         max_tokens: iMaxTokens,
         user: sUserId,
         temperature: dTemperature,
