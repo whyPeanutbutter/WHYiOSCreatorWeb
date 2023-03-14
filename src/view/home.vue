@@ -5,7 +5,8 @@
       <el-header>
         <h1 class="tit">
           WHY iOS creator
-          <el-switch v-model="state.isOCTag" class="switch-border" active-text="OC" inactive-text="Swift"  style="--el-switch-off-color:#ff4949;"/>
+          <el-switch v-model="state.isOCTag" class="switch-border" active-text="OC" inactive-text="Swift"
+            style="--el-switch-off-color:#ff4949;" />
           <div class="border"></div>
         </h1>
 
@@ -17,7 +18,8 @@
           </template>
         </el-aside>
         <el-main class="main-view">
-          <div v-if="state.currentSelectIndex > -1" class="right-view" :style="state.currentShowViews[state.currentSelectIndex].type == 'HelpMe' ? 'width: 800px;': 'width: 400px;'">
+          <div v-if="state.currentSelectIndex > -1" class="right-view"
+            :style="(state.currentShowViews[state.currentSelectIndex].type == 'HelpMe' || state.currentShowViews[state.currentSelectIndex].type == 'AnalyCodeView') ? 'width: 800px;' : 'width: 400px;'">
             <UIbutton v-if="state.currentShowViews[state.currentSelectIndex].type == 'UIButton'"
               :form="state.currentShowViews[state.currentSelectIndex].setting" @update="settingUpdate"
               @delete="settingDelete" @create="settingCreate" />
@@ -39,8 +41,9 @@
             <UITableViewCell v-if="state.currentShowViews[state.currentSelectIndex].type == 'UITableViewCell'"
               :form="state.currentShowViews[state.currentSelectIndex].setting" @update="settingUpdate"
               @delete="settingDelete" @create="settingCreate" />
-            <HelpMeView v-if="state.currentShowViews[state.currentSelectIndex].type == 'HelpMe'"/>
+            <HelpMeView v-if="state.currentShowViews[state.currentSelectIndex].type == 'HelpMe'" />
             <AnalyCodeView v-if="state.currentShowViews[state.currentSelectIndex].type == 'AnalyCodeView'" />
+
           </div>
           <div class="flex-col">
             <div class="main-phone">
@@ -76,8 +79,9 @@ import UITableView from '../components/UITableView.vue';
 import UITableViewCell from '../components/UITableViewCell.vue';
 import HelpMeView from '../components/HelpMeView.vue';
 import * as $utils from '../components/Utils';
-import { reactive, ref, getCurrentInstance, watch } from 'vue'
+import { reactive, ref, getCurrentInstance, watch, onMounted } from 'vue'
 import AnalyCodeView from '../components/AnalyCodeView.vue';
+import router from '../router/index.js'
 const { proxy } = getCurrentInstance();
 
 // do not use same name with ref
@@ -111,16 +115,29 @@ const state = reactive({
     type: 'AnalyCodeView'
   },
   {
-      name: "帮帮我",
-      type: 'HelpMe'
-    }
+    name: "帮帮我",
+    type: 'HelpMe'
+  }
   ],
-  currentSelectIndex: -1
+  currentSelectIndex: -1,
+})
+
+onMounted(() => {
+  // const that = this
+  // alert(that.$route.query)
+  // var canRedirect = router.query && router.query.canRedirect ? router.query.canRedirect : true;
+  let isMobile = navigator.userAgent.match(/(phone|pad|pod|iPhone|iPod|ios|iPad|Android|Mobile|BlackBerry|IEMobile|MQQBrowser|JUC|Fennec|wOSBrowser|BrowserNG|WebOS|Symbian|Windows Phone)/i)
+  if (isMobile) {
+    router.push({
+      name: 'phoneHome'
+    })
+  }
 })
 
 watch(() => state.isOCTag, (newValue, oldValue) => {
   proxy.isOCTag = newValue;
   console.log(proxy.isOCTag);
+
 }, {
   deep: true,
   immediate: true
@@ -210,6 +227,7 @@ const onDeleteAll = () => {
   state.currentShowViews = [];
   state.currentSelectIndex = -1;
 }
+
 
 </script>
 
@@ -310,7 +328,7 @@ body {
   display: none;
 }
 
-.switch-border{
+.switch-border {
   border: 1px solid #409eff;
   border-radius: 4px;
   padding: 2px 6px;

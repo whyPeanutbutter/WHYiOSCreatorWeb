@@ -4,8 +4,8 @@
             代码解析
         </div>
         <el-form-item label="代码">
-            <el-input v-model="form.codeText" placeholder="粘贴代码" type="textarea" :rows="10" />
-            <el-button type="primary" @click="onAddClip" style="width: 100%;">粘贴</el-button>
+            <el-input v-model="form.codeText" placeholder="粘贴代码" type="textarea" :rows="10" style="width: 500px;"/>
+            <el-button type="primary" @click="onAddClip" style="width:500px;">粘贴</el-button>
         </el-form-item>
         <el-form-item label="处理方式">
             <el-radio-group class="flex-col-start" v-model="form.data.analycodeRadioSelect">
@@ -173,6 +173,7 @@ const onAddClip = async () => {
     align-items: center;
     justify-content: flex-start;
     flex-direction: row;
+    width: 100%;
 
 }
 
@@ -185,6 +186,8 @@ const onAddClip = async () => {
     align-items: flex-start !important;
     justify-content: flex-start;
     flex-direction: column;
+    width: 100%;
+
 }
 
 .box-item{
