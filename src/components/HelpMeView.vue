@@ -225,7 +225,6 @@ const onReset = () => {
 
 const onDeleteResult = () => {
     form.result = "";
-    emits('delete')
 };
 
 const onAddClip = async () => {
