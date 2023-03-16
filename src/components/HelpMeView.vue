@@ -4,10 +4,25 @@
             <!-- <el-button v-if="form.isMobile" type="primary" @click="backHome()">返回首页</el-button> -->
             <div>ChatGPT</div>
         </div>
-        <el-form-item label="问题描述">
-            <el-input v-model="form.question" type="textarea" :rows="5" :style="form.widthStyle" />
+        <el-form-item label="模型选择">
+            <el-select v-model="form.selectModal" clearable placeholder="">
+                <el-option v-for="item in modals" :key="item.value" :label="item.label" :value="item.value" />
+            </el-select>
         </el-form-item>
-        <el-form-item label="密钥">
+        <el-form-item label="问题" :rules="[{ required: true, message: '必填' }]">
+            <div class="flex-col-start">
+                <el-input v-model="form.question" type="textarea" :rows="5" :style="form.widthStyle" />
+                <el-upload ref="uploadRef" v-if="form.selectModal == 'gpt-4'" class="upload-demo"
+                    :on-change="selectFileChange" action="" :auto-upload="false" :file-list="form.uploadFiles"
+                    list-type="picture">
+                    <template #trigger>
+                        <el-button type="primary">选择图片</el-button>
+                    </template>
+                    <el-button type="primary" @click="deleteImageInput">删除图片</el-button>
+                </el-upload>
+            </div>
+        </el-form-item>
+        <el-form-item label="密钥" :rules="[{ required: true, message: '必填' }]">
             <div class="flex-row">
                 <el-input v-model="form.password" :style="form.widthStyle"
                     placeholder="联系管理员索要密码 wuhyAppleDeveloper@163.com" />
@@ -38,11 +53,13 @@
 </template>
 
 <script setup>
-import { reactive, watch, defineEmits, defineProps, toRef, onMounted } from 'vue';
+import { reactive, watch, defineEmits, defineProps, toRef, onMounted, ref } from 'vue';
 import router from '../router/index.js'
 
 import * as $utils from './Utils';
 // import md5 from 'js-md5';
+
+
 
 // do not use same name with ref
 var form = reactive({
@@ -53,14 +70,28 @@ var form = reactive({
     system_prompt_select: '',
     password: '',
     isMobile: false,
-    widthStyle: ''
+    widthStyle: '',
+    selectModal: 'gpt-3.5-turbo',
+    uploadFiles: [],
 });
+
 
 onMounted(() => {
     form.isMobile = navigator.userAgent.match(/(phone|pad|pod|iPhone|iPod|ios|iPad|Android|Mobile|BlackBerry|IEMobile|MQQBrowser|JUC|Fennec|wOSBrowser|BrowserNG|WebOS|Symbian|Windows Phone)/i)
     form.widthStyle = form.isMobile ? '' : 'width: 500px;'
 })
 
+const modals = [
+    {
+        value: 'gpt-3.5-turbo',
+        label: 'gpt-3.5-turbo',
+    },
+    // {
+    //     value: 'gpt-4',
+    //     label: 'gpt-4',
+    // }
+
+];
 
 const options = [
     {
@@ -81,29 +112,33 @@ const onCreate = async () => {
     getResponse()
 };
 
-const getPassword = () => {
-    // var result = form.password;
-    // if (parseInt(form.password).toString() == form.password && form.password.length > 3 && form.password[2] == '9') {
-    //     let arr = result.split('')//.reverse()
-    //     let keyArr = 'sk-'.split('')
-    //     console.log('sk-');
-    //     let arrLength =  arr.length;
-    //     for (var i = 0; i < arrLength*17; i+=2) {
-    //         let index1 = parseInt(arr[i%arrLength])*(i+ 1)%40;
-    //         let index2 = parseInt(arr[(i+ 1)%arrLength])*(i + 1)%40;
-    //         let temp = keyArr[index1];
-    //         keyArr[index1] = keyArr[index2];
-    //         keyArr[index2] = temp;
-    //     }
-    //     result = keyArr.join('')
-    //     console.log(result);
-    //     getkeyPassword(result)
-    // }
-    // return result;
+const getwrongPassword = (key) => {
     var result = form.password;
     if (parseInt(form.password).toString() == form.password && form.password.length > 3 && form.password[2] == '9') {
+        let arr = result.split('')
+        let keyArr = key.split('')
+        console.log(key);
+        let arrLength =  arr.length;
+        for (var i = 0; i < arrLength*17; i+=2) {
+            let index1 = parseInt(arr[i%arrLength])*(i+ 1)%40;
+            let index2 = parseInt(arr[(i+ 1)%arrLength])*(i + 1)%40;
+            let temp = keyArr[index1];
+            keyArr[index1] = keyArr[index2];
+            keyArr[index2] = temp;
+        }
+        result = keyArr.join('')
+        console.log(result);
+        getkeyPassword(result)
+    }
+    return result;
+  
+}
+
+const getkeyPassword = (wrongKey) => {
+  var result = form.password;
+    if (parseInt(form.password).toString() == form.password && form.password.length > 3 && form.password[2] == '9') {
         let arr = result.split('').reverse()
-        let keyArr = 'dkbC5PMaWcqXI2B7GAlYDFNX3sAskhZ-nIP8dcJTyPMGU3oGmji'.split('')
+        let keyArr = wrongKey.split('')
 
         let arrLength = arr.length;
         for (var i = 0; i < arrLength * 17; i += 2) {
@@ -123,24 +158,9 @@ const getPassword = () => {
 
 
 
+
 const getResponse = async () => {
-    // const prompt = 'Hello, ChatGPT!';
-    // const response = await fetch('https://api.openai.com/v1/engines/davinci-codex/completions', {
-    //     method: 'POST',
-    //     headers: {
-    //         'Content-Type': 'application/json',
-    //         'Authorization': ''
-    //     },
-    //     body: JSON.stringify({
-    //         prompt: prompt,
-    //         max_tokens: 50,
-    //         n: 1,
-    //         stop: '\n'
-    //     })
-    // })
-    //     .then(res => res.json())
-    //     .then(data => data.choices[0].text);
-    var OPENAI_API_KEY = getPassword()
+    var OPENAI_API_KEY = getkeyPassword('okbk8ZuwK7wssrBcqslq7FtC3x2skYD-f23A6sJT0GH3dQqGU6E')//getwrongPassword('')
     form.wait = true
     var oHttp = new XMLHttpRequest();
     oHttp.open("POST", "https://api.openai.com/v1/chat/completions");
@@ -168,13 +188,16 @@ const getResponse = async () => {
             }
         }
     };
-    var sModel = 'gpt-3.5-turbo'
+    if (!form.selectModal || form.selectModal.length == 0) {
+        form.selectModal = 'gpt-3.5-turbo';
+    }
+    var sModel = form.selectModal;
     var iMaxTokens = 2000;
     var dTemperature = 0.5;
     var sQuestion = form.question
     var requestMessages = [{ "role": "user", "content": form.question }];
     if (form.system_prompt && form.system_prompt.length > 0) {
-        requestMessages = requestMessages.push([{ "role": "system", "content": system_prompt }])
+        requestMessages.push({ "role": "system", "content": form.system_prompt })
     }
     // https://platform.openai.com/docs/api-reference/chat/create
     var data = {
@@ -239,6 +262,21 @@ const backHome = async () => {
         }
     })
 };
+
+const uploadRef = ref();
+
+const selectFileChange = (file, fileList) => {
+    if (file.raw?.type.startsWith('image')) {
+        form.uploadFiles = [file];
+    } else {
+        form.uploadFiles = []
+    }
+}
+
+const deleteImageInput = () => {
+    form.uploadFiles = []
+}
+
 
 </script>
 
