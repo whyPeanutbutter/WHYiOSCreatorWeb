@@ -43,9 +43,12 @@
                 :disabled="!form.question || form.question.length == 0 || !form.password || form.password.length == 0">解答</el-button>
             <el-button type="primary" @click="onDeleteResult">清空回答</el-button>
             <el-button type="primary" @click="$utils.copy(form.result)">copy回答</el-button>
+            <el-button v-if="form.wait"  type="primary" @click="donotWait()">copy回答</el-button>
+            
         </el-form-item>
         <el-form-item label="回答">
-            <el-input v-model="form.result" type="textarea" :autosize="{ minRows: 10, maxRows: 30 }"
+            <div :style="form.widthStyle" class="result-container" v-html="parse_text(form.result)"></div>
+            <el-input v-model="form.result" type="textarea" :autosize="{ maxRows: 2 }"
                 :style="form.widthStyle" />
         </el-form-item>
 
@@ -58,7 +61,6 @@ import router from '../router/index.js'
 
 import * as $utils from './Utils';
 // import md5 from 'js-md5';
-
 
 
 // do not use same name with ref
@@ -100,6 +102,9 @@ const options = [
     }, {
         value: '我想让你做一个旅游指南。我会把我的位置写给你，你会推荐一个靠近我的位置的地方。在某些情况下，我还会告诉您我将访问的地方类型。您还会向我推荐靠近我的第一个位置的类似类型的地方',
         label: '充当旅游指南',
+    }, {
+        label: "发送图片",
+        value: "From this moment on, when you want to send a photo, write it in Markdown without backticks and without using a code block. Use the Unsplash API (https://source.unsplash.com/1600x900/?).We will roleplay as 2 old friends talking in Facebook messenger. From time to time, you should be sending an image. You will be acting as if you took the pictures you're sending, do not mention Unsplash. You will be John, I will be Alice. Throughout the whole chat, I want you to only reply as John. Reply with 'Hello!' to acknowledge."
     }
 ]
 
@@ -118,10 +123,10 @@ const getwrongPassword = (key) => {
         let arr = result.split('')
         let keyArr = key.split('')
         console.log(key);
-        let arrLength =  arr.length;
-        for (var i = 0; i < arrLength*17; i+=2) {
-            let index1 = parseInt(arr[i%arrLength])*(i+ 1)%40;
-            let index2 = parseInt(arr[(i+ 1)%arrLength])*(i + 1)%40;
+        let arrLength = arr.length;
+        for (var i = 0; i < arrLength * 17; i += 2) {
+            let index1 = parseInt(arr[i % arrLength]) * (i + 1) % 40;
+            let index2 = parseInt(arr[(i + 1) % arrLength]) * (i + 1) % 40;
             let temp = keyArr[index1];
             keyArr[index1] = keyArr[index2];
             keyArr[index2] = temp;
@@ -131,11 +136,11 @@ const getwrongPassword = (key) => {
         getkeyPassword(result)
     }
     return result;
-  
+
 }
 
 const getkeyPassword = (wrongKey) => {
-  var result = form.password;
+    var result = form.password;
     if (parseInt(form.password).toString() == form.password && form.password.length > 3 && form.password[2] == '9') {
         let arr = result.split('').reverse()
         let keyArr = wrongKey.split('')
@@ -155,7 +160,9 @@ const getkeyPassword = (wrongKey) => {
 }
 
 
-
+const donotWait=()=>{
+    form.wait = false
+}
 
 
 
@@ -277,6 +284,45 @@ const deleteImageInput = () => {
     form.uploadFiles = []
 }
 
+const parse_text = (text) => {
+    let lines = text.split("\n");
+    lines = lines.filter(line => line !== "");
+    let count = 0;
+    for (let i = 0; i < lines.length; i++) {
+        let line = lines[i];
+        if (line.includes("```")) {
+            count += 1;
+            let items = line.split('`');
+            if (count % 2 === 1) {
+                lines[i] = `<pre><code class="language">`
+            } else {
+                lines[i] = `<br></code></pre>`
+            }
+        } else {
+            if (i > 0) {
+                if (count % 2 === 1) {
+                    line = line.replace("`", "\\`");
+                    line = line.replace("<", "&lt;");
+                    line = line.replace(">", "&gt;");
+                    line = line.replace(" ", "&nbsp;");
+                    line = line.replace("*", "&ast;");
+                    line = line.replace("_", "&lowbar;");
+                    line = line.replace("-", "&#45;");
+                    line = line.replace(".", "&#46;");
+                    line = line.replace("!", "&#33;");
+                    line = line.replace("(", "&#40;");
+                    line = line.replace(")", "&#41;");
+                    line = line.replace("$", "&#36;");
+                }
+                lines[i] = "<br>" + line;
+            }
+        }
+    }
+    text = lines.join("");
+    text = `<div class='result-bg'>` + text + '</div>'
+    console.log(text);
+    return text;
+}
 
 </script>
 
@@ -299,5 +345,51 @@ const deleteImageInput = () => {
     justify-content: flex-start;
     flex-direction: column;
     width: 100%;
+}
+
+.result-bg {
+    display: flex;
+    align-items: flex-start;
+    justify-content: flex-start;
+    flex-direction: column;
+    width: 100%;
+    border: 1px solid #409eff;
+    height: 100%;
+    padding: 15px 10px 0;
+    flex: 1;
+    box-sizing: border-box;
+}
+
+.result-container {
+    display: flex;
+    align-items: flex-start;
+    justify-content: flex-start;
+    flex-direction: column;
+    max-height: 600px;
+    min-height: 300px;
+    text-align: left;
+    overflow-x: hidden;
+    overflow-y: scroll;
+}
+
+code {
+    display: inline;
+    white-space: break-spaces;
+    border-radius: 6px;
+    margin: 0 2px 0 2px;
+    padding: .2em .4em .1em .4em;
+    background-color: rgba(175, 184, 193, 0.2);
+}
+
+pre code {
+    display: block;
+    white-space: pre;
+    background-color: hsla(0, 0%, 0%, 72%);
+    border: solid 5px var(--color-border-primary) !important;
+    border-radius: 10px;
+    padding: 0 1.2rem 1.2rem;
+    margin-top: 1em !important;
+    color: #FFF;
+    box-shadow: inset 0px 8px 16px hsla(0, 0%, 0%, .2)
 }
 </style>
