@@ -48,7 +48,7 @@
         </el-form-item>
         <el-form-item label="回答">
             <div :style="form.widthStyle" class="result-container" v-html="parse_text(form.result)"></div>
-            <el-input v-model="form.result" type="textarea" :autosize="{ maxRows: 2 }"
+            <el-input v-model="form.question" type="textarea" :autosize="{ maxRows: 2 }"
                 :style="form.widthStyle" />
         </el-form-item>
 
@@ -60,6 +60,7 @@ import { reactive, watch, defineEmits, defineProps, toRef, onMounted, ref } from
 import router from '../router/index.js'
 
 import * as $utils from './Utils';
+import MarkdownIt from 'markdown-it'
 // import md5 from 'js-md5';
 
 
@@ -163,7 +164,6 @@ const getkeyPassword = (wrongKey) => {
 const donotWait=()=>{
     form.wait = false
 }
-
 
 
 const getResponse = async () => {
@@ -319,9 +319,18 @@ const parse_text = (text) => {
         }
     }
     text = lines.join("");
+    console.log(text);
+
+    text = markDownTextTohtml(text)
     text = `<div class='result-bg'>` + text + '</div>'
     console.log(text);
     return text;
+}
+
+const markDownTextTohtml=(text)=>{
+    const md = new MarkdownIt()
+    const result = md.render(text)
+    return result
 }
 
 </script>
