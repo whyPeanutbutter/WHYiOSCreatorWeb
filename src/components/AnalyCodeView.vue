@@ -10,10 +10,10 @@
         <el-form-item label="处理方式">
             <el-radio-group class="flex-col-start" v-model="form.data.analycodeRadioSelect">
                 <el-tooltip class="box-item" effect="dark" content="如：UIView *name;" placement="right">
-                    <el-radio label="提取类及名" name="提取类及名" border :disabled="form.codeText?.length == 0" />
+                    <el-radio class="radio-item" label="提取类及名" name="提取类及名" border :disabled="form.codeText?.length == 0" />
                 </el-tooltip>
                 <el-tooltip class="box-item" effect="dark" content="将接口文档转换为属性" placement="right">
-                    <el-radio label="api转属性" name="api转属性" border :disabled="form.codeText?.length == 0" />
+                    <el-radio class="radio-item" label="api转属性" name="api转属性" border :disabled="form.codeText?.length == 0" />
                 </el-tooltip>
             </el-radio-group>
         </el-form-item>
@@ -192,5 +192,10 @@ const onAddClip = async () => {
 
 .box-item{
     margin-top: 5px;
+    
+}
+
+.radio-item{
+    margin-bottom: 10px;
 }
 </style>

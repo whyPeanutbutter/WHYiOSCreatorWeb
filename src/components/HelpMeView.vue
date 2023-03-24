@@ -1,8 +1,10 @@
 <template>
-    <el-form :model="form" :label-width="form.isMobile ? '' : '120px'">
-        <div style="margin-bottom: 10px">
+    <el-form :model="form" :label-width="form.isMobile ? '' : '120px'" class="form-class">
+        <div class="flex-row-center" style="margin-bottom: 10px">
             <!-- <el-button v-if="form.isMobile" type="primary" @click="backHome()">返回首页</el-button> -->
-            <div>ChatGPT</div>
+            <div>ChatGPT </div>
+            <div class="geo-class" :style="form.isRightIpGeo ?'':'color:red;'">{{form.ipGeoText}}</div>
+            <el-button v-if="!form.isRightIpGeo" type="primary" @click="get_geoip()">检测Ip</el-button>
         </div>
         <el-form-item label="模型选择">
             <el-select v-model="form.selectModal" clearable placeholder="">
@@ -40,27 +42,25 @@
         </el-form-item>
         <el-form-item>
             <el-button type="primary" @click="onCreate" :loading="form.wait"
-                :disabled="!form.question || form.question.length == 0 || !form.password || form.password.length == 0">解答</el-button>
+                :disabled="!form.question || form.question.length == 0 || !form.password || form.password.length == 0 || !form.isRightIpGeo">解答</el-button>
             <el-button type="primary" @click="onDeleteResult">清空回答</el-button>
             <el-button type="primary" @click="$utils.copy(form.result)">copy回答</el-button>
-            <el-button v-if="form.wait"  type="primary" @click="donotWait()">copy回答</el-button>
-            
+            <el-button v-if="form.wait" type="primary" @click="donotWait()">不等了</el-button>
+
         </el-form-item>
         <el-form-item label="回答">
             <div :style="form.widthStyle" class="result-container" v-html="parse_text(form.result)"></div>
-            <el-input v-model="form.question" type="textarea" :autosize="{ maxRows: 2 }"
-                :style="form.widthStyle" />
+            <el-input v-model="form.result" type="textarea" :autosize="{ maxRows: 2 }" :style="form.widthStyle" />
         </el-form-item>
-
+        
     </el-form>
 </template>
 
 <script setup>
 import { reactive, watch, defineEmits, defineProps, toRef, onMounted, ref } from 'vue';
 import router from '../router/index.js'
-
+import {marked} from 'marked'
 import * as $utils from './Utils';
-import MarkdownIt from 'markdown-it'
 // import md5 from 'js-md5';
 
 
@@ -69,19 +69,22 @@ var form = reactive({
     question: '',
     result: '',
     wait: false,
-    system_prompt: '',
+    system_prompt: '尽量简短的回答，不要做出解释',
     system_prompt_select: '',
     password: '',
     isMobile: false,
     widthStyle: '',
     selectModal: 'gpt-3.5-turbo',
     uploadFiles: [],
+    ipGeoText:'',
+    isRightIpGeo:false
 });
 
 
 onMounted(() => {
+    get_geoip()
     form.isMobile = navigator.userAgent.match(/(phone|pad|pod|iPhone|iPod|ios|iPad|Android|Mobile|BlackBerry|IEMobile|MQQBrowser|JUC|Fennec|wOSBrowser|BrowserNG|WebOS|Symbian|Windows Phone)/i)
-    form.widthStyle = form.isMobile ? '' : 'width: 500px;'
+    // form.widthStyle = form.isMobile ? '' : 'width: 500px;'
 })
 
 const modals = [
@@ -105,7 +108,25 @@ const options = [
         label: '充当旅游指南',
     }, {
         label: "发送图片",
-        value: "From this moment on, when you want to send a photo, write it in Markdown without backticks and without using a code block. Use the Unsplash API (https://source.unsplash.com/1600x900/?).We will roleplay as 2 old friends talking in Facebook messenger. From time to time, you should be sending an image. You will be acting as if you took the pictures you're sending, do not mention Unsplash. You will be John, I will be Alice. Throughout the whole chat, I want you to only reply as John. Reply with 'Hello!' to acknowledge."
+        value: "从现在起, 当你想发送一张照片时，请使用 Markdown ,并且 不要有反斜线, 不要用代码块。使用 Unsplash API (https://source.unsplash.com/1280x720/? < PUT YOUR QUERY HERE >)"
+    },{
+        label:'debug code',
+        value:"I want you to debug this code. The code is supposed to do [provide purpose] [Insert code here]"
+    },
+    {
+        label:'网页开发',
+        value:"Develop an architecture and code for a <website description> website with JavaScript."
+        
+    },{
+        label:'抖音标题制作',
+        value:`下面是一些抖音标题
+了了睛山见，纷纷宿雾空。＃爱情＃大概这就是爱情最美的样子 ＃甜甜的恋爱
+
+遇一树花开，染一身花香，从此心里每个角落都开满花。#花#春
+
+若无闲事挂心头 便是人间好时节 #海棠花＃看看你相册里的花花
+
+请模仿上面抖音标题的风格，以用户输入的话为主题，写一个标题。标题中可以引用相关古诗词，标题最后需要用Hashtag给出话题。`
     }
 ]
 
@@ -161,7 +182,7 @@ const getkeyPassword = (wrongKey) => {
 }
 
 
-const donotWait=()=>{
+const donotWait = () => {
     form.wait = false
 }
 
@@ -192,6 +213,7 @@ const getResponse = async () => {
 
                 if (s == "") s = "无响应";
                 form.result += "\nChatGPT: " + s;
+                form.question = "";
             }
         }
     };
@@ -199,7 +221,7 @@ const getResponse = async () => {
         form.selectModal = 'gpt-3.5-turbo';
     }
     var sModel = form.selectModal;
-    var iMaxTokens = 2000;
+    var iMaxTokens = 3000;
     var dTemperature = 0.5;
     var sQuestion = form.question
     var requestMessages = [{ "role": "user", "content": form.question }];
@@ -223,7 +245,7 @@ const getResponse = async () => {
 
     if (form.result != "") form.result += "\n";
     form.result += "我: " + sQuestion;
-    form.question = "";
+   
 
 
     // form.result = response;
@@ -253,7 +275,7 @@ const onReset = () => {
     resetForm()
 };
 
-const onDeleteResult = () => {
+const onDeleteResult = async() => {
     form.result = "";
 };
 
@@ -285,6 +307,9 @@ const deleteImageInput = () => {
 }
 
 const parse_text = (text) => {
+    if(!text){
+        return ''
+    }
     let lines = text.split("\n");
     lines = lines.filter(line => line !== "");
     let count = 0;
@@ -319,20 +344,59 @@ const parse_text = (text) => {
         }
     }
     text = lines.join("");
-    console.log(text);
-
-    text = markDownTextTohtml(text)
+    text = imageTextTohtml(text)
     text = `<div class='result-bg'>` + text + '</div>'
-    console.log(text);
     return text;
 }
 
-const markDownTextTohtml=(text)=>{
-    const md = new MarkdownIt()
-    const result = md.render(text)
-    return result
+const imageTextTohtml = (text) => {
+    const pattern = /!\[(.*?)\]\((.*?)\)/mg;
+    let matcher;
+    while ((matcher = pattern.exec(text)) !== null) {
+        console.log(matcher);
+        if (matcher) {
+            text = text.replace(matcher[0],`<img class='image-result' src="${matcher[2]}" >`)
+        }
+    }
+    console.log(text);
+    text = marked(text)
+    console.log(text);
+    return text
 }
 
+const get_geoip = async() => {
+  const response = await fetch('https://ipapi.co/json/', {timeout: 5000});
+  const data = await response.json();
+  if ("error" in data) {
+    console.warning(`无法获取IP地址信息。\n${data}`);
+    if (data['reason'] === "RateLimited") {
+        result = "获取IP地理位置失败，因为达到了检测IP的速率限制。聊天功能可能仍然可用，但请注意，如果您的IP地址在不受支持的地区，您可能会遇到问题。";
+        form.isRightIpGeo = true
+        form.ipGeoText = '获取ip失败'
+        form.result = form.result + `**${result}**`;
+    } else {
+        result = `获取IP地理位置失败。原因：${data['reason']}`;
+        form.isRightIpGeo = true
+        form.ipGeoText = '获取ip失败'
+        form.result = form.result + `**${result}**`;
+    }
+  } else {
+    const country = data['country_name'];
+    if (country === "China") {
+      const text = "**您的IP区域：中国。请立即检查代理设置，在不受支持的地区使用API可能导致账号被封禁。**";
+      console.info(text);
+      form.isRightIpGeo = false
+      form.ipGeoText = `您的IP区域：${country}。`;
+      form.result = form.result + `**${text}**`;
+    } else {
+      const text = `您的IP区域：${country}。`;
+      console.info(text);
+      form.isRightIpGeo = true
+        form.ipGeoText = text
+    }
+  }
+
+}
 </script>
 
 <style>
@@ -340,6 +404,14 @@ const markDownTextTohtml=(text)=>{
     display: flex;
     align-items: center;
     justify-content: flex-start;
+    flex-direction: row;
+    width: 100%;
+}
+
+.flex-row-center {
+    display: flex;
+    align-items: center;
+    justify-content: center;
     flex-direction: row;
     width: 100%;
 }
@@ -354,6 +426,14 @@ const markDownTextTohtml=(text)=>{
     justify-content: flex-start;
     flex-direction: column;
     width: 100%;
+}
+
+.geo-class{
+    font-size: 9px;
+font-family: PingFangSC, PingFangSC-Regular;
+font-weight: 400;
+color: #999999;
+margin-left: 5px;
 }
 
 .result-bg {
@@ -379,6 +459,12 @@ const markDownTextTohtml=(text)=>{
     text-align: left;
     overflow-x: hidden;
     overflow-y: scroll;
+    box-sizing: border-box;
+    width: 100%;
+}
+
+.image-result{
+    width: 100%;
 }
 
 code {
@@ -388,9 +474,13 @@ code {
     margin: 0 2px 0 2px;
     padding: .2em .4em .1em .4em;
     background-color: rgba(175, 184, 193, 0.2);
+    width: 100%;
+    word-break: break-all;
+    box-sizing: border-box;
 }
 
 pre code {
+    width: 100%;
     display: block;
     white-space: pre;
     background-color: hsla(0, 0%, 0%, 72%);
@@ -399,6 +489,14 @@ pre code {
     padding: 0 1.2rem 1.2rem;
     margin-top: 1em !important;
     color: #FFF;
-    box-shadow: inset 0px 8px 16px hsla(0, 0%, 0%, .2)
+    box-shadow: inset 0px 8px 16px hsla(0, 0%, 0%, .2);
+    box-sizing: border-box;
+
+}
+
+.form-class{
+    width: 100%;
+    box-sizing: border-box;
+    padding: 5px;
 }
 </style>

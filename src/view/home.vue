@@ -19,7 +19,7 @@
         </el-aside>
         <el-main class="main-view">
           <div v-if="state.currentSelectIndex > -1" class="right-view"
-            :style="(state.currentShowViews[state.currentSelectIndex].type == 'HelpMe' || state.currentShowViews[state.currentSelectIndex].type == 'AnalyCodeView') ? 'width: 800px;' : 'width: 400px;'">
+            :style="(state.currentShowViews[state.currentSelectIndex].type == 'HelpMe' || state.currentShowViews[state.currentSelectIndex].type == 'AnalyCodeView') ? 'width: 1300px;' : 'width: 400px;'">
             <UIbutton v-if="state.currentShowViews[state.currentSelectIndex].type == 'UIButton'"
               :form="state.currentShowViews[state.currentSelectIndex].setting" @update="settingUpdate"
               @delete="settingDelete" @create="settingCreate" />
@@ -38,7 +38,10 @@
             <UITableView v-if="state.currentShowViews[state.currentSelectIndex].type == 'UITableView'"
               :form="state.currentShowViews[state.currentSelectIndex].setting" @update="settingUpdate"
               @delete="settingDelete" @create="settingCreate" />
-            <UITableViewCell v-if="state.currentShowViews[state.currentSelectIndex].type == 'UITableViewCell'"
+              <UITableView v-if="state.currentShowViews[state.currentSelectIndex].type == 'UITableView'"
+              :form="state.currentShowViews[state.currentSelectIndex].setting" @update="settingUpdate"
+              @delete="settingDelete" @create="settingCreate" />
+            <UICollectionView v-if="state.currentShowViews[state.currentSelectIndex].type == 'UICollectionView'"
               :form="state.currentShowViews[state.currentSelectIndex].setting" @update="settingUpdate"
               @delete="settingDelete" @create="settingCreate" />
             <HelpMeView v-if="state.currentShowViews[state.currentSelectIndex].type == 'HelpMe'" />
@@ -77,6 +80,7 @@ import UIImageView from '../components/UIImageView.vue';
 import UIScrollView from '../components/UIScrollView.vue';
 import UITableView from '../components/UITableView.vue';
 import UITableViewCell from '../components/UITableViewCell.vue';
+import UICollectionView from '../components/UICollectionView.vue';
 import HelpMeView from '../components/HelpMeView.vue';
 import * as $utils from '../components/Utils';
 import { reactive, ref, getCurrentInstance, watch, onMounted } from 'vue'
@@ -109,6 +113,9 @@ const state = reactive({
   }, {
     name: "UITableViewCell",
     type: 'UITableViewCell'
+  },{
+    name: "UICollectionView",
+    type: 'UICollectionView'
   },
   {
     name: "代码解析",
