@@ -4,8 +4,10 @@
             代码解析
         </div>
         <el-form-item label="代码">
-            <el-input v-model="form.codeText" placeholder="粘贴代码" type="textarea" :rows="10" style="width: 500px;"/>
-            <el-button type="primary" @click="onAddClip" style="width:500px;">粘贴</el-button>
+            <div class="flex-col-start">
+                <el-input v-model="form.codeText" placeholder="粘贴代码" type="textarea" :rows="10" style="width: 500px;" />
+                <el-button type="primary" @click="onAddClip" style="width:500px;">粘贴</el-button>
+            </div>
         </el-form-item>
         <el-form-item label="处理方式">
             <el-radio-group class="flex-col-start" v-model="form.data.analycodeRadioSelect">
@@ -13,7 +15,12 @@
                     <el-radio class="radio-item" label="提取类及名" name="提取类及名" border :disabled="form.codeText?.length == 0" />
                 </el-tooltip>
                 <el-tooltip class="box-item" effect="dark" content="将接口文档转换为属性" placement="right">
-                    <el-radio class="radio-item" label="api转属性" name="api转属性" border :disabled="form.codeText?.length == 0" />
+                    <el-radio class="radio-item" label="api转属性" name="api转属性" border
+                        :disabled="form.codeText?.length == 0" />
+                </el-tooltip>
+                <el-tooltip class="box-item" effect="dark" content="将代码转换为代码库格式" placement="right">
+                    <el-radio class="radio-item" label="转换代码库" name="转换代码库" border
+                        :disabled="form.codeText?.length == 0" />
                 </el-tooltip>
             </el-radio-group>
         </el-form-item>
@@ -55,6 +62,9 @@ const onCreate = (formData, needCopy = false) => {
                 break;
             case "api转属性":
                 result = convertApi(form.codeText)
+                break;
+            case "转换代码库":
+                result = convertCodeKu(form.codeText)
             default:
                 break;
         }
@@ -120,8 +130,8 @@ const convertApi = (apiText) => {
             propertyDes = '//' + lineEleArr[1];
         }
 
-        console.log('lineEleArrLower '+lineEleArrLower);
-        console.log('propertyName '+propertyName);
+        console.log('lineEleArrLower ' + lineEleArrLower);
+        console.log('propertyName ' + propertyName);
         if (lineEleArrLower.length > 1) {
             if (['string'].filter(v => lineEleArrLower.includes(v)).length > 0) {
                 result = `${result}\n@property (nonatomic, strong) NSString *${propertyName};${propertyDes}`
@@ -143,6 +153,11 @@ const convertApi = (apiText) => {
     return result
 
 };
+
+const convertCodeKu = (apiText) => {
+    return '`'+ apiText.replaceAll('\n','\\n').replaceAll('   ','')+'\\n`'
+}
+
 
 watch(() => form.data, (newValue, oldValue) => {
     onCreate(newValue, true)
@@ -190,12 +205,12 @@ const onAddClip = async () => {
 
 }
 
-.box-item{
+.box-item {
     margin-top: 5px;
-    
+
 }
 
-.radio-item{
+.radio-item {
     margin-bottom: 10px;
 }
 </style>

@@ -22,11 +22,11 @@
                 <el-checkbox label="@available(iOS 11.0, *)" name="@available(iOS 11.0, *)"></el-checkbox>
                 <div class="flex-row">
                     <el-checkbox label="conrnerRadius" name="conrnerRadius"></el-checkbox>
-                    <el-input style="margin-left: 5px;" placeholder="6" v-model="form.data.conrnerRadius" />
+                    <el-input class='select-input' placeholder="6" v-model="form.data.conrnerRadius" />
                 </div>
                 <div class="flex-row">
                     <el-checkbox label="backgroundColor" name="backgroundColor"></el-checkbox>
-                    <el-input style="margin-left: 5px;" placeholder="#fff" v-model="form.data.backgroundColor" />
+                    <el-input class='select-input' placeholder="#fff" v-model="form.data.backgroundColor" />
                 </div>
             </el-checkbox-group>
         </el-form-item>
@@ -108,7 +108,7 @@ watch(() => props.form, (newValue, oldValue) => {
 
 const onCreate = (formData, needCopy = false) => {
     let commonSettings = formData.commonSettings;
-    let init = commonSettings.indexOf('init') > -1 ? `UIScrollView *${formData.name} = [[UIScrollView alloc]init];\n${formData.name}.showsVerticalScrollIndicator = NO;\n${formData.name}.showsHorizontalScrollIndicator = NO;\n${formData.name}.bounces = YES;\n` : '';
+    let init = commonSettings.indexOf('init') > -1 ? `UIScrollView *${formData.name} = [[UIScrollView alloc]init];\n${formData.name}.showsVerticalScrollIndicator = NO;\n${formData.name}.showsHorizontalScrollIndicator = NO;\n${formData.name}.bounces = YES;//添加后不支持下拉刷新\n` : '';
     let addSubView = commonSettings.indexOf('addSubView') > -1 ? `[<#self#> addSubview:${formData.name}];\n` : '';
     let aviIOS11 = commonSettings.indexOf('@available(iOS 11.0, *)') > -1 ? `if (@available(iOS 11.0, *)) {\n${formData.name}.insetsLayoutMarginsFromSafeArea = NO;\n${formData.name}.contentInsetAdjustmentBehavior = UIScrollViewContentInsetAdjustmentNever;\n} <#else {\n self.automaticallyAdjustsScrollViewInsets = NO;\n}#>\n` : '';
     let frame = commonSettings.indexOf('frame') > -1 ? `${formData.name}.frame = CGRectMake(<#CGFloat x#>, <#CGFloat y#>, <#CGFloat width#>, <#CGFloat height#>);\n` : '';
@@ -181,5 +181,11 @@ const onHelpMe = async() => {
     align-items: flex-start;
     justify-content: flex-start;
     flex-direction: column;
+}
+
+.select-input{
+    width: 150px !important;
+    margin-right: 10px;
+    margin-left: 5px;
 }
 </style>

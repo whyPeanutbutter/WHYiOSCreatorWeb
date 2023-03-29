@@ -26,8 +26,8 @@
         </el-form-item>
         <el-form-item label="密钥" :rules="[{ required: true, message: '必填' }]">
             <div class="flex-row">
-                <el-input v-model="form.password" :style="form.widthStyle"
-                    placeholder="联系管理员索要密码 wuhyAppleDeveloper@163.com" />
+                <el-input v-model="form.password" :style="form.widthStyle" show-password
+                    placeholder="联系管理员 wuhyAppleDeveloper@163.com" />
             </div>
         </el-form-item>
         <el-form-item label="prompt">
@@ -57,10 +57,11 @@
 </template>
 
 <script setup>
-import { reactive, watch, defineEmits, defineProps, toRef, onMounted, ref } from 'vue';
+import { reactive, watch, defineEmits, defineProps, toRef, onMounted, ref,getCurrentInstance } from 'vue';
 import router from '../router/index.js'
 import {marked} from 'marked'
 import * as $utils from './Utils';
+const { proxy } = getCurrentInstance();
 // import md5 from 'js-md5';
 
 
@@ -69,9 +70,9 @@ var form = reactive({
     question: '',
     result: '',
     wait: false,
-    system_prompt: '尽量简短的回答，不要做出解释',
+    system_prompt: '用Objective-c编写，给出简短的回答，不要做出解释',
     system_prompt_select: '',
-    password: '',
+    password: proxy.gptkey,
     isMobile: false,
     widthStyle: '',
     selectModal: 'gpt-3.5-turbo',
@@ -80,6 +81,15 @@ var form = reactive({
     isRightIpGeo:false
 });
 
+
+watch(() => form.password, (newValue, oldValue) => {
+  proxy.gptkey = newValue;
+  console.log(proxy.gptkey);
+
+}, {
+  deep: true,
+  immediate: true
+});
 
 onMounted(() => {
     get_geoip()
@@ -103,7 +113,11 @@ const options = [
     {
         value: '给你一个objective-c类或多个属性，为每个属性制造相应的假数据',
         label: 'OC假数据制造',
-    }, {
+    },{
+        value: '我将给出两个json数据，请找出他们的key或者key对应的vlaue不同的部分并输出，也就是给出他们包含数据的并集。不要做出解释，简短的回答',
+        label: 'json数据对比',
+    },
+     {
         value: '我想让你做一个旅游指南。我会把我的位置写给你，你会推荐一个靠近我的位置的地方。在某些情况下，我还会告诉您我将访问的地方类型。您还会向我推荐靠近我的第一个位置的类似类型的地方',
         label: '充当旅游指南',
     }, {
@@ -114,13 +128,20 @@ const options = [
         value:"I want you to debug this code. The code is supposed to do [provide purpose] [Insert code here]"
     },
     {
-        label:'网页开发',
-        value:"Develop an architecture and code for a <website description> website with JavaScript."
+        label:'给代码添加注释',
+        value:"给代码添加注释"
+        
+    },
+    {
+        label:'自定义promt模版',
+        value:"角色-目标-提需求-补充；\n 我的情况是-我想-你是谁-我要你"
         
     },{
         label:'抖音标题制作',
         value:`下面是一些抖音标题
 了了睛山见，纷纷宿雾空。＃爱情＃大概这就是爱情最美的样子 ＃甜甜的恋爱
+
+你我共存，枯木逢春。#爱情
 
 遇一树花开，染一身花香，从此心里每个角落都开满花。#花#春
 
@@ -203,16 +224,16 @@ const getResponse = async () => {
             try {
                 oJson = JSON.parse(oHttp.responseText);
             } catch (ex) {
-                form.result += "错误: " + ex.message
+                form.result += "<div class='error-red'> 错误: " + ex.message + "</div>";
             }
 
             if (oJson.error && oJson.error.message) {
-                form.result += "错误: " + oJson.error.message;
+                form.result += "<div class='error-red'> 错误: " + oJson.error.message + "</div>";
             } else if (oJson.choices && oJson.choices[0].message) {
                 var s = oJson.choices[0].message.content;
 
                 if (s == "") s = "无响应";
-                form.result += "\nChatGPT: " + s;
+                form.result += "<div class='gpt-result'> \n************************************************************************\nChatGPT: \n" + s+ "</div>";
                 form.question = "";
             }
         }
@@ -221,7 +242,7 @@ const getResponse = async () => {
         form.selectModal = 'gpt-3.5-turbo';
     }
     var sModel = form.selectModal;
-    var iMaxTokens = 3000;
+    var iMaxTokens = 3500;
     var dTemperature = 0.5;
     var sQuestion = form.question
     var requestMessages = [{ "role": "user", "content": form.question }];
@@ -244,7 +265,7 @@ const getResponse = async () => {
     oHttp.send(JSON.stringify(data));
 
     if (form.result != "") form.result += "\n";
-    form.result += "我: " + sQuestion;
+    form.result += "<div class='question'>我: " + sQuestion + '</div>';
    
 
 
@@ -461,6 +482,21 @@ margin-left: 5px;
     overflow-y: scroll;
     box-sizing: border-box;
     width: 100%;
+}
+
+.question{
+    width: 100%;
+    background-color: #bedaf7;
+}
+
+.error-red{
+    width: 100%;
+    background-color: #f7becb;
+}
+
+.gpt-result{
+    width: 100%;
+    background-color: #d3e3ff57;
 }
 
 .image-result{

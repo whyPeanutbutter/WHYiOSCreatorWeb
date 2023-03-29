@@ -21,11 +21,11 @@
                 <el-checkbox label="registerClass" />
                 <div class="flex-row">
                     <el-checkbox label="backgroundColor" name="backgroundColor"></el-checkbox>
-                    <el-input style="margin-left: 5px;" placeholder="#fff" v-model="form.data.backgroundColor" />
+                    <el-input class='select-input' placeholder="#fff" v-model="form.data.backgroundColor" />
                 </div>
                 <div class="flex-row">
                     <el-checkbox label="estimatedRowHeight" name="estimatedRowHeight"></el-checkbox>
-                    <el-input style="margin-left: 5px;" placeholder="65" v-model="form.data.estimatedRowHeight" />
+                    <el-input class='select-input' placeholder="65" v-model="form.data.estimatedRowHeight" />
                 </div>
                 <el-checkbox label="sectionNum" />
                 <el-checkbox label="rownNum" />
@@ -34,6 +34,7 @@
                 <el-checkbox label="headerView" />
                 <el-checkbox label="footerView" />
                 <el-checkbox label="selectCell" />
+                <el-checkbox label="cellAction" />
                 
             </el-checkbox-group>
         </el-form-item>
@@ -130,12 +131,14 @@ const onCreate = (formData, needCopy = false) => {
     let headerView = commonSettings.indexOf('headerView') > -1 ? `- (UIView *)tableView:(UITableView *)tableView viewForHeaderInSection:(NSInteger)section{\nUIView *view = [[UIView alloc]init];\nreturn view;}\n\n- (CGFloat)tableView:(UITableView *)tableView heightForHeaderInSection:(NSInteger)section\n{\nreturn 0.0001f;\n}\n` : '';
     let footerView = commonSettings.indexOf('footerView') > -1 ? `- (UIView *)tableView:(UITableView *)tableView viewForFooterInSection:(NSInteger)section{\nUIView *view = [[UIView alloc] init];\nreturn view;\n}\n\n- (CGFloat)tableView:(UITableView *)tableView heightForFooterInSection:(NSInteger)section{\nreturn 0.0001f;\n}\n` : '';
     let selectCell = commonSettings.indexOf('selectCell') > -1 ? `- (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {\n[tableView deselectRowAtIndexPath:indexPath animated:NO];\n}\n` : '';
+    let cellAction = commonSettings.indexOf('cellAction') > -1 ? `"- (NSArray<UITableViewRowAction *> *)tableView:(UITableView *)tableView editActionsForRowAtIndexPath:(NSIndexPath *)indexPath\n{\n    \n    UITableViewRowAction *action = [UITableViewRowAction rowActionWithStyle:UITableViewRowActionStyleNormal title:@"删除" handler:^(UITableViewRowAction * _Nonnull action, NSIndexPath * _Nonnull indexPath) {\n        [self cellDeleteAction:indexPath];\n    }];\n    action.backgroundColor= Color_Red;\n    return @[action];\n}\n\n\n-(void)cellDeleteAction:(NSIndexPath *)indexPath{\n}\n";` : '';
+
     let mansoryStr = $utils.getMansorys(formData.masonrys);
     let masonry = formData.masonrys?.length > 0 ? `[${formData.name} mas_makeConstraints:^(MASConstraintMaker *make) {
         ${mansoryStr}
     }];\n`: ''
     var result = `${init}${addSubView}${estimatedRowHeight}${backgroundColor}${registerClass}${masonry}
-        /*${sectionNum}${rowNum}${rowHeight}${cellView}${headerView}${footerView}${selectCell}*/\n`
+        /*${sectionNum}${rowNum}${rowHeight}${cellView}${headerView}${footerView}${selectCell}${cellAction}*/\n`
     console.log(result);
     form.result = result;
     emits('create', result)
@@ -198,5 +201,11 @@ const onHelpMe = async() => {
     align-items: flex-start;
     justify-content: flex-start;
     flex-direction: column;
+}
+
+.select-input{
+    width: 150px !important;
+    margin-right: 10px;
+    margin-left: 5px;
 }
 </style>

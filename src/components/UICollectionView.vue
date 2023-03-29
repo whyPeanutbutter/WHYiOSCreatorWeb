@@ -29,7 +29,7 @@
                 </div>
                 <div class="flex-row">
                     <el-checkbox label="backgroundColor" name="backgroundColor"></el-checkbox>
-                    <el-input style="margin-left: 5px;" placeholder="#fff" v-model="form.data.backgroundColor" />
+                    <el-input class='select-input' placeholder="#fff" v-model="form.data.backgroundColor" />
                 </div>
                 <el-checkbox label="sectionNum" />
                 <el-checkbox label="sectionInset" />
@@ -39,10 +39,14 @@
                 <el-checkbox label="headerView" />
                 <el-checkbox label="footerView" />
                 <el-checkbox label="selectCell" />
-                <el-tooltip class="box-item" effect="dark" :content="`collectionView 默认spacing不为0<br>水平滚动时:对应的是同一个Section内部间Item的左右间距;<br>垂直滚动时:对应的是同一个Section内部间Item的上下间距`" :raw-content="true" placement="right">
+                <el-tooltip class="box-item" effect="dark"
+                    :content="`collectionView 默认spacing不为0<br>水平滚动时:对应的是同一个Section内部间Item的左右间距;<br>垂直滚动时:对应的是同一个Section内部间Item的上下间距`"
+                    :raw-content="true" placement="right">
                     <el-checkbox label="minimumLineSpacing" />
                 </el-tooltip>
-                <el-tooltip class="box-item" effect="dark" content="水平滚动时:对应的是同一个Section内部间Item的上下间距;<br> 垂直滚动时:对应的是同一个Section内部间Item的左右间距" :raw-content="true" placement="right">
+                <el-tooltip class="box-item" effect="dark"
+                    content="水平滚动时:对应的是同一个Section内部间Item的上下间距;<br> 垂直滚动时:对应的是同一个Section内部间Item的左右间距" :raw-content="true"
+                    placement="right">
                     <el-checkbox label="minimumInteritemSpacing" />
                 </el-tooltip>
 
@@ -127,7 +131,7 @@ watch(() => props.form, (newValue, oldValue) => {
 const onCreate = (formData, needCopy = false) => {
     let commonSettings = formData.commonSettings;
     let frame = commonSettings.indexOf('frame') > -1 ? `${formData.name}.frame = CGRectMake(<#CGFloat x#>, <#CGFloat y#>, <#CGFloat width#>, <#CGFloat height#>);\n` : '';
-    let estimatedCellSize = commonSettings.indexOf('estimatedCellSize') > -1 ? `未测试 \nflowLayout.estimatedItemSize = CGSize(width: UIScreen.main.bounds.size.width, height: 95.0)\nflowLayout.itemSize = UICollectionViewFlowLayoutAutomaticSize;\n` : '';
+    let estimatedCellSize = commonSettings.indexOf('estimatedCellSize') > -1 ? `//未测试 \nflowLayout.estimatedItemSize = CGSizeMake(0,0);\nflowLayout.itemSize = UICollectionViewFlowLayoutAutomaticSize;\n\n` : '';
     let init = commonSettings.indexOf('init') > -1 ? `UICollectionViewDelegate, UICollectionViewDataSource\nUICollectionViewFlowLayout *flowLayout = [[UICollectionViewFlowLayout alloc]init];\nflowLayout.minimumLineSpacing = 0;\nflowLayout.minimumInteritemSpacing = 0;\n${estimatedCellSize}flowLayout.sectionInset = UIEdgeInsetsMake(0, 0, 0, 0);\nflowLayout.scrollDirection = UICollectionViewScrollDirectionVertical;\nUICollectionView *${formData.name};\n${formData.name} = [[UICollectionView alloc]initWithFrame:CGRectZero collectionViewLayout:flowLayout];\n${formData.name}.delegate = self;\n${formData.name}.dataSource = self;\n${formData.name}.showsVerticalScrollIndicator = NO;\n${formData.name}.showsHorizontalScrollIndicator = NO;` : '';
     let addSubView = commonSettings.indexOf('addSubView') > -1 ? `[<#self#> addSubview:${formData.name}];\n` : '';
     let backgroundColor = commonSettings.indexOf('backgroundColor') > -1 ? `${formData.name}.backgroundColor = ${$utils.getColor(formData.backgroundColor)};\n` : '';
@@ -175,7 +179,7 @@ const onCreate = (formData, needCopy = false) => {
     let selectCell = commonSettings.indexOf('selectCell') > -1 ? `- (void)collectionView:(UICollectionView *)collectionView didSelectItemAtIndexPath:(NSIndexPath *)indexPath {\n}\n` : '';
     let minimumInteritemSpacing = commonSettings.indexOf('minimumInteritemSpacing') > -1 ? `- (CGFloat)collectionView:(UICollectionView *)collectionView layout:(UICollectionViewLayout *)collectionViewLayout minimumInteritemSpacingForSectionAtIndex:(NSInteger)section{\n}\n` : '';
     let minimumLineSpacing = commonSettings.indexOf('minimumLineSpacing') > -1 ? `- (CGFloat)collectionView:(UICollectionView *)collectionView layout:(UICollectionViewLayout *)collectionViewLayout minimumLineSpacingForSectionAtIndex:(NSInteger)section{\n}\n` : '';
-    
+
     let mansoryStr = $utils.getMansorys(formData.masonrys);
     let masonry = formData.masonrys?.length > 0 ? `[${formData.name} mas_makeConstraints:^(MASConstraintMaker *make) {
         ${mansoryStr}
@@ -246,12 +250,19 @@ const onHelpMe = async () => {
     flex-direction: column;
 }
 
-.box-item{
+.box-item {
     margin-top: 5px;
-    
+
 }
+
+
+.select-input{
+    width: 150px !important;
+    margin-right: 10px;
+    margin-left: 5px;
+}
+
 /* .registerClassTypes-class {
     border: solid 1px black;
     margin-left: 10px;
-} */
-</style>
+} */</style>

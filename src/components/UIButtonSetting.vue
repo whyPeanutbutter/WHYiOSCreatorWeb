@@ -21,28 +21,28 @@
                 <el-checkbox label="btnClick" name="btnClick" />
                 <div class="flex-row">
                     <el-checkbox label="image" name="image"></el-checkbox>
-                    <el-input style="margin-left: 5px;" placeholder="imageName" v-model="form.data.imageName" />
+                    <el-input class='select-input' placeholder="imageName" v-model="form.data.imageName" />
                 </div>
                 <div class="flex-row">
                     <el-checkbox label="conrnerRadius" name="conrnerRadius"></el-checkbox>
-                    <el-input style="margin-left: 5px;" placeholder="6" v-model="form.data.conrnerRadius" />
+                    <el-input class='select-input' placeholder="6" v-model="form.data.conrnerRadius" />
                 </div>
                 <div class="flex-row">
                     <el-checkbox label="backgroundColor" name="backgroundColor"></el-checkbox>
-                    <el-input style="margin-left: 5px;" placeholder="#fff" v-model="form.data.backgroundColor" />
+                    <el-input class='select-input' placeholder="#fff" v-model="form.data.backgroundColor" />
                 </div>
                 <div class="flex-row">
                     <el-checkbox label="border" name="border"></el-checkbox>
-                    <el-input style="margin-left: 5px;" placeholder="borderColor" v-model="form.data.borderColor" />
+                    <el-input class='select-input' placeholder="borderColor" v-model="form.data.borderColor" />
                 </div>
             </el-checkbox-group>
         </el-form-item>
         <el-form-item label="title">
             <el-switch v-model="form.data.haveTitle" />
             <div v-if="form.data.haveTitle">
-                <el-input style="margin-left: 5px;" placeholder="文字" v-model="form.data.titleName" />
-                <el-input style="margin-left: 5px;" placeholder="颜色" v-model="form.data.titleColor" />
-                <el-input style="margin-left: 5px;" placeholder="大小" v-model="form.data.titleSize" />
+                <el-input  placeholder="文字" v-model="form.data.titleName" />
+                <el-input  placeholder="颜色" v-model="form.data.titleColor" />
+                <el-input  placeholder="大小" v-model="form.data.titleSize" />
                 <el-radio-group v-model="form.data.textAlign" style="width:100%">
                     <el-radio-button label="Left" />
                     <el-radio-button label="Center"/>
@@ -251,5 +251,10 @@ const onHelpMe = async() => {
     align-items: flex-start;
     justify-content: flex-start;
     flex-direction: column;
+}
+.select-input{
+    width: 150px !important;
+    margin-right: 10px;
+    margin-left: 5px;
 }
 </style>

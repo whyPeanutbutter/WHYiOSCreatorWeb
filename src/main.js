@@ -10,4 +10,5 @@ import ElementPlus from 'element-plus'
 import '../node_modules/element-plus/theme-chalk/index.css'
 const app= createApp(App);
 app.config.globalProperties.isOCTag = true;
+app.config.globalProperties.gptkey = '';
 app.use(router).use(store).use(ElementPlus).mount('#app')

@@ -162,4 +162,10 @@ const onHelpMe = async() => {
     justify-content: flex-start;
     flex-direction: column;
 }
+
+.select-input{
+    width: 150px !important;
+    margin-right: 10px;
+    margin-left: 5px;
+}
 </style>

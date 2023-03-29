@@ -20,20 +20,20 @@
                 <el-checkbox label="frame" name="frame" />
                 <div class="flex-row">
                     <el-checkbox label="image" name="image"></el-checkbox>
-                    <el-input style="margin-left: 5px;" placeholder="imageName" v-model="form.data.imageName" />
+                    <el-input class='select-input' placeholder="imageName" v-model="form.data.imageName" />
                 </div>
                 <div class="flex-row">
                     <el-checkbox label="imageUrl" name="imageUrl"></el-checkbox>
-                    <el-input style="margin-left: 5px;" placeholder="imageUrl" v-model="form.data.imageName" />
+                    <el-input class='select-input' placeholder="imageUrl" v-model="form.data.imageName" />
                 </div>
                 <el-checkbox label="click" name="click" />
                 <div class="flex-row">
                     <el-checkbox label="conrnerRadius" name="conrnerRadius"></el-checkbox>
-                    <el-input style="margin-left: 5px;" placeholder="6" v-model="form.data.conrnerRadius" />
+                    <el-input class='select-input' placeholder="6" v-model="form.data.conrnerRadius" />
                 </div>
                 <div class="flex-row">
                     <el-checkbox label="contentMode" name="contentMode"></el-checkbox>
-                    <el-select style="margin-left: 5px;" v-model="form.data.contentMode" size="small">
+                    <el-select class='select-input' v-model="form.data.contentMode" size="small">
                         <el-option  label="拉伸图片，填满" value="UIViewContentModeScaleToFill" />
                         <el-option  label="保持比例，多余留空" value="UIViewContentModeScaleAspectFit" />
                         <el-option  label="保持比例，剪裁填满" value="UIViewContentModeScaleAspectFill" />
@@ -199,5 +199,11 @@ const onHelpMe = async() => {
     align-items: flex-start;
     justify-content: flex-start;
     flex-direction: column;
+}
+
+.select-input{
+    width: 150px !important;
+    margin-right: 10px;
+    margin-left: 5px;
 }
 </style>

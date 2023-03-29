@@ -22,15 +22,15 @@
                 <el-checkbox label="下侧圆角" name="下侧圆角" />
                 <div class="flex-row">
                     <el-checkbox label="conrnerRadius" name="conrnerRadius"></el-checkbox>
-                    <el-input style="margin-left: 5px;" placeholder="6" v-model="form.data.conrnerRadius" />
+                    <el-input class='select-input' placeholder="6" v-model="form.data.conrnerRadius" />
                 </div>
                 <div class="flex-row">
                     <el-checkbox label="backgroundColor" name="backgroundColor"></el-checkbox>
-                    <el-input style="margin-left: 5px;" placeholder="#fff" v-model="form.data.backgroundColor" />
+                    <el-input class='select-input' placeholder="#fff" v-model="form.data.backgroundColor" />
                 </div>
                 <div class="flex-row">
                     <el-checkbox label="border" name="border"></el-checkbox>
-                    <el-input style="margin-left: 5px;" placeholder="borderColor" v-model="form.data.borderColor" />
+                    <el-input class='select-input' placeholder="borderColor" v-model="form.data.borderColor" />
                 </div>
             </el-checkbox-group>
         </el-form-item>
@@ -196,5 +196,11 @@ const onHelpMe = async() => {
     align-items: flex-start;
     justify-content: flex-start;
     flex-direction: column;
+}
+
+.select-input{
+    width: 150px !important;
+    margin-right: 10px;
+    margin-left: 5px;
 }
 </style>

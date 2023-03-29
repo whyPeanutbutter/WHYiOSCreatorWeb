@@ -19,6 +19,7 @@ const state = reactive({
 </script>
   
 <style scoped lang="less">
+
 body {
     width: 100%;
 }
