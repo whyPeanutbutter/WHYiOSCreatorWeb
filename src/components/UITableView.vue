@@ -118,7 +118,7 @@ const onCreate = (formData, needCopy = false) => {
     let commonSettings = formData.commonSettings;
     let frame = commonSettings.indexOf('frame') > -1 ? `${formData.name}.frame = CGRectMake(<#CGFloat x#>, <#CGFloat y#>, <#CGFloat width#>, <#CGFloat height#>);\n` : '';
 
-    let init = commonSettings.indexOf('init') > -1 ? `UITableViewDataSource,UITableViewDelegate\nUITableView *${formData.name} = [[UITableView alloc]initWithFrame:CGRectZero style:UITableViewStyleGrouped];\n${frame}tableView.dataSource = self;\ntableView.delegate = self;\n${formData.name}.separatorStyle = UITableViewCellSeparatorStyleNone;\n${formData.name}.showsVerticalScrollIndicator = NO;\nif (@available(iOS 15.0, *)) {\n${formData.name}.sectionHeaderTopPadding = 0;\n}\n` : '';
+    let init = commonSettings.indexOf('init') > -1 ? `UITableViewDataSource,UITableViewDelegate\nUITableView *${formData.name} = [[UITableView alloc]initWithFrame:CGRectZero style:UITableViewStyleGrouped];\n${frame}${formData.name}.dataSource = self;\${formData.name}.delegate = self;\n${formData.name}.separatorStyle = UITableViewCellSeparatorStyleNone;\n${formData.name}.showsVerticalScrollIndicator = NO;\nif (@available(iOS 15.0, *)) {\n${formData.name}.sectionHeaderTopPadding = 0;\n}\n` : '';
     let addSubView = commonSettings.indexOf('addSubView') > -1 ? `[<#self#> addSubview:${formData.name}];\n` : '';
     let backgroundColor = commonSettings.indexOf('backgroundColor') > -1 ? `${formData.name}.backgroundColor = ${$utils.getColor(formData.backgroundColor)};\n` : '';
     let upperFirst = formData.name.charAt(0).toUpperCase()+ formData.name.slice(1);

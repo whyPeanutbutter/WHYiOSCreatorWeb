@@ -108,7 +108,7 @@ watch(() => props.form, (newValue, oldValue) => {
 
 const onCreate = (formData, needCopy = false) => {
     let commonSettings = formData.commonSettings;
-    let init = commonSettings.indexOf('init') > -1 ? `UIScrollView *${formData.name} = [[UIScrollView alloc]init];\n${formData.name}.showsVerticalScrollIndicator = NO;\n${formData.name}.showsHorizontalScrollIndicator = NO;\n${formData.name}.bounces = YES;//添加后不支持下拉刷新\n` : '';
+    let init = commonSettings.indexOf('init') > -1 ? `UIScrollView *${formData.name} = [[UIScrollView alloc]init];\n${formData.name}.showsVerticalScrollIndicator = NO;\n${formData.name}.showsHorizontalScrollIndicator = NO;\n${formData.name}.bounces = NO;//添加后不支持下拉刷新\n` : '';
     let addSubView = commonSettings.indexOf('addSubView') > -1 ? `[<#self#> addSubview:${formData.name}];\n` : '';
     let aviIOS11 = commonSettings.indexOf('@available(iOS 11.0, *)') > -1 ? `if (@available(iOS 11.0, *)) {\n${formData.name}.insetsLayoutMarginsFromSafeArea = NO;\n${formData.name}.contentInsetAdjustmentBehavior = UIScrollViewContentInsetAdjustmentNever;\n} <#else {\n self.automaticallyAdjustsScrollViewInsets = NO;\n}#>\n` : '';
     let frame = commonSettings.indexOf('frame') > -1 ? `${formData.name}.frame = CGRectMake(<#CGFloat x#>, <#CGFloat y#>, <#CGFloat width#>, <#CGFloat height#>);\n` : '';

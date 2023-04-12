@@ -38,15 +38,19 @@
             <UITableView v-if="state.currentShowViews[state.currentSelectIndex].type == 'UITableView'"
               :form="state.currentShowViews[state.currentSelectIndex].setting" @update="settingUpdate"
               @delete="settingDelete" @create="settingCreate" />
-              <UITableViewCell v-if="state.currentShowViews[state.currentSelectIndex].type == 'UITableViewCell'"
+            <UITableViewCell v-if="state.currentShowViews[state.currentSelectIndex].type == 'UITableViewCell'"
               :form="state.currentShowViews[state.currentSelectIndex].setting" @update="settingUpdate"
               @delete="settingDelete" @create="settingCreate" />
             <UICollectionView v-if="state.currentShowViews[state.currentSelectIndex].type == 'UICollectionView'"
               :form="state.currentShowViews[state.currentSelectIndex].setting" @update="settingUpdate"
               @delete="settingDelete" @create="settingCreate" />
-              <UITextView v-if="state.currentShowViews[state.currentSelectIndex].type == 'UITextView'"
+            <UITextView v-if="state.currentShowViews[state.currentSelectIndex].type == 'UITextView'"
               :form="state.currentShowViews[state.currentSelectIndex].setting" @update="settingUpdate"
               @delete="settingDelete" @create="settingCreate" />
+            <UITextField v-if="state.currentShowViews[state.currentSelectIndex].type == 'UITextField'"
+              :form="state.currentShowViews[state.currentSelectIndex].setting" @update="settingUpdate"
+              @delete="settingDelete" @create="settingCreate" />
+
             <HelpMeView v-if="state.currentShowViews[state.currentSelectIndex].type == 'HelpMe'" />
             <AnalyCodeView v-if="state.currentShowViews[state.currentSelectIndex].type == 'AnalyCodeView'" />
 
@@ -86,6 +90,7 @@ import UITableViewCell from '../components/UITableViewCell.vue';
 import UICollectionView from '../components/UICollectionView.vue';
 import HelpMeView from '../components/HelpMeView.vue';
 import UITextView from '../components/UITextView.vue';
+import UITextField from '../components/UITextField.vue';
 import * as $utils from '../components/Utils';
 import { reactive, ref, getCurrentInstance, watch, onMounted } from 'vue'
 import AnalyCodeView from '../components/AnalyCodeView.vue';
@@ -96,7 +101,7 @@ const { proxy } = getCurrentInstance();
 const state = reactive({
   isOCTag: proxy.isOCTag,
   currentShowViews: [],
-  leftBtns: [ {
+  leftBtns: [{
     name: "UIView",
     type: 'UIView'
   }, {
@@ -108,7 +113,7 @@ const state = reactive({
   }, {
     name: "UIImageView",
     type: 'UIImageView'
-  },{
+  }, {
     name: "UIScrollView",
     type: 'UIScrollView'
   }, {
@@ -117,12 +122,16 @@ const state = reactive({
   }, {
     name: "UITableViewCell",
     type: 'UITableViewCell'
-  },{
+  }, {
     name: "UICollectionView",
     type: 'UICollectionView'
-  },{
+  }, {
     name: "UITextView",
     type: 'UITextView'
+  },
+  {
+    name: "UITextField",
+    type: 'UITextField'
   },
   {
     name: "代码解析",

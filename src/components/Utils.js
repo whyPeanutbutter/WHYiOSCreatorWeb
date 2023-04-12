@@ -8,9 +8,9 @@ export const getMansorys = (mansorys) => {
     }
     var re = ''
     let dict = {
-        "left": "make.left.equalTo(@16);",
-        "right": "make.right.equalTo(@-16);",
-        "top": "make.top.equalTo(@16);",
+        "left": "make.left.equalTo(@0);",
+        "right": "make.right.equalTo(@-0);",
+        "top": "make.top.equalTo(@0);",
         "bottom": "make.bottom.equalTo(@-0);",
         "width": "make.width.equalTo(@0);",
         "height": "make.height.equalTo(@0);",
@@ -112,6 +112,8 @@ export const analyViewData = (str) => {
         result.backgroundColor = backgroundColor;
     }
 
+    
+    
     return result
 };
 
@@ -127,16 +129,15 @@ const findValueOf = (arr, key) => {
 const analyOCCode = (code) => {
     var data = {}
     var result = /initWithString:@"(.*?)"/g.exec(code);
-    console.log(result)
     if (result) {
         data.titleName = result[1];
     }
 
-    result = /.cornerRadius =(\w+);/g.exec(code);
+    result = /.cornerRadius = (\w+);/g.exec(code);
     if (result) {
         data.conrnerRadius = result[1];
     }
-
+ 
     result = /NSForegroundColorAttributeName: \[UIColor colorWithRed:(\w+)\/255.0 green:(\w+)\/255.0 blue:(\w+)\/255/.exec(code);
     if (result) {
         data.titleColor = rgbToHex(`rgb(${result[1]},${result[2]},${result[3]})`);

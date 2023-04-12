@@ -1,3 +1,4 @@
+
 <template>
     <el-form :model="form" label-width="120px">
         <div style="margin-bottom: 10px">
@@ -18,12 +19,16 @@
                 <el-checkbox label="init" name="init" />
                 <el-checkbox label="addSubView" name="addSubView" />
                 <el-checkbox label="frame" name="frame" />
-                <el-checkbox label="editable" name="editable" />
-                <el-checkbox label="scrollEnabled" name="scrollEnabled" />
-                <el-tooltip class="box-item" effect="dark" content="需手动引入UItextView+placeholder" placement="right">
-                    <el-checkbox label="placeholder" name="placeholder" />
-                </el-tooltip>
-
+                <el-checkbox label="enabled" name="editable" />
+                <el-checkbox label="attributedPlaceholder" name="attributedPlaceholder" />
+                <el-checkbox label="placeholder" name="placeholder" />
+                <!-- <el-tooltip class="box-item" effect="dark" content="需手动引入UItextView+placeholder" placement="right">
+                    
+                </el-tooltip> -->
+                <el-checkbox label="clearButtonMode" name="clearButtonMode" />
+                <el-checkbox label="returnKeyType" name="returnKeyType" />
+                <el-checkbox label="keyboardType" name="keyboardType" />
+                
                 <div class="flex-row">
                     <el-checkbox label="backgroundColor" name="backgroundColor"></el-checkbox>
                     <el-input class='select-input' placeholder="#fff" v-model="form.data.backgroundColor" />
@@ -32,25 +37,24 @@
                     <el-checkbox label="border" name="border"></el-checkbox>
                     <el-input class='select-input' placeholder="borderColor" v-model="form.data.borderColor" />
                 </div>
-                <el-checkbox label="click" name="click" />
                 <div class="flex-row">
                     <el-checkbox label="conrnerRadius" name="conrnerRadius"></el-checkbox>
                     <el-input class='select-input' placeholder="6" v-model="form.data.conrnerRadius" />
-                </div>editable scrollEnabled placeholder haveDelgete delgeteSettings
+                </div>
             </el-checkbox-group>
         </el-form-item>
         <el-form-item label="delgete">
             <el-switch v-model="form.data.haveDelgete" />
             <div v-if="form.data.haveDelgete" style="width:100%">
                 <el-checkbox-group class="flex-col-start" v-model="form.data.delgeteSettings">
-                    <el-checkbox label="textViewDidChange" />
-                    <el-checkbox label="textViewShouldBeginEditing" />
-                    <el-tooltip class="box-item" effect="dark" content="点击完成/回车，收起操作" placement="right">
-                        <el-checkbox label="shouldChangeTextInRange" />
+                    <el-checkbox label="textFieldDidChange" />
+                    <el-checkbox label="textFieldDidBeginEditing" />
+                    <el-checkbox label="textFieldShouldBeginEditing" />
+                    <el-tooltip class="box-item" effect="dark" content="限制输入字数" placement="right">
+                        <el-checkbox label="shouldChangeCharactersInRange" />
                     </el-tooltip>
-                    <el-checkbox label="textViewDidEndEditing" />
-                    <el-checkbox label="超链接" />
-                </el-checkbox-group>
+                    <el-checkbox label="textFieldShouldReturn" />
+                </el-checkbox-group> 
             </div>
         </el-form-item>
         <el-form-item label="title">
@@ -130,7 +134,7 @@ const props = defineProps({
 // do not use same name with ref
 var form = reactive({
     data: {
-        name: 'TextView',
+        name: 'TextField',
         commonSettings: ["addSubView", "init"],
         conrnerRadius: '4',
         backgroundColor: '#fff',
@@ -144,7 +148,6 @@ var form = reactive({
         titleColor: '',
         titleName: '',
         textAlign: 'Center',
-        numberOfLine: '0',
         masonrys: []
     },
     helpMe: '',
@@ -154,7 +157,7 @@ var form = reactive({
 const resetForm = () => {
     console.log('reset');
     form.data = {
-        name: 'TextView',
+        name: 'TextField',
         commonSettings: ["addSubView", "init"],
         conrnerRadius: '4',
         backgroundColor: '#fff',
@@ -168,7 +171,6 @@ const resetForm = () => {
         titleColor: '',
         titleName: '',
         textAlign: 'Center',
-        numberOfLine: '0',
         masonrys: []
     }
 };
@@ -189,16 +191,19 @@ watch(() => props.form, (newValue, oldValue) => {
 
 const onCreate = (formData, needCopy = false) => {
     let commonSettings = formData.commonSettings;
-    let init = commonSettings.indexOf('init') > -1 ? `UITextView *${formData.name} = [[UITextView alloc]init];\n  ${formData.name}.textContainerInset = UIEdgeInsetsMake(0, 0, 0, 0);\n` : '';
+    let init = commonSettings.indexOf('init') > -1 ? ` UITextField *${formData.name} = [[UITextField alloc] init)];\n ${formData.name}.contentVerticalAlignment = UIControlContentVerticalAlignmentCenter;\n ${formData.name}.inputAssistantItem.leadingBarButtonGroups = @[];\n ${formData.name}.inputAssistantItem.trailingBarButtonGroups = @[];\n${formData.name}.autocapitalizationType = UITextAutocapitalizationTypeNone;\n` : '';
     let addSubView = commonSettings.indexOf('addSubView') > -1 ? `[<#self#> addSubview:${formData.name}];\n` : '';
     let frame = commonSettings.indexOf('frame') > -1 ? `${formData.name}.frame = CGRectMake(<#CGFloat x#>, <#CGFloat y#>, <#CGFloat width#>, <#CGFloat height#>);\n` : '';
-    let click = commonSettings.indexOf('click') > -1 ? `[${formData.name} addTarget:self action:@selector(<#${formData.name}Clicked:#>) forControlEvents:UIControlEventTouchUpInside];\n\n- (void)${formData.name}Clicked:(UIButton *)button{\n\n}\n` : '';
+    let enabled = commonSettings.indexOf('enabled') > -1 ? `${formData.name}.enabled = NO;\n` : '';
     let conrnerRadius = commonSettings.indexOf('conrnerRadius') > -1 ? `${formData.name}.layer.cornerRadius = ${formData.conrnerRadius};\n${formData.name}.layer.masksToBounds = YES;\n` : '';
     let backgroundColor = commonSettings.indexOf('backgroundColor') > -1 ? `${formData.name}.backgroundColor = ${$utils.getColor(formData.backgroundColor)};\n` : '';
     let border = commonSettings.indexOf('border') > -1 ? `[${formData.name}.layer setBorderColor:${$utils.getColor(formData.borderColor)}.CGColor];\n[${formData.name}.layer setBorderWidth:<#1.0#>];\n` : '';
 
-    let editable = commonSettings.indexOf('editable') > -1 ? `${formData.name}.editable = NO;\n` : '';
-    let scrollEnabled = commonSettings.indexOf('scrollEnabled') > -1 ? `${formData.name}.editable = YES;\n` : '';
+    let returnKeyType = commonSettings.indexOf('returnKeyType') > -1 ? `${formData.name}.clearButtonMode = UITextFieldViewModeWhileEditing;\n` : '';
+    let clearButtonMode = commonSettings.indexOf('clearButtonMode') > -1 ? `${formData.name}.returnKeyType = UIReturnKeyDone;\n` : '';
+    let keyboardType = commonSettings.indexOf('keyboardType') > -1 ? `${formData.name}.keyboardType = UIKeyboardTypeNumberPad;\n` : '';
+
+    let attributedPlaceholder = commonSettings.indexOf('attributedPlaceholder') > -1 ? `${formData.name}.attributedPlaceholder = [[NSMutableAttributedString alloc] initWithString:DefaultInputHint attributes:@{NSFontAttributeName:GetRegularFont(15),NSForegroundColorAttributeName:Color_Black_Light}];\n` : '';
     let placeholder = commonSettings.indexOf('placeholder') > -1 ? `${formData.name}.placeholder = @"";\n` : '';
     let haveDelgete = formData.haveDelgete ? getDelgeteText(formData.name, formData.delgeteSettings) : '';
 
@@ -209,7 +214,7 @@ const onCreate = (formData, needCopy = false) => {
         ${mansoryStr}
     }];\n`: ''
     var result =
-        `${init}${frame}${addSubView}${editable}${scrollEnabled}${placeholder}${title}${haveAttributedText}${conrnerRadius}${backgroundColor}${border}${masonry}${click}${haveDelgete}\n`
+        `${init}${frame}${addSubView}${enabled}${returnKeyType}${clearButtonMode}${keyboardType}${placeholder}${attributedPlaceholder}${title}${haveAttributedText}${conrnerRadius}${backgroundColor}${border}${masonry}${haveDelgete}\n`
     console.log(result);
     form.result = result;
     emits('create', result)
@@ -221,18 +226,20 @@ const onCreate = (formData, needCopy = false) => {
 
 const getDelgeteText = (name, settings) => {
     if (settings.length == 0) {
-        return `UITextViewDelegate\n${name}.delegate = self;\n`
+        return `UITextFieldDelegate\n${name}.delegate = self;\n`
     }
-
     let dict = {
-        "init": `UITextViewDelegate\n${name}.delegate = self;\n`,
-        "textViewDidChange": "- (void)textViewDidChange:(UITextView *)textView {\n     textView.text.length//修改后的所有text\n}\n",
-        "超链接": ` ${name}.editable = NO;\n\n       NSString *summary = @“bbbbbb联系客服bbbbb”;\n        NSMutableAttributedString * attributeString = [[NSMutableAttributedString alloc] initWithString:summary];\n        [attributeString addAttribute: NSLinkAttributeName value: @"http://www.jianshu.com" range: [summary rangeOfString:@"联系客服"]];\n        ${name}.linkTextAttributes = @{ NSForegroundColorAttributeName: RGBA(79, 224, 161, 1)};\n        ${name}.attributedText = attributeString;\n\n- (BOOL)textView:(UITextView *)textView shouldInteractWithURL:(NSURL *)URL inRange:(NSRange)characterRange interaction:(UITextItemInteraction)interaction {\n    NSString *url = URL.absoluteString;\n    if ([url isEqualToString:@"http://www.jianshu.com"]) {\n//在这里是可以做一些判定什么的，用来确定对应的操作。\n}\n\n    return YES;//返回 YES，则会打开URL地址，返回 NO则不会。\n}\n`,
-        "textViewDidEndEditing": `- (void)textViewDidEndEditing:(UITextView *)textView\n{\n}\n`,
-        "shouldChangeTextInRange": `-(BOOL)textView:(UITextView *)textView shouldChangeTextInRange:(NSRange)range replacementText:(NSString *)text\n{//点击完成操作\n    if ([text isEqualToString:@"\n"]) {\n        [textView resignFirstResponder];\n        return NO;\n    }\n    return YES;\n}`,
-        "textViewShouldBeginEditing": "- (BOOL)textViewShouldBeginEditing:(UITextView *)textView\n{\n    return YES;\n}\n\n"
+        "init": `UITextFieldDelegate\n${name}.delegate = self;\n#pragma mark - UITextFieldDelegate\n`,
+        "textFieldDidChange": `  [${name} addTarget:self action:@selector(textFieldDidChange:) forControlEvents:UIControlEventEditingChanged];\n\n- (void)textFieldDidChange:(UITextField *)textField\n{\n UITextRange *range = textField.markedTextRange; \n}\n`,
+        "textFieldDidBeginEditing": "- (void)textFieldDidBeginEditing:(UITextField *)textField {\n}\n",
+        "textFieldShouldBeginEditing": `- (BOOL)textFieldShouldBeginEditing:(UITextField *)textField\n{\n if (textField == categoryField) {\n   return NO;\n }\n return YES;\n}\n`,
+        "shouldChangeCharactersInRange": `\n-(BOOL)textField:(UITextField *)textField shouldChangeCharactersInRange:(NSRange)range replacementString:(NSString *)string\n{\n NSMutableString *inputText = textField.text.mutableCopy;\n [inputText replaceCharactersInRange:range withString:string];\n if (inputText.length > 50)\n {\n  return NO;\n }\n return YES;\n}\n`,
+        "textFieldShouldReturn": "`- (BOOL)textFieldShouldReturn:(UITextField *)textField {\n [textField resignFirstResponder];\n [self endEditing:YES];\n return YES;\n}\n`"
     };
     var re = dict['init'];
+    if(settings.length == 1 && settings[0] == "textFieldDidChange"){
+        re = ""
+    }
     var i = 0
     for (let str of settings) {
         re = re + (settings.indexOf(str) > -1 ? dict[str] : '')
