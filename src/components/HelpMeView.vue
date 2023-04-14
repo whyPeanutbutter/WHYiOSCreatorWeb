@@ -3,7 +3,7 @@
         <div class="flex-row-center" style="margin-bottom: 10px">
             <!-- <el-button v-if="form.isMobile" type="primary" @click="backHome()">返回首页</el-button> -->
             <div>ChatGPT </div>
-            <div class="geo-class" :style="form.isRightIpGeo ?'':'color:red;'">{{form.ipGeoText}}</div>
+            <div class="geo-class" :style="form.isRightIpGeo ? '' : 'color:red;'">{{ form.ipGeoText }}</div>
             <el-button v-if="!form.isRightIpGeo" type="primary" @click="get_geoip()">检测Ip</el-button>
         </div>
         <el-form-item label="模型选择">
@@ -44,24 +44,30 @@
             <el-button type="primary" @click="onCreate" :loading="form.wait"
                 :disabled="!form.question || form.question.length == 0 || !form.password || form.password.length == 0 || !form.isRightIpGeo">解答</el-button>
             <el-button type="primary" @click="onDeleteResult">清空回答</el-button>
-            <el-button type="primary" @click="$utils.copy(form.result)">copy回答</el-button>
+            <el-button type="primary" @click="$utils.copy(form.orginResult)">copy回答</el-button>
+            <el-button v-if="form.orginResult && form.orginResult.length > 0 && !form.isMobile" type="primary"
+                @click="saveFile()">保存为文件</el-button>
             <el-button v-if="form.wait" type="primary" @click="donotWait()">不等了</el-button>
 
         </el-form-item>
         <el-form-item label="回答">
             <div :style="form.widthStyle" class="result-container" v-html="parse_text(form.result)"></div>
-            <el-input v-model="form.result" type="textarea" :autosize="{ maxRows: 2 }" :style="form.widthStyle" />
+            <el-input v-model="form.orginResult" type="textarea" :autosize="{ maxRows: 2 }" :style="form.widthStyle" />
         </el-form-item>
-        
+
     </el-form>
 </template>
 
 <script setup>
-import { reactive, watch, defineEmits, defineProps, toRef, onMounted, ref,getCurrentInstance } from 'vue';
+import { reactive, watch, defineEmits, defineProps, toRef, onMounted, ref, getCurrentInstance } from 'vue';
 import router from '../router/index.js'
-import {marked} from 'marked'
+import { marked } from 'marked'
 import * as $utils from './Utils';
+import { saveAs } from 'file-saver'
+
+
 const { proxy } = getCurrentInstance();
+
 // import md5 from 'js-md5';
 
 
@@ -69,6 +75,7 @@ const { proxy } = getCurrentInstance();
 var form = reactive({
     question: '',
     result: '',
+    orginResult: '',
     wait: false,
     system_prompt: '用Objective-c编写，给出简短的回答，不要做出解释',
     system_prompt_select: '',
@@ -77,18 +84,19 @@ var form = reactive({
     widthStyle: '',
     selectModal: 'gpt-3.5-turbo',
     uploadFiles: [],
-    ipGeoText:'',
-    isRightIpGeo:false
+    ipGeoText: '',
+    isRightIpGeo: false,
+    abortController: null,
 });
 
 
 watch(() => form.password, (newValue, oldValue) => {
-  proxy.gptkey = newValue;
-  console.log(proxy.gptkey);
+    proxy.gptkey = newValue;
+    console.log(proxy.gptkey);
 
 }, {
-  deep: true,
-  immediate: true
+    deep: true,
+    immediate: true
 });
 
 onMounted(() => {
@@ -113,32 +121,32 @@ const options = [
     {
         value: '给你一个objective-c类或多个属性，为每个属性制造相应的假数据',
         label: 'OC假数据制造',
-    },{
+    }, {
         value: '我将给出两个json数据，请找出他们的key或者key对应的vlaue不同的部分并输出，也就是给出他们包含数据的并集。不要做出解释，简短的回答',
         label: 'json数据对比',
     },
-     {
+    {
         value: '我想让你做一个旅游指南。我会把我的位置写给你，你会推荐一个靠近我的位置的地方。在某些情况下，我还会告诉您我将访问的地方类型。您还会向我推荐靠近我的第一个位置的类似类型的地方',
         label: '充当旅游指南',
     }, {
         label: "发送图片",
         value: "从现在起, 当你想发送一张照片时，请使用 Markdown ,并且 不要有反斜线, 不要用代码块。使用 Unsplash API (https://source.unsplash.com/1280x720/? < PUT YOUR QUERY HERE >)"
-    },{
-        label:'debug code',
-        value:"I want you to debug this code. The code is supposed to do [provide purpose] [Insert code here]"
+    }, {
+        label: 'debug code',
+        value: "I want you to debug this code. The code is supposed to do [provide purpose] [Insert code here]"
     },
     {
-        label:'给代码添加注释',
-        value:"给代码添加注释"
-        
+        label: '给代码添加注释',
+        value: "给代码添加注释"
+
     },
     {
-        label:'自定义promt模版',
-        value:"角色-目标-提需求-补充；\n 我的情况是-我想-你是谁-我要你"
-        
-    },{
-        label:'抖音标题制作',
-        value:`下面是一些抖音标题
+        label: '自定义promt模版',
+        value: "角色-目标-提需求-补充；\n 我的情况是-我想-你是谁-我要你"
+
+    }, {
+        label: '抖音标题制作',
+        value: `下面是一些抖音标题
 了了睛山见，纷纷宿雾空。＃爱情＃大概这就是爱情最美的样子 ＃甜甜的恋爱
 
 你我共存，枯木逢春。#爱情
@@ -157,7 +165,11 @@ const resetForm = () => {
 };
 
 const onCreate = async () => {
-    getResponse()
+    getResponse().catch(error => {
+        form.result += "<div class='error-red'> 错误: " + "Error fetching data:" + error + "</div>";
+        form.orginResult += "错误: " + "Error fetching data:" + "Error fetching data:" + error;
+        console.error("Error fetching data:", error);
+    });
 };
 
 const getwrongPassword = (key) => {
@@ -205,39 +217,154 @@ const getkeyPassword = (wrongKey) => {
 
 const donotWait = () => {
     form.wait = false
+    if (abortController) {
+        form.abortController.abort();
+    }
+}
+
+const oldGetResponse = () => {
+    // var OPENAI_API_KEY = getkeyPassword('okbk8ZuwK7wssrBcqslq7FtC3x2skYD-f23A6sJT0GH3dQqGU6E')//getwrongPassword('')
+    // form.wait = true
+    // var oHttp = new XMLHttpRequest();
+    // oHttp.open("POST", "https://api.openai.com/v1/chat/completions");
+    // oHttp.setRequestHeader("Accept", "application/json");
+    // oHttp.setRequestHeader("Content-Type", "application/json");
+    // oHttp.setRequestHeader("Authorization", "Bearer " + OPENAI_API_KEY)
+    // oHttp.onreadystatechange = function () {
+    //     form.wait = false
+    //     if (oHttp.readyState === 4) {
+    //         var oJson = {}
+    //         if (form.result != "") {
+    //             form.result += "\n";
+    //             form.orginResult += "\n";
+    //         }
+    //         try {
+    //             oJson = JSON.parse(oHttp.responseText);
+    //         } catch (ex) {
+    //             form.result += "<div class='error-red'> 错误: " + ex.message + "</div>";
+    //             form.orginResult += "错误: " + ex.message;
+    //         }
+
+    //         if (oJson.error && oJson.error.message) {
+    //             form.result += "<div class='error-red'> 错误: " + oJson.error.message + "</div>";
+    //             form.orginResult += "错误: " + ex.message;
+    //         } else if (oJson.choices && oJson.choices[0].message) {
+    //             var s = oJson.choices[0].message.content;
+
+    //             if (s == "") s = "无响应";
+    //             form.result += "<div class='gpt-result'> \n************************************************************************\nChatGPT: \n" + s + "</div>";
+    //             form.orginResult += "\n************************************************************************\nChatGPT: \n" + s;
+    //             form.question = "";
+    //         }
+    //     }
+    // };
+
+    // oHttp.send(JSON.stringify(postData()));
 }
 
 
+
 const getResponse = async () => {
-    var OPENAI_API_KEY = getkeyPassword('okbk8ZuwK7wssrBcqslq7FtC3x2skYD-f23A6sJT0GH3dQqGU6E')//getwrongPassword('')
+    // getwrongPassword('sk-')
+    // return
+    var OPENAI_API_KEY = getkeyPassword('bkmsjLitngigdBnbZsIl29S-3BT3kFJ62umMYVA6zyDMTU5crA7')
     form.wait = true
-    var oHttp = new XMLHttpRequest();
-    oHttp.open("POST", "https://api.openai.com/v1/chat/completions");
-    oHttp.setRequestHeader("Accept", "application/json");
-    oHttp.setRequestHeader("Content-Type", "application/json");
-    oHttp.setRequestHeader("Authorization", "Bearer " + OPENAI_API_KEY)
-    oHttp.onreadystatechange = function () {
-        form.wait = false
-        if (oHttp.readyState === 4) {
-            var oJson = {}
-            if (form.result != "") form.result += "\n";
-            try {
-                oJson = JSON.parse(oHttp.responseText);
-            } catch (ex) {
-                form.result += "<div class='error-red'> 错误: " + ex.message + "</div>";
-            }
+    form.abortController = new AbortController();
+    const signal = form.abortController.signal;
+    try {
+        const response = await fetch("https://api.openai.com/v1/chat/completions", {
+            method: "POST",
+            headers: {
+                "Accept": "application/json",
+                "Content-Type": "application/json",
+                "Authorization": "Bearer " + OPENAI_API_KEY
+            },
+            body: JSON.stringify(postData()),
+            signal // 添加中止信号
+        });
 
-            if (oJson.error && oJson.error.message) {
-                form.result += "<div class='error-red'> 错误: " + oJson.error.message + "</div>";
-            } else if (oJson.choices && oJson.choices[0].message) {
-                var s = oJson.choices[0].message.content;
-
-                if (s == "") s = "无响应";
-                form.result += "<div class='gpt-result'> \n************************************************************************\nChatGPT: \n" + s+ "</div>";
-                form.question = "";
-            }
+        if (!response.ok) {
+            form.result += "<div class='error-red'> 错误: " + `HTTP error! Status: ${response.status}` + "</div>";
+            form.orginResult += "错误: " + `HTTP error! Status: ${response.status}`;
         }
-    };
+
+        // const textStream = response.body.pipeThrough(new TextDecoderStream());
+        // const reader = textStream.getReader();
+
+        // let result = "";
+        // while (true) {
+        //     const { value, done } = await reader.read();
+        //     if (done || !form.wait) break;
+        //     result += value;
+        //     // 处理数据流的每个片段
+        //     processStreamChunk(result);
+        // }
+        const reader = response.body.getReader();
+        const decoder = new TextDecoder();
+
+        let result = "";
+        while (true) {
+            const { value, done } = await reader.read();
+            if (done || !form.wait) break;
+            result += decoder.decode(value, { stream: true });
+            // 处理数据流的每个片段
+            processStreamChunk(result);
+        }
+
+        // 处理完整的数据流
+        processStreamComplete(result);
+    } catch (error) {
+        if (error.name === 'AbortError') {
+            console.log('Request aborted');
+            form.result += "<div class='error-red'> 错误: " + `Request aborted 用户终止请求` + "</div>";
+            form.orginResult += "错误: " + `Request aborted 用户终止请求`;
+        } else {
+            console.error("Error fetching data:", error);
+            form.result += "<div class='error-red'> 错误: " + "Error fetching data:" + error + "</div>";
+            form.orginResult += "错误: " + "Error fetching data:" + error;
+        }
+    }
+
+};
+
+const processStreamChunk = (chunk) => {
+    // 在这里处理每个数据流片段
+    console.log('processStreamChunk' + chunk);
+    //processStreamChunk{"id":"chatcmpl-74hr4hWKjQmTKF7E0LYk6FVzgYSjd","object":"chat.completion","created":1681356246,"model":"gpt-3.5-turbo-0301","usage":{"prompt_tokens":40,"completion_tokens":17,"total_tokens":57},"choices":[{"message":{"role":"assistant","content":"I am an AI language model designed to answer questions and engage in conversations with humans."},"finish_reason":"stop","index":0}]}
+}
+
+const processStreamComplete = (result) => {
+    console.log("processStreamComplete" + result);
+    form.wait = false
+    // 在这里处理完整的数据流
+    let oJson = {};
+    if (form.result != "") {
+        form.result += "\n";
+        form.orginResult += "\n";
+    }
+    try {
+        oJson = JSON.parse(result);
+    } catch (ex) {
+        form.result += "<div class='error-red'> 错误: " + ex.message + "</div>";
+        form.orginResult += "错误: " + ex.message;
+    }
+
+    if (oJson.error && oJson.error.message) {
+        form.result += "<div class='error-red'> 错误: " + oJson.error.message + "</div>";
+        form.orginResult += "错误: " + oJson.error.message;
+    } else if (oJson.choices && oJson.choices[0].message) {
+        var s = oJson.choices[0].message.content;
+
+        if (s == "") s = "无响应";
+        form.result += "<div class='gpt-result'> \n************************************************************************\nChatGPT: \n" + s + "</div>";
+        form.orginResult += "\n************************************************************************\nChatGPT: \n" + s;
+        form.question = "";
+    }
+}
+
+
+
+const postData = () => {
     if (!form.selectModal || form.selectModal.length == 0) {
         form.selectModal = 'gpt-3.5-turbo';
     }
@@ -245,7 +372,7 @@ const getResponse = async () => {
     var iMaxTokens = 3500;
     var dTemperature = 0.5;
     var sQuestion = form.question
-    var requestMessages = [{ "role": "user", "content": form.question }];
+    var requestMessages = [{ "role": "user", "content": sQuestion }];
     if (form.system_prompt && form.system_prompt.length > 0) {
         requestMessages.push({ "role": "system", "content": form.system_prompt })
     }
@@ -255,22 +382,21 @@ const getResponse = async () => {
         messages: requestMessages,
         max_tokens: iMaxTokens,
         temperature: dTemperature,
-        frequency_penalty: 0.0, //-2.0 到 2.0 之间的数字。  
+        frequency_penalty: 0.5, //-2.0 到 2.0 之间的数字。  
         //较大的数值会减少 ChatGPT 重复同一句话的可能性。
 
         presence_penalty: 0.0 //-2.0 到 2.0 之间的数字。 
         //较大的数值会增加 ChatGPT 开启新话题的可能性。
     }
 
-    oHttp.send(JSON.stringify(data));
 
-    if (form.result != "") form.result += "\n";
+    if (form.result != "") {
+        form.result += "\n";
+        form.orginResult += "\n";
+    }
     form.result += "<div class='question'>我: " + sQuestion + '</div>';
-   
-
-
-    // form.result = response;
-    // console.log(response);
+    form.orginResult += "我: " + sQuestion;
+    return data
 };
 
 watch(() => form.system_prompt_select, (newValue, oldValue) => {
@@ -296,9 +422,26 @@ const onReset = () => {
     resetForm()
 };
 
-const onDeleteResult = async() => {
+const saveFile = () => {
+    const data = form.orginResult; // 文件内容
+    console.log(data);
+    var title = '';
+    if (data.length > 11) {
+        title = data.slice(3, 10) + '.txt';
+    } else {
+        title = 'myfile.txt'
+    }
+
+    const blob = new Blob([data]) // 将数据封装在 Blob 对象中
+    saveAs(blob, title) // 保存文件
+}
+
+
+const onDeleteResult = async () => {
     form.result = "";
+    form.orginResult = ''
 };
+
 
 const onAddClip = async () => {
 
@@ -328,7 +471,7 @@ const deleteImageInput = () => {
 }
 
 const parse_text = (text) => {
-    if(!text){
+    if (!text) {
         return ''
     }
     let lines = text.split("\n");
@@ -376,46 +519,44 @@ const imageTextTohtml = (text) => {
     while ((matcher = pattern.exec(text)) !== null) {
         console.log(matcher);
         if (matcher) {
-            text = text.replace(matcher[0],`<img class='image-result' src="${matcher[2]}" >`)
+            text = text.replace(matcher[0], `<img class='image-result' src="${matcher[2]}" >`)
         }
     }
-    console.log(text);
     text = marked(text)
-    console.log(text);
     return text
 }
 
-const get_geoip = async() => {
-  const response = await fetch('https://ipapi.co/json/', {timeout: 5000});
-  const data = await response.json();
-  if ("error" in data) {
-    console.warning(`无法获取IP地址信息。\n${data}`);
-    if (data['reason'] === "RateLimited") {
-        result = "获取IP地理位置失败，因为达到了检测IP的速率限制。聊天功能可能仍然可用，但请注意，如果您的IP地址在不受支持的地区，您可能会遇到问题。";
-        form.isRightIpGeo = true
-        form.ipGeoText = '获取ip失败'
-        form.result = form.result + `**${result}**`;
+const get_geoip = async () => {
+    const response = await fetch('https://ipapi.co/json/', { timeout: 5000 });
+    const data = await response.json();
+    if ("error" in data) {
+        console.warning(`无法获取IP地址信息。\n${data}`);
+        if (data['reason'] === "RateLimited") {
+            result = "获取IP地理位置失败，因为达到了检测IP的速率限制。聊天功能可能仍然可用，但请注意，如果您的IP地址在不受支持的地区，您可能会遇到问题。";
+            form.isRightIpGeo = true
+            form.ipGeoText = '获取ip失败'
+            form.result = form.result + `**${result}**`;
+        } else {
+            result = `获取IP地理位置失败。原因：${data['reason']}`;
+            form.isRightIpGeo = true
+            form.ipGeoText = '获取ip失败'
+            form.result = form.result + `**${result}**`;
+        }
     } else {
-        result = `获取IP地理位置失败。原因：${data['reason']}`;
-        form.isRightIpGeo = true
-        form.ipGeoText = '获取ip失败'
-        form.result = form.result + `**${result}**`;
+        const country = data['country_name'];
+        if (country === "China") {
+            const text = "**您的IP区域：中国。请立即检查代理设置，在不受支持的地区使用API可能导致账号被封禁。**";
+            console.info(text);
+            form.isRightIpGeo = false
+            form.ipGeoText = `您的IP区域：${country}。`;
+            form.result = form.result + `**${text}**`;
+        } else {
+            const text = `您的IP区域：${country}。`;
+            console.info(text);
+            form.isRightIpGeo = true
+            form.ipGeoText = text
+        }
     }
-  } else {
-    const country = data['country_name'];
-    if (country === "China") {
-      const text = "**您的IP区域：中国。请立即检查代理设置，在不受支持的地区使用API可能导致账号被封禁。**";
-      console.info(text);
-      form.isRightIpGeo = false
-      form.ipGeoText = `您的IP区域：${country}。`;
-      form.result = form.result + `**${text}**`;
-    } else {
-      const text = `您的IP区域：${country}。`;
-      console.info(text);
-      form.isRightIpGeo = true
-        form.ipGeoText = text
-    }
-  }
 
 }
 </script>
@@ -449,12 +590,12 @@ const get_geoip = async() => {
     width: 100%;
 }
 
-.geo-class{
+.geo-class {
     font-size: 9px;
-font-family: PingFangSC, PingFangSC-Regular;
-font-weight: 400;
-color: #999999;
-margin-left: 5px;
+    font-family: PingFangSC, PingFangSC-Regular;
+    font-weight: 400;
+    color: #999999;
+    margin-left: 5px;
 }
 
 .result-bg {
@@ -484,22 +625,22 @@ margin-left: 5px;
     width: 100%;
 }
 
-.question{
+.question {
     width: 100%;
     background-color: #bedaf7;
 }
 
-.error-red{
+.error-red {
     width: 100%;
     background-color: #f7becb;
 }
 
-.gpt-result{
+.gpt-result {
     width: 100%;
     background-color: #d3e3ff57;
 }
 
-.image-result{
+.image-result {
     width: 100%;
 }
 
@@ -530,7 +671,7 @@ pre code {
 
 }
 
-.form-class{
+.form-class {
     width: 100%;
     box-sizing: border-box;
     padding: 5px;
