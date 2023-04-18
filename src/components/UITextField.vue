@@ -38,8 +38,8 @@
                     <el-input class='select-input' placeholder="borderColor" v-model="form.data.borderColor" />
                 </div>
                 <div class="flex-row">
-                    <el-checkbox label="conrnerRadius" name="conrnerRadius"></el-checkbox>
-                    <el-input class='select-input' placeholder="6" v-model="form.data.conrnerRadius" />
+                    <el-checkbox label="cornerRadius" name="cornerRadius"></el-checkbox>
+                    <el-input class='select-input' placeholder="6" v-model="form.data.cornerRadius" />
                 </div>
             </el-checkbox-group>
         </el-form-item>
@@ -136,7 +136,7 @@ var form = reactive({
     data: {
         name: 'TextField',
         commonSettings: ["addSubView", "init"],
-        conrnerRadius: '4',
+        cornerRadius: '4',
         backgroundColor: '#fff',
         borderColor: 'borderColor',
         haveTitle: false,
@@ -159,7 +159,7 @@ const resetForm = () => {
     form.data = {
         name: 'TextField',
         commonSettings: ["addSubView", "init"],
-        conrnerRadius: '4',
+        cornerRadius: '4',
         backgroundColor: '#fff',
         borderColor: 'borderColor',
         delgeteSettings: [],
@@ -195,7 +195,7 @@ const onCreate = (formData, needCopy = false) => {
     let addSubView = commonSettings.indexOf('addSubView') > -1 ? `[<#self#> addSubview:${formData.name}];\n` : '';
     let frame = commonSettings.indexOf('frame') > -1 ? `${formData.name}.frame = CGRectMake(<#CGFloat x#>, <#CGFloat y#>, <#CGFloat width#>, <#CGFloat height#>);\n` : '';
     let enabled = commonSettings.indexOf('enabled') > -1 ? `${formData.name}.enabled = NO;\n` : '';
-    let conrnerRadius = commonSettings.indexOf('conrnerRadius') > -1 ? `${formData.name}.layer.cornerRadius = ${formData.conrnerRadius};\n${formData.name}.layer.masksToBounds = YES;\n` : '';
+    let cornerRadius = commonSettings.indexOf('cornerRadius') > -1 ? `${formData.name}.layer.cornerRadius = ${formData.cornerRadius};\n${formData.name}.layer.masksToBounds = YES;\n` : '';
     let backgroundColor = commonSettings.indexOf('backgroundColor') > -1 ? `${formData.name}.backgroundColor = ${$utils.getColor(formData.backgroundColor)};\n` : '';
     let border = commonSettings.indexOf('border') > -1 ? `[${formData.name}.layer setBorderColor:${$utils.getColor(formData.borderColor)}.CGColor];\n[${formData.name}.layer setBorderWidth:<#1.0#>];\n` : '';
 
@@ -214,7 +214,7 @@ const onCreate = (formData, needCopy = false) => {
         ${mansoryStr}
     }];\n`: ''
     var result =
-        `${init}${frame}${addSubView}${enabled}${returnKeyType}${clearButtonMode}${keyboardType}${placeholder}${attributedPlaceholder}${title}${haveAttributedText}${conrnerRadius}${backgroundColor}${border}${masonry}${haveDelgete}\n`
+        `${init}${frame}${addSubView}${enabled}${returnKeyType}${clearButtonMode}${keyboardType}${placeholder}${attributedPlaceholder}${title}${haveAttributedText}${cornerRadius}${backgroundColor}${border}${masonry}${haveDelgete}\n`
     console.log(result);
     form.result = result;
     emits('create', result)

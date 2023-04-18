@@ -21,8 +21,8 @@
                 <el-checkbox label="delegate" name="delegate"></el-checkbox>
                 <el-checkbox label="@available(iOS 11.0, *)" name="@available(iOS 11.0, *)"></el-checkbox>
                 <div class="flex-row">
-                    <el-checkbox label="conrnerRadius" name="conrnerRadius"></el-checkbox>
-                    <el-input class='select-input' placeholder="6" v-model="form.data.conrnerRadius" />
+                    <el-checkbox label="cornerRadius" name="cornerRadius"></el-checkbox>
+                    <el-input class='select-input' placeholder="6" v-model="form.data.cornerRadius" />
                 </div>
                 <div class="flex-row">
                     <el-checkbox label="backgroundColor" name="backgroundColor"></el-checkbox>
@@ -76,7 +76,7 @@ var form = reactive({
     data: {
         name: 'scrollView',
         commonSettings: ["addSubView","init"],
-        conrnerRadius: '4',
+        cornerRadius: '4',
         backgroundColor: '#fff',
         masonrys: []
     },
@@ -89,7 +89,7 @@ const resetForm = () => {
     form.data = {
         name: 'scrollView',
         commonSettings: ["addSubView","init"],
-        conrnerRadius: '4',
+        cornerRadius: '4',
         backgroundColor: '#fff',
         masonrys: []
     }
@@ -113,13 +113,13 @@ const onCreate = (formData, needCopy = false) => {
     let aviIOS11 = commonSettings.indexOf('@available(iOS 11.0, *)') > -1 ? `if (@available(iOS 11.0, *)) {\n${formData.name}.insetsLayoutMarginsFromSafeArea = NO;\n${formData.name}.contentInsetAdjustmentBehavior = UIScrollViewContentInsetAdjustmentNever;\n} <#else {\n self.automaticallyAdjustsScrollViewInsets = NO;\n}#>\n` : '';
     let frame = commonSettings.indexOf('frame') > -1 ? `${formData.name}.frame = CGRectMake(<#CGFloat x#>, <#CGFloat y#>, <#CGFloat width#>, <#CGFloat height#>);\n` : '';
     let delegate = commonSettings.indexOf('delegate') > -1 ? `UIScrollViewDelegate \n${formData.name}.delegate = self;\n` : '';
-    let conrnerRadius = commonSettings.indexOf('conrnerRadius') > -1 ? `${formData.name}.layer.cornerRadius = ${formData.conrnerRadius};\n${formData.name}.layer.masksToBounds = YES;\n` : '';
+    let cornerRadius = commonSettings.indexOf('cornerRadius') > -1 ? `${formData.name}.layer.cornerRadius = ${formData.cornerRadius};\n${formData.name}.layer.masksToBounds = YES;\n` : '';
     let backgroundColor = commonSettings.indexOf('backgroundColor') > -1 ? `${formData.name}.backgroundColor = ${$utils.getColor(formData.backgroundColor)};\n` : '';
     let mansoryStr = $utils.getMansorys(formData.masonrys);
     let masonry = formData.masonrys?.length > 0 ? `[${formData.name} mas_makeConstraints:^(MASConstraintMaker *make) {
         ${mansoryStr}
     }];\n`: ''
-    var result =  `${init}${frame}${addSubView}${conrnerRadius}${aviIOS11}${backgroundColor}${delegate}${masonry}\n`
+    var result =  `${init}${frame}${addSubView}${cornerRadius}${aviIOS11}${backgroundColor}${delegate}${masonry}\n`
     console.log(result);
     form.result = result;
     emits('create', result)

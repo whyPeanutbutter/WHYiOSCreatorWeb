@@ -217,7 +217,7 @@ const contentViewClick = (item, index) => {
 const settingUpdate = (setting) => {
   if (state.currentSelectIndex > -1) {
     state.currentShowViews[state.currentSelectIndex].setting = setting;
-    state.currentShowViews[state.currentSelectIndex].style = `background-color:${setting.backgroundColor};border-radius:${setting.conrnerRadius}px ;color:${setting.titleColor};`;
+    state.currentShowViews[state.currentSelectIndex].style = `background-color:${setting.backgroundColor};border-radius:${setting.cornerRadius}px ;color:${setting.titleColor};`;
   }
 }
 

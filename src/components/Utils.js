@@ -88,7 +88,9 @@ export const getAttributedText = (name, attributedTextSettings) => {
 
 
 export const analyViewData = (str) => {
-    if (str.indexOf('alloc] init]') > 0) {
+    if(str.indexOf('"baseInfo"') > 0){
+        //nothing
+    } else if (str.indexOf('alloc] init]') > 0) {
         return analyOCCode(str);
     }
     let dataarr = JSON.parse(str)
@@ -100,9 +102,13 @@ export const analyViewData = (str) => {
         return result;
     }
     let data = dataarr[0]
+    console.log(data.baseInfo ,'bbbbbbb');
+
     result.titleName = data.baseInfo.name;
+    console.log(data.baseInfo.radius ,'aaaaaaa');
     if (data.baseInfo.radius.length > 0) {
-        result.conrnerRadius = parseFloat(data.baseInfo.radius);
+        
+        result.cornerRadius = parseFloat(data.baseInfo.radius);
     }
     result.titleColor = findValueOf(data.codeInfo.codes, 'color').slice(0, -1);
     // result.titleSize = findValueOf(data.codeInfo.codes, 'font-size').replace(/[^0-9]/ig, "");
@@ -133,9 +139,12 @@ const analyOCCode = (code) => {
         data.titleName = result[1];
     }
 
-    result = /.cornerRadius = (\w+);/g.exec(code);
+    result = /.cornerRadius = \d+(\.\d+)?;/g.exec(code);
+    console.log(result +'aaaaaaaaaaa');
     if (result) {
-        data.conrnerRadius = result[1];
+        var num =  /\d+(\.\d+)?/g.exec(result);
+        console.log(num +'aaaaaaaaaaa');
+        data.cornerRadius = num[0];
     }
  
     result = /NSForegroundColorAttributeName: \[UIColor colorWithRed:(\w+)\/255.0 green:(\w+)\/255.0 blue:(\w+)\/255/.exec(code);

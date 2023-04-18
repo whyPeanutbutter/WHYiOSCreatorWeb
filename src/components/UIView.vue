@@ -21,8 +21,8 @@
                 <el-checkbox label="click" name="click" />
                 <el-checkbox label="下侧圆角" name="下侧圆角" />
                 <div class="flex-row">
-                    <el-checkbox label="conrnerRadius" name="conrnerRadius"></el-checkbox>
-                    <el-input class='select-input' placeholder="6" v-model="form.data.conrnerRadius" />
+                    <el-checkbox label="cornerRadius" name="cornerRadius"></el-checkbox>
+                    <el-input class='select-input' placeholder="6" v-model="form.data.cornerRadius" />
                 </div>
                 <div class="flex-row">
                     <el-checkbox label="backgroundColor" name="backgroundColor"></el-checkbox>
@@ -82,7 +82,7 @@ var form = reactive({
     data: {
         name: 'view',
         commonSettings: ["addSubView","init"],
-        conrnerRadius: '4',
+        cornerRadius: '4',
         backgroundColor: '#fff',
         borderColor: 'borderColor',
         masonrys: []
@@ -96,7 +96,7 @@ const resetForm = () => {
     form.data = {
         name: 'View',
         commonSettings: ["addSubView","init"],
-        conrnerRadius: '4',
+        cornerRadius: '4',
         backgroundColor: '#fff',
         borderColor: 'borderColor',
         masonrys: []
@@ -120,7 +120,7 @@ const onCreate = (formData, needCopy = false) => {
     let addSubView = commonSettings.indexOf('addSubView') > -1 ? `[<#self#> addSubview:${formData.name}];\n` : '';
     let frame = commonSettings.indexOf('frame') > -1 ? `${formData.name}.frame = CGRectMake(<#CGFloat x#>, <#CGFloat y#>, <#CGFloat width#>, <#CGFloat height#>);\n` : '';
     let click = commonSettings.indexOf('click') > -1 ? `${formData.name}.userInteractionEnabled = YES;\nUITapGestureRecognizer *${formData.name}TapGestureRecognizer = [[UITapGestureRecognizer alloc]initWithTarget:self action:@selector(${formData.name}Tap:)];\n[${formData.name} addGestureRecognizer:${formData.name}TapGestureRecognizer];\n\n-(void)${formData.name}Tap:(UITapGestureRecognizer *)tap{\ntap.view\n}` : '';
-    let conrnerRadius = commonSettings.indexOf('conrnerRadius') > -1 ? `${formData.name}.layer.cornerRadius = ${formData.conrnerRadius};\n${formData.name}.layer.masksToBounds = YES;\n` : '';
+    let cornerRadius = commonSettings.indexOf('cornerRadius') > -1 ? `${formData.name}.layer.cornerRadius = ${formData.cornerRadius};\n${formData.name}.layer.masksToBounds = YES;\n` : '';
     let backgroundColor = commonSettings.indexOf('backgroundColor') > -1 ? `${formData.name}.backgroundColor = ${$utils.getColor(formData.backgroundColor)};\n` : '';
     let border = commonSettings.indexOf('border') > -1 ? `[${formData.name}.layer setBorderColor:${$utils.getColor(formData.borderColor)}.CGColor];\n[${formData.name}.layer setBorderWidth:<#1.0#>];\n` : '';
     let bottomCor = commonSettings.indexOf('下侧圆角') > -1 ? `  UIBezierPath *maskPath = [UIBezierPath bezierPathWithRoundedRect:${formData.name}.bounds<#CGRectMake(0, 0, 100, 100)#> byRoundingCorners:UIRectCornerBottomLeft | UIRectCornerBottomRight cornerRadii:CGSizeMake(10, 10)];
@@ -133,7 +133,7 @@ const onCreate = (formData, needCopy = false) => {
         ${mansoryStr}
     }];\n`: ''
     var result = 
-        `${init}${frame}${addSubView}${conrnerRadius}${bottomCor}${backgroundColor}${border}${masonry}${click}\n`
+        `${init}${frame}${addSubView}${cornerRadius}${bottomCor}${backgroundColor}${border}${masonry}${click}\n`
     console.log(result);
     form.result = result;
     emits('create', result)

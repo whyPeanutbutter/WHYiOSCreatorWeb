@@ -385,8 +385,9 @@ const postData = () => {
         frequency_penalty: 0.5, //-2.0 到 2.0 之间的数字。  
         //较大的数值会减少 ChatGPT 重复同一句话的可能性。
 
-        presence_penalty: 0.0 //-2.0 到 2.0 之间的数字。 
+        presence_penalty: 0.0 ,//-2.0 到 2.0 之间的数字。 
         //较大的数值会增加 ChatGPT 开启新话题的可能性。
+        // stream: true,
     }
 
 
