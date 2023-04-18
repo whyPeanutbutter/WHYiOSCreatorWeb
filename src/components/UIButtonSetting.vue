@@ -24,8 +24,8 @@
                     <el-input class='select-input' placeholder="imageName" v-model="form.data.imageName" />
                 </div>
                 <div class="flex-row">
-                    <el-checkbox label="cornerRadius" name="cornerRadius"></el-checkbox>
-                    <el-input class='select-input' placeholder="6" v-model="form.data.cornerRadius" />
+                    <el-checkbox label="conrnerRadius" name="conrnerRadius"></el-checkbox>
+                    <el-input class='select-input' placeholder="6" v-model="form.data.conrnerRadius" />
                 </div>
                 <div class="flex-row">
                     <el-checkbox label="backgroundColor" name="backgroundColor"></el-checkbox>
@@ -104,7 +104,7 @@ var form = reactive({
         name: 'Btn',
         commonSettings: ["addSubView","init"],
         imageName: 'imageName',
-        cornerRadius: '4',
+        conrnerRadius: '4',
         backgroundColor: '#fff',
         borderColor: 'borderColor',
         haveTitle: false,
@@ -124,7 +124,7 @@ const resetForm = () => {
         name: 'Btn',
         commonSettings: ["addSubView","init"],
         imageName: 'imageName',
-        cornerRadius: '4',
+        conrnerRadius: '4',
         backgroundColor: '#fff',
         borderColor: 'borderColor',
         haveTitle: false,
@@ -157,7 +157,7 @@ const onCreate = (formData, needCopy = false) => {
     let frame = commonSettings.indexOf('frame') > -1 ? `${formData.name}.frame = CGRectMake(<#CGFloat x#>, <#CGFloat y#>, <#CGFloat width#>, <#CGFloat height#>);\n` : '';
     let btnClick = commonSettings.indexOf('btnClick') > -1 ? `[${formData.name} addTarget:self action:@selector(<#${formData.name}Clicked:#>) forControlEvents:UIControlEventTouchUpInside];\n\n- (void)${formData.name}Clicked:(UIButton *)button{\n\n}\n` : '';
     let image = commonSettings.indexOf('image') > -1 ? `[${formData.name} setImage:[UIImage imageNamed:@"${formData.imageName}"] forState:UIControlStateNormal];\n` : '';
-    let cornerRadius = commonSettings.indexOf('cornerRadius') > -1 ? `${formData.name}.layer.cornerRadius = ${formData.cornerRadius};\n${formData.name}.layer.masksToBounds = YES;\n` : '';
+    let conrnerRadius = commonSettings.indexOf('conrnerRadius') > -1 ? `${formData.name}.layer.cornerRadius = ${formData.conrnerRadius};\n${formData.name}.layer.masksToBounds = YES;\n` : '';
     let backgroundColor = commonSettings.indexOf('backgroundColor') > -1 ? `${formData.name}.backgroundColor = ${$utils.getColor(formData.backgroundColor)};\n` : '';
     let border = commonSettings.indexOf('border') > -1 ? `[${formData.name}.layer setBorderColor:${$utils.getColor(formData.borderColor)}.CGColor];\n[${formData.name}.layer setBorderWidth:<#1.0#>];\n` : '';
     let title = formData.haveTitle ? `[${formData.name} setTitle:@"${formData.titleName}" forState:UIControlStateNormal];\n${formData.name}.titleLabel.textAlignment = NSTextAlignment${formData.textAlign};\n[${formData.name} setTitleColor:${$utils.getColor(formData.titleColor)} forState:UIControlStateNormal];\n${formData.name}.titleLabel.font = ${$utils.getFont(formData.titleSize)};\n` : ''
@@ -166,7 +166,7 @@ const onCreate = (formData, needCopy = false) => {
         ${mansoryStr}
     }];\n`: ''
     var result = 
-        `${init}${frame}${addSubView}${image}${title}${cornerRadius}${backgroundColor}${border}${masonry}${btnClick}\n`
+        `${init}${frame}${addSubView}${image}${title}${conrnerRadius}${backgroundColor}${border}${masonry}${btnClick}\n`
     console.log(result);
     form.result = result;
     emits('create', result)

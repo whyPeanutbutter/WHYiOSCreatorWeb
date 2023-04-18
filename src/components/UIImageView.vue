@@ -28,8 +28,8 @@
                 </div>
                 <el-checkbox label="click" name="click" />
                 <div class="flex-row">
-                    <el-checkbox label="cornerRadius" name="cornerRadius"></el-checkbox>
-                    <el-input class='select-input' placeholder="6" v-model="form.data.cornerRadius" />
+                    <el-checkbox label="conrnerRadius" name="conrnerRadius"></el-checkbox>
+                    <el-input class='select-input' placeholder="6" v-model="form.data.conrnerRadius" />
                 </div>
                 <div class="flex-row">
                     <el-checkbox label="contentMode" name="contentMode"></el-checkbox>
@@ -88,7 +88,7 @@ var form = reactive({
     data: {
         name: 'ImgView',
         commonSettings: ["addSubView","init"],
-        cornerRadius: '4',
+        conrnerRadius: '4',
         imageName: 'imageName',
         contentMode: 'UIViewContentModeScaleAspectFit',
         masonrys: []
@@ -102,7 +102,7 @@ const resetForm = () => {
     form.data = {
         name: 'ImgView',
         commonSettings: ["addSubView","init"],
-        cornerRadius: '4',
+        conrnerRadius: '4',
         imageName: 'imageName',
         contentMode: 'UIViewContentModeScaleAspectFit',
         masonrys: []
@@ -127,7 +127,7 @@ const onCreate = (formData, needCopy = false) => {
     let frame = commonSettings.indexOf('frame') > -1 ? `${formData.name}.frame = CGRectMake(<#CGFloat x#>, <#CGFloat y#>, <#CGFloat width#>, <#CGFloat height#>);\n` : '';
     let image = commonSettings.indexOf('image') > -1 ? `${formData.name}.image = [UIImage imageNamed:@"${formData.imageName}"];\n` : '';
     let click = commonSettings.indexOf('click') > -1 ? `${formData.name}.userInteractionEnabled = YES;\nUITapGestureRecognizer *${formData.name}TapGestureRecognizer = [[UITapGestureRecognizer alloc]initWithTarget:self action:@selector(${formData.name}Tap:)];\n[${formData.name} addGestureRecognizer:${formData.name}TapGestureRecognizer];\n\n-(void)${formData.name}Tap:(UITapGestureRecognizer *)tap{\ntap.view\n}` : '';
-    let cornerRadius = commonSettings.indexOf('cornerRadius') > -1 ? `${formData.name}.layer.cornerRadius = ${formData.cornerRadius};\n${formData.name}.layer.masksToBounds = YES;\n` : '';
+    let conrnerRadius = commonSettings.indexOf('conrnerRadius') > -1 ? `${formData.name}.layer.cornerRadius = ${formData.conrnerRadius};\n${formData.name}.layer.masksToBounds = YES;\n` : '';
     let imageUrl = commonSettings.indexOf('imageUrl') > -1 ? `#import "UIImageView+WebCache.h"\n [${formData.name} sd_setImageWithURL:[NSURL URLWithString:${formData.imageName}] placeholderImage:[UIImage imageNamed: @"jsbcDefault"]];\n` : '';
     let contentMode = commonSettings.indexOf('contentMode') > -1 ? ` ${formData.name}.contentMode = ${formData.contentMode};\n` : '';
     let mansoryStr = $utils.getMansorys(formData.masonrys);
@@ -135,7 +135,7 @@ const onCreate = (formData, needCopy = false) => {
         ${mansoryStr}
     }];\n`: ''
     var result = 
-        `${init}${frame}${image}${imageUrl}${cornerRadius}${contentMode}${addSubView}${masonry}${click}\n`
+        `${init}${frame}${image}${imageUrl}${conrnerRadius}${contentMode}${addSubView}${masonry}${click}\n`
     console.log(result);
     form.result = result;
     emits('create', result)
