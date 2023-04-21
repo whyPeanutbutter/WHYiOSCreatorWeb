@@ -55,13 +55,13 @@
             <AnalyCodeView v-if="state.currentShowViews[state.currentSelectIndex].type == 'AnalyCodeView'" />
 
           </div>
-          <div class="flex-col">
+          <div class="flex-col" v-if="(state.currentShowViews && state.currentShowViews.length > 0 && state.currentShowViews[state.currentSelectIndex].type != 'HelpMe' && state.currentShowViews[state.currentSelectIndex].type != 'AnalyCodeView')" >
             <div class="main-phone">
               <template v-for="(item, index) in state.currentShowViews" :key="index">
                 <div :class="{
                   'content-view': true,
                   'selected': index == state.currentSelectIndex,
-                  'displayNone': item.type == 'AnalyCodeView'
+                  'displayNone': item.type == 'AnalyCodeView' || item.type == 'HelpMe'
                 }" @click="contentViewClick(item, index)" :style="item.style">{{ item.setting.name }}</div>
               </template>
             </div>
@@ -167,6 +167,10 @@ watch(() => state.isOCTag, (newValue, oldValue) => {
 });
 
 const leftBtnClick = (item) => {
+  console.log(item);
+  // if(item.type == 'AnalyCodeView' || item.type == 'HelpMe'){
+  //   return
+  // }
   if (state.currentShowViews.length > 0) {
     let end = state.currentShowViews[state.currentShowViews.length - 1];
     let position = calcPosition(end)

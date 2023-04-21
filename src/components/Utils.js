@@ -88,7 +88,9 @@ export const getAttributedText = (name, attributedTextSettings) => {
 
 
 export const analyViewData = (str) => {
-    if (str.indexOf('alloc] init]') > 0) {
+    if(str.indexOf('"baseInfo"') > 0){
+        //nothing
+    } else if (str.indexOf('alloc] init]') > 0) {
         return analyOCCode(str);
     }
     let dataarr = JSON.parse(str)
@@ -133,9 +135,11 @@ const analyOCCode = (code) => {
         data.titleName = result[1];
     }
 
-    result = /.cornerRadius = (\w+);/g.exec(code);
+    result = /.cornerRadius = \d+(\.\d+)?;/g.exec(code);
     if (result) {
-        data.conrnerRadius = result[1];
+        var num =  /\d+(\.\d+)?/g.exec(result);
+        console.log(num +'aaaaaaaaaaa');
+        data.cornerRadius = num[0];
     }
  
     result = /NSForegroundColorAttributeName: \[UIColor colorWithRed:(\w+)\/255.0 green:(\w+)\/255.0 blue:(\w+)\/255/.exec(code);

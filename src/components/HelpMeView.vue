@@ -10,6 +10,8 @@
             <el-select v-model="form.selectModal" clearable placeholder="">
                 <el-option v-for="item in modals" :key="item.value" :label="item.label" :value="item.value" />
             </el-select>
+            <el-switch v-model="form.isStream" class="switch-border" active-text="stream" :disabled='form.wait' />
+            <el-switch v-model="form.isContinueStyle" class="switch-border" active-text="连着问" />
         </el-form-item>
         <el-form-item label="问题" :rules="[{ required: true, message: '必填' }]">
             <div class="flex-col-start">
@@ -35,14 +37,14 @@
                 <el-select v-model="form.system_prompt_select" clearable placeholder="预设的系统角色">
                     <el-option v-for="item in options" :key="item.value" :label="item.label" :value="item.value" />
                 </el-select>
-                <el-input v-model="form.system_prompt" type="textarea" :style="form.widthStyle" rows="3"
+                <el-input v-model="form.system_prompt" type="textarea" :style="form.widthStyle" rows="1"
                     placeholder="需要系统扮演的角色，可不填">
                 </el-input>
             </div>
         </el-form-item>
         <el-form-item>
             <el-button type="primary" @click="onCreate" :loading="form.wait"
-                :disabled="!form.question || form.question.length == 0 || !form.password || form.password.length == 0 || !form.isRightIpGeo">解答</el-button>
+                :disabled="!form.question || form.question.length == 0 || !form.password || form.password.length == 0 || !form.isRightIpGeo">{{form.isContinueStyle?'接着答':'解答'}}</el-button>
             <el-button type="primary" @click="onDeleteResult">清空回答</el-button>
             <el-button type="primary" @click="$utils.copy(form.orginResult)">copy回答</el-button>
             <el-button v-if="form.orginResult && form.orginResult.length > 0 && !form.isMobile" type="primary"
@@ -87,6 +89,12 @@ var form = reactive({
     ipGeoText: '',
     isRightIpGeo: false,
     abortController: null,
+    //stream回答模式
+    isStream: true,
+    //连续问答模式
+    isContinueStyle: false,
+    //连续问答的信息
+    allMessages: []
 });
 
 
@@ -100,6 +108,7 @@ watch(() => form.password, (newValue, oldValue) => {
 });
 
 onMounted(() => {
+
     get_geoip()
     form.isMobile = navigator.userAgent.match(/(phone|pad|pod|iPhone|iPod|ios|iPad|Android|Mobile|BlackBerry|IEMobile|MQQBrowser|JUC|Fennec|wOSBrowser|BrowserNG|WebOS|Symbian|Windows Phone)/i)
     // form.widthStyle = form.isMobile ? '' : 'width: 500px;'
@@ -165,6 +174,7 @@ const resetForm = () => {
 };
 
 const onCreate = async () => {
+
     getResponse().catch(error => {
         form.result += "<div class='error-red'> 错误: " + "Error fetching data:" + error + "</div>";
         form.orginResult += "错误: " + "Error fetching data:" + "Error fetching data:" + error;
@@ -282,37 +292,52 @@ const getResponse = async () => {
             body: JSON.stringify(postData()),
             signal // 添加中止信号
         });
-
+        var sQuestion = form.question
         if (!response.ok) {
             form.result += "<div class='error-red'> 错误: " + `HTTP error! Status: ${response.status}` + "</div>";
             form.orginResult += "错误: " + `HTTP error! Status: ${response.status}`;
         }
 
-        // const textStream = response.body.pipeThrough(new TextDecoderStream());
-        // const reader = textStream.getReader();
-
-        // let result = "";
-        // while (true) {
-        //     const { value, done } = await reader.read();
-        //     if (done || !form.wait) break;
-        //     result += value;
-        //     // 处理数据流的每个片段
-        //     processStreamChunk(result);
-        // }
         const reader = response.body.getReader();
         const decoder = new TextDecoder();
 
+
         let result = "";
+        var isfirst = true
+        if (form.isStream) {
+            if (form.result != "") {
+                form.result += "\n";
+                form.orginResult += "\n";
+            }
+        }
+
+        var allResultContent = ''
         while (true) {
             const { value, done } = await reader.read();
             if (done || !form.wait) break;
             result += decoder.decode(value, { stream: true });
             // 处理数据流的每个片段
-            processStreamChunk(result);
+            if (form.isStream) {
+                processStreamChunk(decoder.decode(value, { stream: true }), isfirst,(content)=>{
+                    allResultContent += content
+                });
+                isfirst = false
+            }
         }
-
-        // 处理完整的数据流
-        processStreamComplete(result);
+        console.log(result)
+        form.wait = false
+        if (!form.isStream) {
+            // 处理完整的数据流
+            processStreamComplete(result,(content)=>{
+                    allResultContent += content
+                });
+        }
+        console.log('allResultContent' + allResultContent);
+       
+        if (form.isContinueStyle && allResultContent && allResultContent.length > 0) {
+            var requestMessages = [{ "role": "user", "content": sQuestion }, { "role": "assistant", "content": allResultContent }];
+            form.allMessages = form.allMessages.concat(requestMessages)
+        }
     } catch (error) {
         if (error.name === 'AbortError') {
             console.log('Request aborted');
@@ -327,13 +352,77 @@ const getResponse = async () => {
 
 };
 
-const processStreamChunk = (chunk) => {
+const processStreamChunk = (chunks, isfirst,callBack) => {
     // 在这里处理每个数据流片段
-    console.log('processStreamChunk' + chunk);
-    //processStreamChunk{"id":"chatcmpl-74hr4hWKjQmTKF7E0LYk6FVzgYSjd","object":"chat.completion","created":1681356246,"model":"gpt-3.5-turbo-0301","usage":{"prompt_tokens":40,"completion_tokens":17,"total_tokens":57},"choices":[{"message":{"role":"assistant","content":"I am an AI language model designed to answer questions and engage in conversations with humans."},"finish_reason":"stop","index":0}]}
+    // console.log('processStreamChunk' + chunks);
+    var chunkArr = chunks.trim().split('\n')
+    for (let i = 0; i < chunkArr.length; i++) {
+        var chunk = chunkArr[i]
+        if (!chunk || chunk.length < 7 || chunk == 'data: [DONE]') {
+            continue
+        }
+        chunk = chunk.slice(6)
+        // 在这里处理完整的数据流
+        let oJson = {};
+        try {
+            oJson = JSON.parse(chunk);
+        } catch (ex) {
+            form.result += "<div class='error-red'> 错误: " + ex.message + "</div>";
+            form.orginResult += "错误: " + ex.message;
+            break
+        }
+
+        if (oJson.error && oJson.error.message) {
+            form.result += "<div class='error-red'> 错误: " + oJson.error.message + "</div>";
+            form.orginResult += "错误: " + oJson.error.message;
+        } else {
+            if (oJson.choices && oJson.choices[0].delta) {
+                var s = oJson.choices[0].delta.content;
+                
+                if (s) {
+                    if (isfirst) {
+                        form.result += "<div class='gpt-result'> ************************************************************************\nChatGPT: \n</div>"
+                        form.orginResult += "\n************************************************************************\nChatGPT: \n"
+                    }
+                } else {
+                    s = ""
+                }
+                callBack(s)
+
+                var finishReason = oJson.choices[0].delta.finish_reason
+                if (finishReason && finishReason.length > 0) {
+                    if (finishReason != 'stop') {
+                        s += '\n结束原因：' + finishReason
+                    }
+                }
+
+                // console.log(s);
+
+                var end = ''
+                if (form.result.endsWith("</div>")) {
+                    var insertIndex = form.result.length - 6;
+                    var insertString = form.result.slice(0, insertIndex) + s + '</div>'
+                    form.result = insertString;
+                } else {
+                    form.result += s
+                }
+
+
+
+                form.orginResult += s;
+                form.question = "";
+                if (finishReason && finishReason.length > 0) {
+                    break
+                }
+            }
+        }
+
+    }
+
+
 }
 
-const processStreamComplete = (result) => {
+const processStreamComplete = (result,callBack) => {
     console.log("processStreamComplete" + result);
     form.wait = false
     // 在这里处理完整的数据流
@@ -354,7 +443,7 @@ const processStreamComplete = (result) => {
         form.orginResult += "错误: " + oJson.error.message;
     } else if (oJson.choices && oJson.choices[0].message) {
         var s = oJson.choices[0].message.content;
-
+        callBack(s)
         if (s == "") s = "无响应";
         form.result += "<div class='gpt-result'> \n************************************************************************\nChatGPT: \n" + s + "</div>";
         form.orginResult += "\n************************************************************************\nChatGPT: \n" + s;
@@ -373,9 +462,14 @@ const postData = () => {
     var dTemperature = 0.5;
     var sQuestion = form.question
     var requestMessages = [{ "role": "user", "content": sQuestion }];
+    if (form.isContinueStyle) {
+        var tmpAllMessages = form.allMessages.concat(requestMessages)
+        requestMessages = [...tmpAllMessages];
+    }
     if (form.system_prompt && form.system_prompt.length > 0) {
         requestMessages.push({ "role": "system", "content": form.system_prompt })
     }
+    console.log('requestMessages', requestMessages);
     // https://platform.openai.com/docs/api-reference/chat/create
     var data = {
         model: sModel,
@@ -384,7 +478,7 @@ const postData = () => {
         temperature: dTemperature,
         frequency_penalty: 0.5, //-2.0 到 2.0 之间的数字。  
         //较大的数值会减少 ChatGPT 重复同一句话的可能性。
-
+        stream: form.isStream,
         presence_penalty: 0.0 //-2.0 到 2.0 之间的数字。 
         //较大的数值会增加 ChatGPT 开启新话题的可能性。
     }
@@ -438,8 +532,37 @@ const saveFile = () => {
 
 
 const onDeleteResult = async () => {
+
     form.result = "";
     form.orginResult = ''
+    form.allMessages = []
+
+    //     var test = `data: {"id":"chatcmpl-76uk0YLzZlAohYR234UKd5I7Gb0tw","object":"chat.completion.chunk","created":1681882436,"model":"gpt-3.5-turbo-0301","choices":[{"delta":{"role":"assistant"},"index":0,"finish_reason":null}]}
+
+    // data: {"id":"chatcmpl-76uk0YLzZlAohYR234UKd5I7Gb0tw","object":"chat.completion.chunk","created":1681882436,"model":"gpt-3.5-turbo-0301","choices":[{"delta":{"content":"Hello"},"index":0,"finish_reason":null}]}
+
+    // `
+    //     processStreamChunk(test, true)
+    //     test = `data: {"id":"chatcmpl-76uk0YLzZlAohYR234UKd5I7Gb0tw","object":"chat.completion.chunk","created":1681882436,"model":"gpt-3.5-turbo-0301","choices":[{"delta":{"content":"!"},"index":0,"finish_reason":null}]}
+
+    // data: {"id":"chatcmpl-76uk0YLzZlAohYR234UKd5I7Gb0tw","object":"chat.completion.chunk","created":1681882436,"model":"gpt-3.5-turbo-0301","choices":[{"delta":{"content":" How"},"index":0,"finish_reason":null}]}
+
+    // data: {"id":"chatcmpl-76uk0YLzZlAohYR234UKd5I7Gb0tw","object":"chat.completion.chunk","created":1681882436,"model":"gpt-3.5-turbo-0301","choices":[{"delta":{"content":" may"},"index":0,"finish_reason":null}]}
+
+    // data: {"id":"chatcmpl-76uk0YLzZlAohYR234UKd5I7Gb0tw","object":"chat.completion.chunk","created":1681882436,"model":"gpt-3.5-turbo-0301","choices":[{"delta":{"content":" I"},"index":0,"finish_reason":null}]}
+
+    // data: {"id":"chatcmpl-76uk0YLzZlAohYR234UKd5I7Gb0tw","object":"chat.completion.chunk","created":1681882436,"model":"gpt-3.5-turbo-0301","choices":[{"delta":{"content":" assist"},"index":0,"finish_reason":null}]}
+
+    // data: {"id":"chatcmpl-76uk0YLzZlAohYR234UKd5I7Gb0tw","object":"chat.completion.chunk","created":1681882436,"model":"gpt-3.5-turbo-0301","choices":[{"delta":{"content":" you"},"index":0,"finish_reason":null}]}
+
+    // data: {"id":"chatcmpl-76uk0YLzZlAohYR234UKd5I7Gb0tw","object":"chat.completion.chunk","created":1681882436,"model":"gpt-3.5-turbo-0301","choices":[{"delta":{"content":" today"},"index":0,"finish_reason":null}]}
+
+    // data: {"id":"chatcmpl-76uk0YLzZlAohYR234UKd5I7Gb0tw","object":"chat.completion.chunk","created":1681882436,"model":"gpt-3.5-turbo-0301","choices":[{"delta":{"content":"?"},"index":0,"finish_reason":null}]}
+
+    // data: {"id":"chatcmpl-76uk0YLzZlAohYR234UKd5I7Gb0tw","object":"chat.completion.chunk","created":1681882436,"model":"gpt-3.5-turbo-0301","choices":[{"delta":{},"index":0,"finish_reason":"stop"}]}
+
+    // data: [DONE]`
+    //     processStreamChunk(test, false)
 };
 
 
@@ -527,35 +650,42 @@ const imageTextTohtml = (text) => {
 }
 
 const get_geoip = async () => {
-    const response = await fetch('https://ipapi.co/json/', { timeout: 5000 });
-    const data = await response.json();
-    if ("error" in data) {
-        console.warning(`无法获取IP地址信息。\n${data}`);
-        if (data['reason'] === "RateLimited") {
-            result = "获取IP地理位置失败，因为达到了检测IP的速率限制。聊天功能可能仍然可用，但请注意，如果您的IP地址在不受支持的地区，您可能会遇到问题。";
-            form.isRightIpGeo = true
-            form.ipGeoText = '获取ip失败'
-            form.result = form.result + `**${result}**`;
+    try {
+        const response = await fetch('https://ipapi.co/json/', { timeout: 5000 });
+        const data = await response.json();
+        if ("error" in data) {
+            console.warning(`无法获取IP地址信息。\n${data}`);
+            if (data['reason'] === "RateLimited") {
+                result = "获取IP地理位置失败，因为达到了检测IP的速率限制。聊天功能可能仍然可用，但请注意，如果您的IP地址在不受支持的地区，您可能会遇到问题。";
+                form.isRightIpGeo = true
+                form.ipGeoText = '获取ip失败'
+                form.result = form.result + `**${result}**`;
+            } else {
+                result = `获取IP地理位置失败。原因：${data['reason']}`;
+                form.isRightIpGeo = true
+                form.ipGeoText = '获取ip失败'
+                form.result = form.result + `**${result}**`;
+            }
         } else {
-            result = `获取IP地理位置失败。原因：${data['reason']}`;
-            form.isRightIpGeo = true
-            form.ipGeoText = '获取ip失败'
-            form.result = form.result + `**${result}**`;
+            const country = data['country_name'];
+            if (country === "China") {
+                const text = "**您的IP区域：中国。请立即检查代理设置，在不受支持的地区使用API可能导致账号被封禁。**";
+                console.info(text);
+                form.isRightIpGeo = false
+                form.ipGeoText = `您的IP区域：${country}。`;
+                form.result = form.result + `**${text}**`;
+            } else {
+                const text = `您的IP区域：${country}。`;
+                console.info(text);
+                form.isRightIpGeo = true
+                form.ipGeoText = text
+            }
         }
-    } else {
-        const country = data['country_name'];
-        if (country === "China") {
-            const text = "**您的IP区域：中国。请立即检查代理设置，在不受支持的地区使用API可能导致账号被封禁。**";
-            console.info(text);
-            form.isRightIpGeo = false
-            form.ipGeoText = `您的IP区域：${country}。`;
-            form.result = form.result + `**${text}**`;
-        } else {
-            const text = `您的IP区域：${country}。`;
-            console.info(text);
-            form.isRightIpGeo = true
-            form.ipGeoText = text
-        }
+    } catch (error) {
+        result = `获取IP地理位置失败。原因：${error}`;
+        form.isRightIpGeo = true
+        form.ipGeoText = '获取ip失败'
+        form.result = form.result + `**${error}**`;
     }
 
 }
@@ -675,5 +805,12 @@ pre code {
     width: 100%;
     box-sizing: border-box;
     padding: 5px;
+}
+
+.switch-border {
+    border: 1px solid #409eff;
+    border-radius: 4px;
+    padding: 0 6px;
+    margin-left: 4px;
 }
 </style>
