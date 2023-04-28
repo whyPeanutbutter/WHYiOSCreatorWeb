@@ -23,7 +23,7 @@ http://localhost:3000/
 点击 ‘代码解析’ 按钮
   ![](./markdown-sources/api转换.png 'api转换') 
 复制接口文档表格到输入框，生成对应属性
-![](./markdown-sources/接口文档转换.png 'api转换') 
+![](./markdown-sources/接口转文档.png 'api转换') 
 
 ### 3.chatGPT访问
 

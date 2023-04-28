@@ -134,13 +134,13 @@ const convertApi = (apiText) => {
         console.log('propertyName ' + propertyName);
         if (lineEleArrLower.length > 1) {
             if (['string'].filter(v => lineEleArrLower.includes(v)).length > 0) {
-                result = `${result}\n@property (nonatomic, strong) NSString *${propertyName};${propertyDes}`
-            } else if (['int', 'long', 'datetime', 'number', 'integer', 'date'].filter(v => lineEleArrLower.includes(v)).length > 0) {
-                result = `${result}\n@property (nonatomic, strong) NSString *${propertyName};${propertyDes}`
+                result = `${result}\n@property (nonatomic, copy) NSString *${propertyName};${propertyDes}`
+            } else if (['int', 'long', 'datetime', 'number', 'integer', 'date','integer(int32)', 'integer(int64)'].filter(v => lineEleArrLower.includes(v)).length > 0) {
+                result = `${result}\n@property (nonatomic, assign) NSInteger ${propertyName};${propertyDes}`
             } else if (['bool', 'boolean'].filter(v => lineEleArrLower.includes(v)).length > 0) {
                 result = `${result}\n@property (nonatomic, assign) BOOL ${propertyName};${propertyDes}`
-            } else if (['double', 'float', 'integer(int32)', 'integer(int64)'].filter(v => lineEleArrLower.includes(v)).length > 0) {
-                result = `${result}\n@property (nonatomic, strong) NSString *${propertyName};${propertyDes}`
+            } else if (['double', 'float',].filter(v => lineEleArrLower.includes(v)).length > 0) {
+                result = `${result}\n@property (nonatomic, assign) CGFloat ${propertyName};${propertyDes}`
             } else if (lineEleArrLower[1].indexOf('list<') > -1) {
                 result = `${result}\n@property (nonatomic, strong) NSArray<${lineEleArr[1].slice(5, -1)}*> *${propertyName};(这是推测类型)${propertyDes}`
             } else {
