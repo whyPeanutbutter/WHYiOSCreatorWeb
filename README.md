@@ -19,6 +19,9 @@ http://localhost:3000/
 也可以直接使用我生成的稳定版本网站，点击直接访问
 https://ios-creator-0gx5m3uq05dc1926-1316715867.tcloudbaseapp.com/#/
 
+若要打包  
+执行```npm run build```，目标文件会生成在dist文件夹下
+
 ## 主要功能  
 ### 1.代码生成。 
 点击按钮直接生成对应代码。也可以使用蓝湖或者慕客代码生成。   
