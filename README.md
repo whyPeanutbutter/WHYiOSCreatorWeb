@@ -1,4 +1,8 @@
 # iOS Creator
+## iOS 自动化UI代码生成网站
+https://ios-creator-0gx5m3uq05dc1926-1316715867.tcloudbaseapp.com/#/
+
+## 安装
 下载项目后  
 cd 到当前项目目录
 
@@ -11,6 +15,9 @@ cd 到当前项目目录
 
 打开对应浏览器网址
 http://localhost:3000/
+
+也可以直接使用我生成的稳定版本网站，点击直接访问
+https://ios-creator-0gx5m3uq05dc1926-1316715867.tcloudbaseapp.com/#/
 
 ## 主要功能  
 ### 1.代码生成。 
