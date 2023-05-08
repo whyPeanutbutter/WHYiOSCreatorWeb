@@ -19,7 +19,7 @@
         </el-aside>
         <el-main class="main-view">
           <div v-if="state.currentSelectIndex > -1" class="right-view"
-            :style="(state.currentShowViews[state.currentSelectIndex].type == 'HelpMe' || state.currentShowViews[state.currentSelectIndex].type == 'AnalyCodeView') ? 'width: 1300px;' : 'width: 600px;'">
+            :style="isCurrentSpecialType(state.currentShowViews[state.currentSelectIndex].type) ? 'width: 1300px;' : 'width: 600px;'">
             <UIbutton v-if="state.currentShowViews[state.currentSelectIndex].type == 'UIButton'"
               :form="state.currentShowViews[state.currentSelectIndex].setting" @update="settingUpdate"
               @delete="settingDelete" @create="settingCreate" />
@@ -51,18 +51,20 @@
               :form="state.currentShowViews[state.currentSelectIndex].setting" @update="settingUpdate"
               @delete="settingDelete" @create="settingCreate" />
 
+            <CodeStoreView v-if="state.currentShowViews[state.currentSelectIndex].type == 'CodeStoreView'" />
             <HelpMeView v-if="state.currentShowViews[state.currentSelectIndex].type == 'HelpMe'" />
             <AnalyCodeView v-if="state.currentShowViews[state.currentSelectIndex].type == 'AnalyCodeView'" />
 
           </div>
-          <div class="flex-col" v-if="(state.currentShowViews && state.currentShowViews.length > 0 && state.currentShowViews[state.currentSelectIndex].type != 'HelpMe' && state.currentShowViews[state.currentSelectIndex].type != 'AnalyCodeView')" >
+          <div class="flex-col"
+            v-if="(state.currentShowViews && state.currentShowViews.length > 0  && state.currentShowViews[state.currentSelectIndex].type != 'CodeStoreView' && state.currentShowViews[state.currentSelectIndex].type != 'HelpMe' && state.currentShowViews[state.currentSelectIndex].type != 'AnalyCodeView')">
             <div class="main-phone">
               <template v-for="(item, index) in state.currentShowViews" :key="index">
                 <div :class="{
-                  'content-view': true,
-                  'selected': index == state.currentSelectIndex,
-                  'displayNone': item.type == 'AnalyCodeView' || item.type == 'HelpMe'
-                }" @click="contentViewClick(item, index)" :style="item.style">{{ item.setting.name }}</div>
+                    'content-view': true,
+                    'selected': index == state.currentSelectIndex,
+                    'displayNone': isCurrentSpecialType(item.type)
+                  }" @click="contentViewClick(item, index)" :style="item.style">{{ item.setting.name }}</div>
               </template>
             </div>
             <div>
@@ -94,6 +96,7 @@ import UITextField from '../components/UITextField.vue';
 import * as $utils from '../components/Utils';
 import { reactive, ref, getCurrentInstance, watch, onMounted } from 'vue'
 import AnalyCodeView from '../components/AnalyCodeView.vue';
+import CodeStoreView from '../components/CodeStoreView.vue';
 import router from '../router/index.js'
 const { proxy } = getCurrentInstance();
 
@@ -134,6 +137,10 @@ const state = reactive({
     type: 'UITextField'
   },
   {
+    name: "代码库",
+    type: 'CodeStoreView'
+  },
+  {
     name: "代码解析",
     type: 'AnalyCodeView'
   },
@@ -156,6 +163,18 @@ onMounted(() => {
     })
   }
 })
+
+const isCurrentSpecialType=(type)=>{
+  switch (type) {
+    case 'HelpMe':
+    case 'CodeStoreView':
+    case 'AnalyCodeView':
+      return true
+    default:
+      break;
+  }
+  return false
+}
 
 watch(() => state.isOCTag, (newValue, oldValue) => {
   proxy.isOCTag = newValue;

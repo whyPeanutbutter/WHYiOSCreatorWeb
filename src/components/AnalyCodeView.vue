@@ -11,12 +11,12 @@
         </el-form-item>
         <el-form-item label="处理方式">
             <el-radio-group class="flex-col-start" v-model="form.data.analycodeRadioSelect">
-                <el-tooltip class="box-item" effect="dark" content="如：UIView *name;" placement="right">
-                    <el-radio class="radio-item" label="提取类及名" name="提取类及名" border :disabled="form.codeText?.length == 0" />
-                </el-tooltip>
                 <el-tooltip class="box-item" effect="dark" content="将接口文档转换为属性" placement="right">
                     <el-radio class="radio-item" label="api转属性" name="api转属性" border
                         :disabled="form.codeText?.length == 0" />
+                </el-tooltip>
+                <el-tooltip class="box-item" effect="dark" content="如：UIView *name;" placement="right">
+                    <el-radio class="radio-item" label="提取类及名" name="提取类及名" border :disabled="form.codeText?.length == 0" />
                 </el-tooltip>
                 <el-tooltip class="box-item" effect="dark" content="将代码转换为代码库格式" placement="right">
                     <el-radio class="radio-item" label="转换代码库" name="转换代码库" border

@@ -10,8 +10,29 @@
             <el-select v-model="form.selectModal" clearable placeholder="">
                 <el-option v-for="item in modals" :key="item.value" :label="item.label" :value="item.value" />
             </el-select>
+            <el-switch v-model="form.showParam" class="switch-border" active-text="查看参数" />
             <el-switch v-model="form.isStream" class="switch-border" active-text="stream" :disabled='form.wait' />
             <el-switch v-model="form.isContinueStyle" class="switch-border" active-text="连着问" />
+        </el-form-item>
+        <el-form-item v-if="form.showParam" label="参数选择">
+            <el-scrollbar style="width:100%;" height="50px">
+                <div class="slider-demo-block">
+                    <el-tooltip class="box-item" effect="dark" content="数值大时，每次回答都会不同，更具创造性" placement="top">
+                        <span class="demonstration">温度</span>
+                    </el-tooltip>
+                    <div class="slider-container">
+                        <el-slider v-model="form.temperature" :max="2" :step="0.1" />
+                    </div>
+                </div>
+                <!-- <div class="slider-demo-block">
+                <span class="demonstration">Customized initial value</span>
+                <el-slider v-model="value2" />
+            </div>
+            <div class="slider-demo-block">
+                <span class="demonstration">Hide Tooltip</span>
+                <el-slider v-model="value3" :show-tooltip="false" />
+            </div> -->
+            </el-scrollbar>
         </el-form-item>
         <el-form-item label="问题" :rules="[{ required: true, message: '必填' }]">
             <div class="flex-col-start">
@@ -44,7 +65,8 @@
         </el-form-item>
         <el-form-item>
             <el-button type="primary" @click="onCreate" :loading="form.wait"
-                :disabled="!form.question || form.question.length == 0 || !form.password || form.password.length == 0 || !form.isRightIpGeo">{{form.isContinueStyle?'接着答':'解答'}}</el-button>
+                :disabled="!form.question || form.question.length == 0 || !form.password || form.password.length == 0 || !form.isRightIpGeo">{{
+                    form.isContinueStyle ? '接着答' : '解答' }}</el-button>
             <el-button type="primary" @click="onDeleteResult">清空回答</el-button>
             <el-button type="primary" @click="$utils.copy(form.orginResult)">copy回答</el-button>
             <el-button v-if="form.orginResult && form.orginResult.length > 0 && !form.isMobile" type="primary"
@@ -94,7 +116,11 @@ var form = reactive({
     //连续问答模式
     isContinueStyle: false,
     //连续问答的信息
-    allMessages: []
+    allMessages: [],
+    //查看请求参数
+    showParam: false,
+
+    temperature: 0
 });
 
 
@@ -109,7 +135,7 @@ watch(() => form.password, (newValue, oldValue) => {
 
 onMounted(() => {
 
-    get_geoip()
+    // get_geoip()
     form.isMobile = navigator.userAgent.match(/(phone|pad|pod|iPhone|iPod|ios|iPad|Android|Mobile|BlackBerry|IEMobile|MQQBrowser|JUC|Fennec|wOSBrowser|BrowserNG|WebOS|Symbian|Windows Phone)/i)
     // form.widthStyle = form.isMobile ? '' : 'width: 500px;'
 })
@@ -150,8 +176,8 @@ const options = [
 
     },
     {
-        label:'帮我总结内容',
-        value:'请帮我总结内容，实现减少字数的同时，保证对话的质量。在总结中不要加入这一句话。'
+        label: '帮我总结内容',
+        value: '请帮我总结内容，实现减少字数的同时，保证对话的质量。在总结中不要加入这一句话。'
     },
     {
         label: '自定义promt模版',
@@ -322,7 +348,7 @@ const getResponse = async () => {
             result += decoder.decode(value, { stream: true });
             // 处理数据流的每个片段
             if (form.isStream) {
-                processStreamChunk(decoder.decode(value, { stream: true }), isfirst,(content)=>{
+                processStreamChunk(decoder.decode(value, { stream: true }), isfirst, (content) => {
                     allResultContent += content
                 });
                 isfirst = false
@@ -332,12 +358,12 @@ const getResponse = async () => {
         form.wait = false
         if (!form.isStream) {
             // 处理完整的数据流
-            processStreamComplete(result,(content)=>{
-                    allResultContent += content
-                });
+            processStreamComplete(result, (content) => {
+                allResultContent += content
+            });
         }
         console.log('allResultContent' + allResultContent);
-       
+
         if (form.isContinueStyle && allResultContent && allResultContent.length > 0) {
             var requestMessages = [{ "role": "user", "content": sQuestion }, { "role": "assistant", "content": allResultContent }];
             form.allMessages = form.allMessages.concat(requestMessages)
@@ -356,7 +382,7 @@ const getResponse = async () => {
 
 };
 
-const processStreamChunk = (chunks, isfirst,callBack) => {
+const processStreamChunk = (chunks, isfirst, callBack) => {
     // 在这里处理每个数据流片段
     // console.log('processStreamChunk' + chunks);
     var chunkArr = chunks.trim().split('\n')
@@ -382,7 +408,7 @@ const processStreamChunk = (chunks, isfirst,callBack) => {
         } else {
             if (oJson.choices && oJson.choices[0].delta) {
                 var s = oJson.choices[0].delta.content;
-                
+
                 if (s) {
                     if (isfirst) {
                         form.result += "<div class='gpt-result'> ************************************************************************\nChatGPT: \n</div>"
@@ -426,7 +452,7 @@ const processStreamChunk = (chunks, isfirst,callBack) => {
 
 }
 
-const processStreamComplete = (result,callBack) => {
+const processStreamComplete = (result, callBack) => {
     console.log("processStreamComplete" + result);
     form.wait = false
     // 在这里处理完整的数据流
@@ -463,7 +489,7 @@ const postData = () => {
     }
     var sModel = form.selectModal;
     var iMaxTokens = 3500;
-    var dTemperature = 0.5;
+    var dTemperature = form.temperature;//一般来说，在构建需要可预测响应的应用程序时，我建议使用温度为零。在所有课程中，我们一直设置温度为零，如果您正在尝试构建一个可靠和可预测的系统，我认为您应该选择这个温度。如果您尝试以更具创意的方式使用模型，可能需要更广泛地输出不同的结果，那么您可能需要使用更高的温度。
     var sQuestion = form.question
     var requestMessages = [{ "role": "user", "content": sQuestion }];
     if (form.isContinueStyle) {
@@ -479,7 +505,7 @@ const postData = () => {
         model: sModel,
         messages: requestMessages,
         max_tokens: iMaxTokens,
-        temperature: dTemperature,
+        temperature: dTemperature,//0-2 控制模型生成的多样性和创造力，较高的温度会产生更多的随机性和变化性。希望结果更有创意可以尝试 0.9，或者希望有固定结果可以尝试 0.0 .
         frequency_penalty: 0.5, //-2.0 到 2.0 之间的数字。  
         //较大的数值会减少 ChatGPT 重复同一句话的可能性。
         stream: form.isStream,
@@ -654,6 +680,8 @@ const imageTextTohtml = (text) => {
 }
 
 const get_geoip = async () => {
+    // console.log(form.temperature);
+    // return
     try {
         const response = await fetch('https://ipapi.co/json/', { timeout: 5000 });
         const data = await response.json();
@@ -816,5 +844,21 @@ pre code {
     border-radius: 4px;
     padding: 0 6px;
     margin-left: 4px;
+}
+
+
+.slider-demo-block {
+    display: flex;
+    align-items: center;
+}
+
+.slider-demo-block .demonstration {
+    font-size: 14px;
+    color: var(--el-text-color-secondary);
+}
+
+.slider-container {
+    padding: 10px 16px;
+    flex: 1;
 }
 </style>
