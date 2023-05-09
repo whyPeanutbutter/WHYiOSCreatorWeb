@@ -1,5 +1,6 @@
 # iOS Creator
-## iOS 自动化UI代码生成网站
+## iOS 自动化UI代码生成网站  
+点击直接访问
 https://ios-creator-0gx5m3uq05dc1926-1316715867.tcloudbaseapp.com/#/
 
 ## 安装
