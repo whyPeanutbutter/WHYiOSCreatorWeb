@@ -3,6 +3,7 @@
   <div class="common-layout">
     <el-container>
       <el-header>
+        <button class="feedback" @click="goToLink">反馈</button>
         <h1 class="tit">
           WHY iOS creator
           <el-switch v-model="state.isOCTag" class="switch-border" active-text="OC" inactive-text="Swift"
@@ -57,7 +58,7 @@
 
           </div>
           <div class="flex-col"
-            v-if="(state.currentShowViews && state.currentShowViews.length > 0  && state.currentShowViews[state.currentSelectIndex].type != 'CodeStoreView' && state.currentShowViews[state.currentSelectIndex].type != 'HelpMe' && state.currentShowViews[state.currentSelectIndex].type != 'AnalyCodeView')">
+            v-if="(state.currentShowViews && state.currentShowViews.length > 0 && state.currentShowViews[state.currentSelectIndex].type != 'CodeStoreView' && state.currentShowViews[state.currentSelectIndex].type != 'HelpMe' && state.currentShowViews[state.currentSelectIndex].type != 'AnalyCodeView')">
             <div class="main-phone">
               <template v-for="(item, index) in state.currentShowViews" :key="index">
                 <div :class="{
@@ -164,7 +165,7 @@ onMounted(() => {
   }
 })
 
-const isCurrentSpecialType=(type)=>{
+const isCurrentSpecialType = (type) => {
   switch (type) {
     case 'HelpMe':
     case 'CodeStoreView':
@@ -274,6 +275,12 @@ const onDeleteAll = () => {
   state.currentSelectIndex = -1;
 }
 
+const goToLink = () => {
+  window.open("https://github.com/whyPeanutbutter/WHYiOSCreatorWeb/issues/1", "_blank");
+
+  // window.location.href = 'https://github.com/whyPeanutbutter/WHYiOSCreatorWeb/issues/1';
+}
+
 
 </script>
 
@@ -283,7 +290,7 @@ body {
 }
 
 .left-btn {
-
+  background: #4f91ec;
   width: 95%;
   margin-bottom: 5px;
   margin-right: 5px;
@@ -378,5 +385,16 @@ body {
   border: 1px solid #409eff;
   border-radius: 4px;
   padding: 2px 6px;
+}
+
+.feedback {
+  padding: 7px;
+  position: absolute;
+  background: #d35b64;
+  font-size: 16px;
+  color: white;
+  border-radius: 5px;
+  left: 20px;
+    top: 10px;
 }
 </style>

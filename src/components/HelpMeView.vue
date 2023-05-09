@@ -101,7 +101,7 @@ var form = reactive({
     result: '',
     orginResult: '',
     wait: false,
-    system_prompt: '用Objective-c编写，给出简短的回答，不要做出解释',
+    system_prompt: '给出简短的回答，不要做出解释',
     system_prompt_select: '',
     password: proxy.gptkey,
     isMobile: false,
@@ -154,6 +154,14 @@ const modals = [
 
 const options = [
     {
+        value: '用Objective-c编写，给出简短的回答，不要做出解释',
+        label: 'OC回答'
+    }, {
+        label: "分步指导，逻辑增强",
+        value: "Let's think step by step"
+
+    },
+    {
         value: '给你一个objective-c类或多个属性，为每个属性制造相应的假数据',
         label: 'OC假数据制造',
     }, {
@@ -195,10 +203,6 @@ const options = [
 若无闲事挂心头 便是人间好时节 #海棠花＃看看你相册里的花花
 
 请模仿上面抖音标题的风格，以用户输入的话为主题，写一个标题。标题中可以引用相关古诗词，标题最后需要用Hashtag给出话题。`
-    },{
-        label:"分步指导，逻辑增强",
-        value:"Let's think step by step"
-
     }
 ]
 
@@ -492,7 +496,7 @@ const postData = () => {
         form.selectModal = 'gpt-3.5-turbo';
     }
     var sModel = form.selectModal;
-    var iMaxTokens = 39000;
+    var iMaxTokens = 3900;
     var dTemperature = form.temperature;//一般来说，在构建需要可预测响应的应用程序时，我建议使用温度为零。在所有课程中，我们一直设置温度为零，如果您正在尝试构建一个可靠和可预测的系统，我认为您应该选择这个温度。如果您尝试以更具创意的方式使用模型，可能需要更广泛地输出不同的结果，那么您可能需要使用更高的温度。
     var sQuestion = form.question
     var requestMessages = [{ "role": "user", "content": sQuestion }];
@@ -864,5 +868,9 @@ pre code {
 .slider-container {
     padding: 10px 16px;
     flex: 1;
+}
+
+.button-style {
+    background: #4f91ec;
 }
 </style>
