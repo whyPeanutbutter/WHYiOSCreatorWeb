@@ -120,7 +120,7 @@ var form = reactive({
     //查看请求参数
     showParam: false,
 
-    temperature: 0
+    temperature: 0.8
 });
 
 
@@ -135,7 +135,7 @@ watch(() => form.password, (newValue, oldValue) => {
 
 onMounted(() => {
 
-    // get_geoip()
+    get_geoip()
     form.isMobile = navigator.userAgent.match(/(phone|pad|pod|iPhone|iPod|ios|iPad|Android|Mobile|BlackBerry|IEMobile|MQQBrowser|JUC|Fennec|wOSBrowser|BrowserNG|WebOS|Symbian|Windows Phone)/i)
     // form.widthStyle = form.isMobile ? '' : 'width: 500px;'
 })
@@ -195,6 +195,10 @@ const options = [
 若无闲事挂心头 便是人间好时节 #海棠花＃看看你相册里的花花
 
 请模仿上面抖音标题的风格，以用户输入的话为主题，写一个标题。标题中可以引用相关古诗词，标题最后需要用Hashtag给出话题。`
+    },{
+        label:"分步指导，逻辑增强",
+        value:"Let's think step by step"
+
     }
 ]
 
@@ -488,7 +492,7 @@ const postData = () => {
         form.selectModal = 'gpt-3.5-turbo';
     }
     var sModel = form.selectModal;
-    var iMaxTokens = 3500;
+    var iMaxTokens = 39000;
     var dTemperature = form.temperature;//一般来说，在构建需要可预测响应的应用程序时，我建议使用温度为零。在所有课程中，我们一直设置温度为零，如果您正在尝试构建一个可靠和可预测的系统，我认为您应该选择这个温度。如果您尝试以更具创意的方式使用模型，可能需要更广泛地输出不同的结果，那么您可能需要使用更高的温度。
     var sQuestion = form.question
     var requestMessages = [{ "role": "user", "content": sQuestion }];
