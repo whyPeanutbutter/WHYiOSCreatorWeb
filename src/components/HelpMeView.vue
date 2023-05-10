@@ -15,13 +15,21 @@
             <el-switch v-model="form.isContinueStyle" class="switch-border" active-text="连着问" />
         </el-form-item>
         <el-form-item v-if="form.showParam" label="参数选择">
-            <el-scrollbar style="width:100%;" height="50px">
+            <el-scrollbar style="width:100%;" height="100px">
                 <div class="slider-demo-block">
                     <el-tooltip class="box-item" effect="dark" content="数值大时，每次回答都会不同，更具创造性" placement="top">
                         <span class="demonstration">温度</span>
                     </el-tooltip>
                     <div class="slider-container">
                         <el-slider v-model="form.temperature" :max="2" :step="0.1" />
+                    </div>
+                </div>
+                <div class="slider-demo-block">
+                    <el-tooltip class="box-item" effect="dark" content="最大数会依据问题改变" placement="top">
+                        <span class="demonstration">最大回答字数</span>
+                    </el-tooltip>
+                    <div class="slider-container">
+                        <el-slider v-model="form.maxTokenNum" :max="form.allowMaxTokenNum" :min="200" :step="1" />
                     </div>
                 </div>
                 <!-- <div class="slider-demo-block">
@@ -120,9 +128,18 @@ var form = reactive({
     //查看请求参数
     showParam: false,
 
-    temperature: 0.8
+    temperature: 0.8,
+    allowMaxTokenNum:4000,
+    maxTokenNum:3500
 });
 
+
+watch(() => form.question, (newValue, oldValue) => {
+form.allowMaxTokenNum = 4000 - form.question.length*2 - form.system_prompt.length
+}, {
+    deep: true,
+    immediate: true
+});
 
 watch(() => form.password, (newValue, oldValue) => {
     proxy.gptkey = newValue;
@@ -133,9 +150,18 @@ watch(() => form.password, (newValue, oldValue) => {
     immediate: true
 });
 
+watch(() => form.allowMaxTokenNum, (newValue, oldValue) => {
+    if(form.maxTokenNum == oldValue || form.maxTokenNum > newValue){
+        form.maxTokenNum = newValue;
+    } 
+}, {
+    deep: true,
+    immediate: true
+});
+
 onMounted(() => {
 
-    get_geoip()
+    get_geoip();
     form.isMobile = navigator.userAgent.match(/(phone|pad|pod|iPhone|iPod|ios|iPad|Android|Mobile|BlackBerry|IEMobile|MQQBrowser|JUC|Fennec|wOSBrowser|BrowserNG|WebOS|Symbian|Windows Phone)/i)
     // form.widthStyle = form.isMobile ? '' : 'width: 500px;'
 })
@@ -496,7 +522,7 @@ const postData = () => {
         form.selectModal = 'gpt-3.5-turbo';
     }
     var sModel = form.selectModal;
-    var iMaxTokens = 3900;
+    var iMaxTokens = form.maxTokenNum;
     var dTemperature = form.temperature;//一般来说，在构建需要可预测响应的应用程序时，我建议使用温度为零。在所有课程中，我们一直设置温度为零，如果您正在尝试构建一个可靠和可预测的系统，我认为您应该选择这个温度。如果您尝试以更具创意的方式使用模型，可能需要更广泛地输出不同的结果，那么您可能需要使用更高的温度。
     var sQuestion = form.question
     var requestMessages = [{ "role": "user", "content": sQuestion }];
@@ -691,6 +717,7 @@ const get_geoip = async () => {
     // console.log(form.temperature);
     // return
     try {
+        var result=''
         const response = await fetch('https://ipapi.co/json/', { timeout: 5000 });
         const data = await response.json();
         if ("error" in data) {
@@ -722,7 +749,7 @@ const get_geoip = async () => {
             }
         }
     } catch (error) {
-        result = `获取IP地理位置失败。原因：${error}`;
+        var result = `获取IP地理位置失败。原因：${error}`;
         form.isRightIpGeo = true
         form.ipGeoText = '获取ip失败'
         form.result = form.result + `**${error}**`;
@@ -866,7 +893,7 @@ pre code {
 }
 
 .slider-container {
-    padding: 10px 16px;
+    padding: 2px 19px;
     flex: 1;
 }
 
