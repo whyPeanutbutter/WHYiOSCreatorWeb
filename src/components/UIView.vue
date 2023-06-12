@@ -6,9 +6,9 @@
         <el-form-item label="名称">
             <el-input v-model="form.data.name" />
         </el-form-item>
-          <el-form-item label="帮我解析">
+        <el-form-item label="帮我解析">
             <div class="flex-row">
-                <el-input v-model="form.helpMe" placeholder="粘贴数据"/>
+                <el-input v-model="form.helpMe" placeholder="粘贴数据" />
                 <el-button @click="onAddClip">粘贴</el-button>
                 <el-button @click="onHelpMe">解析</el-button>
             </div>
@@ -35,23 +35,23 @@
             </el-checkbox-group>
         </el-form-item>
         <el-form-item label="masonrys">
+            <el-input placeholder="快捷输入简称：lrtbwhsecxcyclvtvrvbv" v-model="form.data.quickMasonrys" />
             <el-checkbox-group class="flex-row flex-wrap" v-model="form.data.masonrys">
                 <el-checkbox label="top" />
                 <el-checkbox label="left" />
                 <el-checkbox label="right" />
                 <el-checkbox label="bottom" />
-                <div style="width:100px"></div>
                 <el-checkbox label="width" />
                 <el-checkbox label="height" />
                 <el-checkbox label="size" />
                 <el-checkbox label="edges" />
-                <div style="width:100px"></div>
                 <el-checkbox label="centerX" />
                 <el-checkbox label="centerY" />
                 <el-checkbox label="center" />
                 <el-checkbox label="left-View" />
                 <el-checkbox label="top-View" />
                 <el-checkbox label="right-View" />
+                <el-checkbox label="bottom-View" />
             </el-checkbox-group>
         </el-form-item>
         <el-form-item>
@@ -60,7 +60,7 @@
             <el-button @click="onDelete">删除视图</el-button>
         </el-form-item>
     </el-form>
-    <el-input v-model="form.result" type="textarea" :rows="10"/>
+    <el-input v-model="form.result" type="textarea" :rows="10" />
 </template>
 
 <script setup>
@@ -81,13 +81,14 @@ const props = defineProps({
 var form = reactive({
     data: {
         name: 'view',
-        commonSettings: ["addSubView","init"],
+        commonSettings: ["addSubView", "init"],
         conrnerRadius: '4',
         backgroundColor: '#fff',
         borderColor: 'borderColor',
-        masonrys: []
+         masonrys: [],
+        quickMasonrys: ''
     },
-    helpMe:'',
+    helpMe: '',
     result: '点击create生成代码'
 });
 
@@ -95,20 +96,57 @@ const resetForm = () => {
     console.log('reset');
     form.data = {
         name: 'View',
-        commonSettings: ["addSubView","init"],
+        commonSettings: ["addSubView", "init"],
         conrnerRadius: '4',
         backgroundColor: '#fff',
         borderColor: 'borderColor',
-        masonrys: []
+         masonrys: [],
+        quickMasonrys: ''
     }
 };
+
+watch(() => form.data.quickMasonrys, (newValue, oldValue) => {
+    newValue = newValue.toLocaleLowerCase()
+    form.data.quickMasonrys = newValue
+    let copy = newValue;
+    copy = copy.replace('cx', 'x').replace('cy', 'y').replace('lv', 'a').replace('rv', 'm').replace('tv', 'o').replace('bv', 'j')
+    var newMasonrys = []
+    var map = {
+        'l': 'left',
+        'r': 'right',
+        't': 'top',
+        'b': 'bottom',
+        'w': 'width',
+        'h': 'height',
+        's': 'size',
+        'x': 'centerX',
+        'e': 'edges',
+        'y': 'centerY',
+        'c': 'center',
+        'a': 'left-View',
+        'm': 'right-View',
+        'o': 'top-View',
+        'j': 'bottom-View',
+    }
+    copy.split("").forEach(element => {
+        if (map[element]) {
+            newMasonrys.push(map[element])
+        }
+    });
+    console.log('已选择 ', newMasonrys)
+    form.data.masonrys = newMasonrys;
+}, {
+    deep: true,
+    immediate: true
+});
+
 
 watch(() => props.form, (newValue, oldValue) => {
     if (newValue.name) {
         form.data = newValue
     } else {
         resetForm()
-        }
+    }
 }, {
     deep: true,
     immediate: true
@@ -132,7 +170,7 @@ const onCreate = (formData, needCopy = false) => {
     let masonry = formData.masonrys?.length > 0 ? `[${formData.name} mas_makeConstraints:^(MASConstraintMaker *make) {
         ${mansoryStr}
     }];\n`: ''
-    var result = 
+    var result =
         `${init}${frame}${addSubView}${conrnerRadius}${bottomCor}${backgroundColor}${border}${masonry}${click}\n`
     console.log(result);
     form.result = result;
@@ -153,27 +191,27 @@ const onDelete = () => {
 
 watch(() => form.data, (newValue, oldValue) => {
     emits('update', newValue)
-    onCreate(newValue,false)
+    onCreate(newValue, false)
 }, {
     deep: true,
     immediate: true
 });
 
 
-const onAddClip = async() => {
+const onAddClip = async () => {
     form.helpMe = await navigator.clipboard.readText()
     onHelpMe()
 };
 
-const onHelpMe = async() => {
+const onHelpMe = async () => {
     let re = $utils.analyViewData(form.helpMe)
     console.log(re);
     for (let key in form.data) {
-  if (re.hasOwnProperty(key)) {
-    form.data[key] = re[key];
-    console.log(key);
-  }
-}
+        if (re.hasOwnProperty(key)) {
+            form.data[key] = re[key];
+            console.log(key);
+        }
+    }
 };
 
 </script>
@@ -198,7 +236,7 @@ const onHelpMe = async() => {
     flex-direction: column;
 }
 
-.select-input{
+.select-input {
     width: 150px !important;
     margin-right: 10px;
     margin-left: 5px;

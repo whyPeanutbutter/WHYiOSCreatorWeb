@@ -127,7 +127,10 @@ const convertApi = (apiText) => {
         var propertyName = lineEleArr[0].charAt(0).toLowerCase() + lineEleArr[0].slice(1);
         var propertyDes = ''
         if (lineEleArr.length > 1) {
-            propertyDes = '//' + lineEleArr[1];
+            var des = lineEleArr[1];
+            if(des.trim().length > 0){
+            propertyDes = '//' + des.trim();
+            }
         }
 
         console.log('lineEleArrLower ' + lineEleArrLower);

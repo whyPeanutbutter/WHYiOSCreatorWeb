@@ -12,7 +12,7 @@
             </el-select>
             <el-switch v-model="form.showParam" class="switch-border" active-text="查看参数" />
             <el-switch v-model="form.isStream" class="switch-border" active-text="stream" :disabled='form.wait' />
-            <el-switch v-model="form.isContinueStyle" class="switch-border" active-text="连着问" />
+            <el-switch v-model="form.isContinueStyle" class="switch-border" active-text="对话模式" />
         </el-form-item>
         <el-form-item v-if="form.showParam" label="参数选择">
             <el-scrollbar style="width:100%;" height="100px">
@@ -129,13 +129,36 @@ var form = reactive({
     showParam: false,
 
     temperature: 0.8,
-    allowMaxTokenNum:4000,
-    maxTokenNum:3500
+    allowMaxTokenNum: 4000,
+    maxTokenNum: 3000
 });
 
+//js计算字符串长度，其中中文长度为2英文为1
+const getLength = (str) => {
+    var len = 0;
+    for (var i = 0; i < str.length; i++) {
+        if (str.charCodeAt(i) > 255) { //如果是中文字符
+            len += 2;
+        } else {
+            len++;
+        }
+    }
+    return len;
+}
 
 watch(() => form.question, (newValue, oldValue) => {
-form.allowMaxTokenNum = 4000 - form.question.length*2 - form.system_prompt.length
+    var allowMaxTokenNum = 4000 - getLength(form.question) - getLength(form.system_prompt)
+    if (form.isContinueStyle) {
+        var data = [...form.allMessages];
+        var totalLength = 0;
+        for (var i = 0; i < data.length; i++) {
+            var content = data[i].content;
+            var length = content.replace(/[^\u0000-\u00ff]/g, 'xx').length; // 将中文替换成两个字符
+            totalLength += length;
+        }
+        allowMaxTokenNum = 4000 - totalLength - getLength(form.system_prompt)
+    }
+    form.allowMaxTokenNum = allowMaxTokenNum < 100 ? 100 : allowMaxTokenNum
 }, {
     deep: true,
     immediate: true
@@ -151,9 +174,9 @@ watch(() => form.password, (newValue, oldValue) => {
 });
 
 watch(() => form.allowMaxTokenNum, (newValue, oldValue) => {
-    if(form.maxTokenNum == oldValue || form.maxTokenNum > newValue){
+    if (form.maxTokenNum == oldValue || form.maxTokenNum > newValue) {
         form.maxTokenNum = newValue;
-    } 
+    }
 }, {
     deep: true,
     immediate: true
@@ -195,9 +218,6 @@ const options = [
         label: 'json数据对比',
     },
     {
-        value: '我想让你做一个旅游指南。我会把我的位置写给你，你会推荐一个靠近我的位置的地方。在某些情况下，我还会告诉您我将访问的地方类型。您还会向我推荐靠近我的第一个位置的类似类型的地方',
-        label: '充当旅游指南',
-    }, {
         label: "发送图片",
         value: "从现在起, 当你想发送一张照片时，请使用 Markdown ,并且 不要有反斜线, 不要用代码块。使用 Unsplash API (https://source.unsplash.com/1280x720/? < PUT YOUR QUERY HERE >)"
     }, {
@@ -214,12 +234,27 @@ const options = [
         value: '请帮我总结内容，实现减少字数的同时，保证对话的质量。在总结中不要加入这一句话。'
     },
     {
+        label: "充当提示生成器",
+        value: "我希望你充当提示生成器。首先，我会给你一个这样的标题：《做个英语发音帮手》。然后你给我一个这样的提示：“我想让你做土耳其语人的英语发音助手，我写你的句子，你只回答他们的发音，其他什么都不做。回复不能是翻译我的句子，但只有发音。发音应使用土耳其语拉丁字母作为语音。不要在回复中写解释。我的第一句话是“伊斯坦布尔的天气怎么样？”。（你应该根据我给的标题改编示例提示。提示应该是不言自明的并且适合标题，不要参考我给你的例子。）我的第一个标题是“充当代码审查助手”\n"
+    }, {
+        label: "充当正则表达式生成器",
+        value: "我希望你充当正则表达式生成器。您的角色是生成匹配文本中特定模式的正则表达式。您应该以一种可以轻松复制并粘贴到支持正则表达式的文本编辑器或编程语言中的格式提供正则表达式。不要写正则表达式如何工作的解释或例子；只需提供正则表达式本身。我的第一个提示是生成一个匹配电子邮件地址的正则表达式。\n"
+    },
+    {
         label: '自定义promt模版',
         value: "角色-目标-提需求-补充；\n 我的情况是-我想-你是谁-我要你"
 
     }, {
+        value: '我想让你做一个旅游指南。我会把我的位置写给你，你会推荐一个靠近我的位置的地方。在某些情况下，我还会告诉您我将访问的地方类型。您还会向我推荐靠近我的第一个位置的类似类型的地方',
+        label: '充当旅游指南',
+    },
+    {
+        label: "充当小说家",
+        value: "我想让你扮演一个小说家。您将想出富有创意且引人入胜的故事，可以长期吸引读者。你可以选择任何类型，如奇幻、浪漫、历史小说等——但你的目标是写出具有出色情节、引人入胜的人物和意想不到的高潮的作品。我的第一个要求是“我要写一部以未来为背景的科幻小说”。\n"
+    }, {
         label: '抖音标题制作',
         value: `下面是一些抖音标题
+        <
 了了睛山见，纷纷宿雾空。＃爱情＃大概这就是爱情最美的样子 ＃甜甜的恋爱
 
 你我共存，枯木逢春。#爱情
@@ -227,8 +262,8 @@ const options = [
 遇一树花开，染一身花香，从此心里每个角落都开满花。#花#春
 
 若无闲事挂心头 便是人间好时节 #海棠花＃看看你相册里的花花
-
-请模仿上面抖音标题的风格，以用户输入的话为主题，写一个标题。标题中可以引用相关古诗词，标题最后需要用Hashtag给出话题。`
+>
+请模仿上面抖音标题的风格，以用户输入的话为主题，写一个标题。标题中可以引用相关古诗词,要吸引眼球，标题最后需要用Hashtag给出话题。`
     }
 ]
 
@@ -418,7 +453,7 @@ const getResponse = async () => {
 
 const processStreamChunk = (chunks, isfirst, callBack) => {
     // 在这里处理每个数据流片段
-    // console.log('processStreamChunk' + chunks);
+    console.log('processStreamChunk' + chunks, isfirst);
     var chunkArr = chunks.trim().split('\n')
     for (let i = 0; i < chunkArr.length; i++) {
         var chunk = chunkArr[i]
@@ -431,13 +466,13 @@ const processStreamChunk = (chunks, isfirst, callBack) => {
         try {
             oJson = JSON.parse(chunk);
         } catch (ex) {
-            form.result += "<div class='error-red'> 错误: " + ex.message + "</div>";
+            form.result += "<div class='error-red'> 错误1: " + ex.message + "</div>";
             form.orginResult += "错误: " + ex.message;
             break
         }
 
         if (oJson.error && oJson.error.message) {
-            form.result += "<div class='error-red'> 错误: " + oJson.error.message + "</div>";
+            form.result += "<div class='error-red'> 错误2: " + oJson.error.message + "</div>";
             form.orginResult += "错误: " + oJson.error.message;
         } else {
             if (oJson.choices && oJson.choices[0].delta) {
@@ -448,6 +483,7 @@ const processStreamChunk = (chunks, isfirst, callBack) => {
                         form.result += "<div class='gpt-result'> ************************************************************************\nChatGPT: \n</div>"
                         form.orginResult += "\n************************************************************************\nChatGPT: \n"
                     }
+                    isfirst = false
                 } else {
                     s = ""
                 }
@@ -498,12 +534,12 @@ const processStreamComplete = (result, callBack) => {
     try {
         oJson = JSON.parse(result);
     } catch (ex) {
-        form.result += "<div class='error-red'> 错误: " + ex.message + "</div>";
+        form.result += "<div class='error-red'> 错误3: " + ex.message + "</div>";
         form.orginResult += "错误: " + ex.message;
     }
 
     if (oJson.error && oJson.error.message) {
-        form.result += "<div class='error-red'> 错误: " + oJson.error.message + "</div>";
+        form.result += "<div class='error-red'> 错误4: " + oJson.error.message + "</div>";
         form.orginResult += "错误: " + oJson.error.message;
     } else if (oJson.choices && oJson.choices[0].message) {
         var s = oJson.choices[0].message.content;
@@ -717,7 +753,7 @@ const get_geoip = async () => {
     // console.log(form.temperature);
     // return
     try {
-        var result=''
+        var result = ''
         const response = await fetch('https://ipapi.co/json/', { timeout: 5000 });
         const data = await response.json();
         if ("error" in data) {

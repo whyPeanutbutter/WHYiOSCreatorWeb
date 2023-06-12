@@ -91,6 +91,7 @@
             </div>
         </el-form-item>
         <el-form-item label="masonrys">
+            <el-input placeholder="快捷输入简称：lrtbwhsecxcyclvtvrvbv" v-model="form.data.quickMasonrys" />
             <el-checkbox-group class="flex-row flex-wrap" v-model="form.data.masonrys">
                 <el-checkbox label="top" />
                 <el-checkbox label="left" />
@@ -106,6 +107,7 @@
                 <el-checkbox label="left-View" />
                 <el-checkbox label="top-View" />
                 <el-checkbox label="right-View" />
+                <el-checkbox label="bottom-View" />
             </el-checkbox-group>
         </el-form-item>
         <el-form-item>
@@ -148,7 +150,8 @@ var form = reactive({
         titleColor: '',
         titleName: '',
         textAlign: 'Center',
-        masonrys: []
+         masonrys: [],
+        quickMasonrys: ''
     },
     helpMe: '',
     result: '点击create生成代码'
@@ -171,10 +174,45 @@ const resetForm = () => {
         titleColor: '',
         titleName: '',
         textAlign: 'Center',
-        masonrys: []
+         masonrys: [],
+        quickMasonrys: ''
     }
 };
 
+watch(() => form.data.quickMasonrys, (newValue, oldValue) => {
+    newValue = newValue.toLocaleLowerCase()
+    form.data.quickMasonrys = newValue
+    let copy = newValue;
+    copy = copy.replace('cx', 'x').replace('cy', 'y').replace('lv', 'a').replace('rv', 'm').replace('tv', 'o').replace('bv', 'j')
+    var newMasonrys = []
+    var map = {
+        'l': 'left',
+        'r': 'right',
+        't': 'top',
+        'b': 'bottom',
+        'w': 'width',
+        'h': 'height',
+        's': 'size',
+        'x': 'centerX',
+        'e': 'edges',
+        'y': 'centerY',
+        'c': 'center',
+        'a': 'left-View',
+        'm': 'right-View',
+        'o': 'top-View',
+        'j': 'bottom-View',
+    }
+    copy.split("").forEach(element => {
+        if (map[element]) {
+            newMasonrys.push(map[element])
+        }
+    });
+    console.log('已选择 ', newMasonrys)
+    form.data.masonrys = newMasonrys;
+}, {
+    deep: true,
+    immediate: true
+});
 watch(() => props.form, (newValue, oldValue) => {
     console.log('props');
     console.log(newValue);
