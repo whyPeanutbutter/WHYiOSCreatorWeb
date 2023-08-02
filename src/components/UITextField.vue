@@ -291,7 +291,7 @@ const onCreate = (formData, needCopy = false) => {
 
     let title = formData.haveTitle ? `${formData.name}.text = "${formData.titleName}"\n${formData.name}.textAlignment = .${formData.textAlign}\n${formData.name}.textColor = ${$utils.getColor(formData.titleColor)}\n${formData.name}.font = ${$utils.getFont(formData.titleSize)}\n` : '';
     let haveAttributedText = formData.haveAttributedText ? $utils.getAttributedText(formData.name + 'AttributedString', formData.attributedTextSettings) + `${formData.name}.attributedText = ${formData.name}AttributedString\n` : '';
-    let masonry = formData.masonrys?.length > 0 ? `${formData.name}.snp.makeConstraints { make in\n${$utils.getMasonrys(formData.masonrys)}\n}\n` : '';
+    let masonry = formData.masonrys?.length > 0 ? `${formData.name}.snp.makeConstraints { make in\n${$utils.getMansorys(formData.masonrys)}\n}\n` : '';
 
     let result =
         `${init}${frame}${addSubView}${isEnabled}${returnKeyType}${clearButtonMode}${keyboardType}${placeholder}${attributedPlaceholder}${title}${haveAttributedText}${cornerRadius}${backgroundColor}${border}${masonry}${haveDelegate}\n`;
