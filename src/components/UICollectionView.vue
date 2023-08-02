@@ -122,6 +122,9 @@ const resetForm = () => {
 };
 
 watch(() => form.data.quickMasonrys, (newValue, oldValue) => {
+   if(newValue == ''){
+        return
+    }
     newValue = newValue.toLocaleLowerCase()
     form.data.quickMasonrys = newValue
     let copy = newValue;
@@ -232,6 +235,11 @@ const onCreate = (formData, needCopy = false) => {
         form.result = '已复制到剪切板\n' + result;
     }
 };
+
+
+const onCreateSwift = (formData, needCopy = false) => {
+
+}
 
 const onReset = () => {
     resetForm()

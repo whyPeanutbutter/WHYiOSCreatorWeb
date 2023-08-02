@@ -11,16 +11,25 @@
         </el-form-item>
         <el-form-item label="处理方式">
             <el-radio-group class="flex-col-start" v-model="form.data.analycodeRadioSelect">
-                <el-tooltip class="box-item" effect="dark" content="将接口文档转换为属性" placement="right">
-                    <el-radio class="radio-item" label="api转属性" name="api转属性" border
-                        :disabled="form.codeText?.length == 0" />
-                </el-tooltip>
+
+                <div class="flex-row">
+                    <el-tooltip class="box-item" effect="dark" content="将接口文档转换为属性" placement="right">
+                        <el-radio class="radio-item" label="api转属性" name="api转属性" border style="margin-right: 5px;"
+                            :disabled="form.codeText?.length == 0">
+                        </el-radio>
+                    </el-tooltip>
+                    <el-tooltip class="box-item" effect="dark" content="属性描述所在自然列，默认第二列" placement="right">
+                        <el-input v-model="form.descLineNumber" class="input-class" placeholder="2" />
+                    </el-tooltip>
+                </div>
+
+
+
                 <el-tooltip class="box-item" effect="dark" content="如：UIView *name;" placement="right">
                     <el-radio class="radio-item" label="提取类及名" name="提取类及名" border :disabled="form.codeText?.length == 0" />
                 </el-tooltip>
                 <el-tooltip class="box-item" effect="dark" content="将代码转换为代码库格式" placement="right">
-                    <el-radio class="radio-item" label="转换代码库" name="转换代码库" border
-                        :disabled="form.codeText?.length == 0" />
+                    <el-radio class="radio-item" label="转换代码库" name="转换代码库" border :disabled="form.codeText?.length == 0" />
                 </el-tooltip>
             </el-radio-group>
         </el-form-item>
@@ -38,7 +47,8 @@ var form = reactive({
         analycodeRadioSelect: "",
     },
     codeText: '',
-    result: ''
+    result: '',
+    descLineNumber: 2
 });
 
 
@@ -54,6 +64,9 @@ const onCreate = (formData, needCopy = false) => {
                 result = form.codeText.replace(/(UIView|UIButton|UILabel|UIScrollView|UIImageView|UITableView|UICollectionView) \*/g, '');
 
                 let nameStr = '';
+                if(!nameResults || nameResults.length == 0){
+                    break;
+                }
                 for (var name of nameResults) {
                     nameStr = nameStr + name + ';\n';
                     console.log(name);
@@ -80,7 +93,7 @@ const onCreate = (formData, needCopy = false) => {
     // let addSubView = analycodeRadioSelect.indexOf('addSubView') > -1 ? `[<#self#> addSubview:${formData.name}];\n` : '';
     // let frame = analycodeRadioSelect.indexOf('frame') > -1 ? `${formData.name}.frame = CGRectMake(<#CGFloat x#>, <#CGFloat y#>, <#CGFloat width#>, <#CGFloat height#>);\n` : '';
     // let click = analycodeRadioSelect.indexOf('click') > -1 ? `${formData.name}.userInteractionEnabled = YES;\nUITapGestureRecognizer *${formData.name}TapGestureRecognizer = [[UITapGestureRecognizer alloc]initWithTarget:self action:@selector(${formData.name}Tap:)];\n[${formData.name} addGestureRecognizer:${formData.name}TapGestureRecognizer];\n\n-(void)${formData.name}Tap:(UITapGestureRecognizer *)tap{\ntap.view\n}` : '';
-    // let conrnerRadius = analycodeRadioSelect.indexOf('conrnerRadius') > -1 ? `${formData.name}.layer.cornerRadius = ${formData.conrnerRadius};\n${formData.name}.layer.masksToBounds = YES;\n` : '';
+    // let cornerRadius = analycodeRadioSelect.indexOf('cornerRadius') > -1 ? `${formData.name}.layer.cornerRadius = ${formData.cornerRadius};\n${formData.name}.layer.masksToBounds = YES;\n` : '';
     // let backgroundColor = analycodeRadioSelect.indexOf('backgroundColor') > -1 ? `${formData.name}.backgroundColor = ${$utils.getColor(formData.backgroundColor)};\n` : '';
     // let border = analycodeRadioSelect.indexOf('border') > -1 ? `[${formData.name}.layer setBorderColor:${$utils.getColor(formData.borderColor)}.CGColor];\n[${formData.name}.layer setBorderWidth:<#1.0#>];\n` : '';
     // let bottomCor = analycodeRadioSelect.indexOf('下侧圆角') > -1 ? `  UIBezierPath *maskPath = [UIBezierPath bezierPathWithRoundedRect:${formData.name}.bounds<#CGRectMake(0, 0, 100, 100)#> byRoundingCorners:UIRectCornerBottomLeft | UIRectCornerBottomRight cornerRadii:CGSizeMake(10, 10)];
@@ -93,7 +106,7 @@ const onCreate = (formData, needCopy = false) => {
     //     ${mansoryStr}
     // }];\n`: ''
     // var result =
-    //     `${init}${frame}${addSubView}${conrnerRadius}${bottomCor}${backgroundColor}${border}${masonry}${click}\n`
+    //     `${init}${frame}${addSubView}${cornerRadius}${bottomCor}${backgroundColor}${border}${masonry}${click}\n`
     // console.log(result);
     // form.result = result;
     // emits('create', result)
@@ -110,6 +123,57 @@ const convertApi = (apiText) => {
     var lineArr = apiText.split("\n");
     lineArr.filter(word => word.length > 6);
     var noInferString = "以下是程序无法推断的属性或是不需要的注释:"
+
+    //     let uniqueProperties = new Set();
+    // let uniqueLineArr = [];
+
+    // for (let index = 0; index < lineArr.length; index++) {
+    //     const lineElement = lineArr[index];
+    //     var lineEleArr = lineElement.split('##')
+
+    //     //预处理
+    //     lineEleArr = lineEleArr.filter(word => word.length > 0 && word != '可选' && word != '必选' && word != 'true' && word != 'false');
+
+    //     if (lineEleArr?.length == 0 || lineArr[0] == '参数') {
+    //         continue
+    //     }
+
+    //     var lineEleArrLower = [...lineEleArr]
+    //     for (let i = 0; i < lineEleArrLower.length; i++) {
+    //         lineEleArrLower[i] = lineEleArrLower[i].toLowerCase()
+    //     }
+
+    //     var propertyName = lineEleArr[0].charAt(0).toLowerCase() + lineEleArr[0].slice(1);
+
+    //     // 如果 uniqueProperties Set 之前没有见过这个 propertyName，那么它将被添加到 Set 和 uniqueLineArr 中
+    //     if (!uniqueProperties.has(propertyName)) {
+    //         uniqueProperties.add(propertyName);
+    //         uniqueLineArr.push(lineElement);
+    //     }
+    // }
+
+    // // 最后，uniqueLineArr 就是所有唯一 propertyName 的行的数组
+    // console.log(uniqueLineArr);
+
+    // lineArr =  uniqueLineArr
+
+    // for (let index = 0; index < lineArr.length; index++) {
+    //     const lineElement = lineArr[index];
+    //     var lineEleArr = lineElement.split('##')
+    //     //预处理
+    //     lineEleArr = lineEleArr.filter(word => word.length > 0 || word != '可选' || word != '必选' || word != 'true' || word != 'false');
+    //     if (lineEleArr?.length == 0 || lineArr[0] == '参数') {
+    //         continue
+    //     }
+
+    //     var lineEleArrLower = [...lineEleArr]
+    //     for (let i = 0; i < lineEleArrLower.length; i++) {
+    //         lineEleArrLower[i] = lineEleArrLower[i].toLowerCase()
+    //     }
+
+    //     var propertyName = lineEleArr[0].charAt(0).toLowerCase() + lineEleArr[0].slice(1);
+    // }
+
     for (let index = 0; index < lineArr.length; index++) {
         const lineElement = lineArr[index];
         var lineEleArr = lineElement.split('##')
@@ -126,10 +190,20 @@ const convertApi = (apiText) => {
 
         var propertyName = lineEleArr[0].charAt(0).toLowerCase() + lineEleArr[0].slice(1);
         var propertyDes = ''
-        if (lineEleArr.length > 1) {
-            var des = lineEleArr[1];
-            if(des.trim().length > 0){
-            propertyDes = '//' + des.trim();
+
+        var descLineNumber =  parseInt(form.descLineNumber);
+        console.log('解析后descLineNumber',descLineNumber);
+        if(Number.isNaN(descLineNumber)){
+            descLineNumber = 2;
+        }
+        
+        descLineNumber = descLineNumber < 1?1: descLineNumber;
+        form.descLineNumber =  descLineNumber;
+        if (lineEleArr.length > descLineNumber - 1) {
+           
+            var des = lineEleArr[descLineNumber - 1];
+            if (des.trim().length > 0) {
+                propertyDes = '//' + des.trim();
             }
         }
 
@@ -138,7 +212,7 @@ const convertApi = (apiText) => {
         if (lineEleArrLower.length > 1) {
             if (['string'].filter(v => lineEleArrLower.includes(v)).length > 0) {
                 result = `${result}\n@property (nonatomic, copy) NSString *${propertyName};${propertyDes}`
-            } else if (['int', 'long', 'datetime', 'number', 'integer', 'date','integer(int32)', 'integer(int64)'].filter(v => lineEleArrLower.includes(v)).length > 0) {
+            } else if (['int', 'long', 'datetime', 'number', 'integer', 'date', 'integer(int32)', 'integer(int64)'].filter(v => lineEleArrLower.includes(v)).length > 0) {
                 result = `${result}\n@property (nonatomic, assign) NSInteger ${propertyName};${propertyDes}`
             } else if (['bool', 'boolean'].filter(v => lineEleArrLower.includes(v)).length > 0) {
                 result = `${result}\n@property (nonatomic, assign) BOOL ${propertyName};${propertyDes}`
@@ -158,7 +232,7 @@ const convertApi = (apiText) => {
 };
 
 const convertCodeKu = (apiText) => {
-    return '`'+ apiText.replaceAll('\n','\\n').replaceAll('   ','')+'\\n`'
+    return '`' + apiText.replaceAll('\n', '\\n').replaceAll('   ', '') + '\\n`'
 }
 
 
@@ -189,7 +263,7 @@ const onAddClip = async () => {
 .flex-row {
     display: flex;
     align-items: center;
-    justify-content: flex-start;
+    justify-content: center;
     flex-direction: row;
     width: 100%;
 
@@ -215,5 +289,10 @@ const onAddClip = async () => {
 
 .radio-item {
     margin-bottom: 10px;
+}
+
+.input-class {
+    margin-bottom: 10px;
+    width: 60px !important;
 }
 </style>

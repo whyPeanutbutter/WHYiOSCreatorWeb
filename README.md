@@ -29,12 +29,23 @@ https://ios-creator-0gx5m3uq05dc1926-1316715867.tcloudbaseapp.com/#/
 ![](./markdown-sources/代码生成1.png '代码生成')
 可以在红框处粘贴蓝湖和慕客对应OC代码，快速生成。  
 ![](./markdown-sources/蓝湖代码.png '代码生成') 
+
+演示视频   
+<video id="video1" controls="" preload="none">
+      <source id="mp41" src="./markdown-sources/UI转代码.mp4" type="video/mp4">
+</videos> 
   
 ### 2.接口文档生成
 点击 ‘代码解析’ 按钮
   ![](./markdown-sources/api转换.png 'api转换') 
 复制接口文档表格到输入框，生成对应属性
 ![](./markdown-sources/接口转文档.png 'api转换') 
+
+演示视频   
+<video id="video1" controls="" preload="none">
+      <source id="mp41" src="./markdown-sources/API%E8%BD%AC%E5%B1%9E%E6%80%A7.mp4" type="video/mp4">
+</videos> 
+
 
 ### 3.chatGPT访问
 

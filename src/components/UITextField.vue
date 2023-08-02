@@ -28,7 +28,7 @@
                 <el-checkbox label="clearButtonMode" name="clearButtonMode" />
                 <el-checkbox label="returnKeyType" name="returnKeyType" />
                 <el-checkbox label="keyboardType" name="keyboardType" />
-                
+
                 <div class="flex-row">
                     <el-checkbox label="backgroundColor" name="backgroundColor"></el-checkbox>
                     <el-input class='select-input' placeholder="#fff" v-model="form.data.backgroundColor" />
@@ -38,8 +38,8 @@
                     <el-input class='select-input' placeholder="borderColor" v-model="form.data.borderColor" />
                 </div>
                 <div class="flex-row">
-                    <el-checkbox label="conrnerRadius" name="conrnerRadius"></el-checkbox>
-                    <el-input class='select-input' placeholder="6" v-model="form.data.conrnerRadius" />
+                    <el-checkbox label="cornerRadius" name="cornerRadius"></el-checkbox>
+                    <el-input class='select-input' placeholder="6" v-model="form.data.cornerRadius" />
                 </div>
             </el-checkbox-group>
         </el-form-item>
@@ -54,7 +54,7 @@
                         <el-checkbox label="shouldChangeCharactersInRange" />
                     </el-tooltip>
                     <el-checkbox label="textFieldShouldReturn" />
-                </el-checkbox-group> 
+                </el-checkbox-group>
             </div>
         </el-form-item>
         <el-form-item label="title">
@@ -138,7 +138,7 @@ var form = reactive({
     data: {
         name: 'TextField',
         commonSettings: ["addSubView", "init"],
-        conrnerRadius: '4',
+        cornerRadius: '4',
         backgroundColor: '#fff',
         borderColor: 'borderColor',
         haveTitle: false,
@@ -150,7 +150,7 @@ var form = reactive({
         titleColor: '',
         titleName: '',
         textAlign: 'Center',
-         masonrys: [],
+        masonrys: [],
         quickMasonrys: ''
     },
     helpMe: '',
@@ -162,7 +162,7 @@ const resetForm = () => {
     form.data = {
         name: 'TextField',
         commonSettings: ["addSubView", "init"],
-        conrnerRadius: '4',
+        cornerRadius: '4',
         backgroundColor: '#fff',
         borderColor: 'borderColor',
         delgeteSettings: [],
@@ -174,12 +174,15 @@ const resetForm = () => {
         titleColor: '',
         titleName: '',
         textAlign: 'Center',
-         masonrys: [],
+        masonrys: [],
         quickMasonrys: ''
     }
 };
 
 watch(() => form.data.quickMasonrys, (newValue, oldValue) => {
+    if (newValue == '') {
+        return
+    }
     newValue = newValue.toLocaleLowerCase()
     form.data.quickMasonrys = newValue
     let copy = newValue;
@@ -227,13 +230,13 @@ watch(() => props.form, (newValue, oldValue) => {
     immediate: true
 });
 
-const onCreate = (formData, needCopy = false) => {
+const onCreateSwift = (formData, needCopy = false) => {
     let commonSettings = formData.commonSettings;
     let init = commonSettings.indexOf('init') > -1 ? ` UITextField *${formData.name} = [[UITextField alloc] init)];\n ${formData.name}.contentVerticalAlignment = UIControlContentVerticalAlignmentCenter;\n ${formData.name}.inputAssistantItem.leadingBarButtonGroups = @[];\n ${formData.name}.inputAssistantItem.trailingBarButtonGroups = @[];\n${formData.name}.autocapitalizationType = UITextAutocapitalizationTypeNone;\n` : '';
     let addSubView = commonSettings.indexOf('addSubView') > -1 ? `[<#self#> addSubview:${formData.name}];\n` : '';
     let frame = commonSettings.indexOf('frame') > -1 ? `${formData.name}.frame = CGRectMake(<#CGFloat x#>, <#CGFloat y#>, <#CGFloat width#>, <#CGFloat height#>);\n` : '';
     let enabled = commonSettings.indexOf('enabled') > -1 ? `${formData.name}.enabled = NO;\n` : '';
-    let conrnerRadius = commonSettings.indexOf('conrnerRadius') > -1 ? `${formData.name}.layer.cornerRadius = ${formData.conrnerRadius};\n${formData.name}.layer.masksToBounds = YES;\n` : '';
+    let cornerRadius = commonSettings.indexOf('cornerRadius') > -1 ? `${formData.name}.layer.cornerRadius = ${formData.cornerRadius};\n${formData.name}.layer.masksToBounds = YES;\n` : '';
     let backgroundColor = commonSettings.indexOf('backgroundColor') > -1 ? `${formData.name}.backgroundColor = ${$utils.getColor(formData.backgroundColor)};\n` : '';
     let border = commonSettings.indexOf('border') > -1 ? `[${formData.name}.layer setBorderColor:${$utils.getColor(formData.borderColor)}.CGColor];\n[${formData.name}.layer setBorderWidth:<#1.0#>];\n` : '';
 
@@ -252,7 +255,7 @@ const onCreate = (formData, needCopy = false) => {
         ${mansoryStr}
     }];\n`: ''
     var result =
-        `${init}${frame}${addSubView}${enabled}${returnKeyType}${clearButtonMode}${keyboardType}${placeholder}${attributedPlaceholder}${title}${haveAttributedText}${conrnerRadius}${backgroundColor}${border}${masonry}${haveDelgete}\n`
+        `${init}${frame}${addSubView}${enabled}${returnKeyType}${clearButtonMode}${keyboardType}${placeholder}${attributedPlaceholder}${title}${haveAttributedText}${cornerRadius}${backgroundColor}${border}${masonry}${haveDelgete}\n`
     console.log(result);
     form.result = result;
     emits('create', result)
@@ -261,6 +264,48 @@ const onCreate = (formData, needCopy = false) => {
         form.result = '已复制到剪切板\n' + result;
     }
 };
+
+
+const onCreate = (formData, needCopy = false) => {
+
+    if (!$utils.getStorage('isOCTag')) {
+        onCreateSwift(formData, needCopy)
+        return
+    }
+    let commonSettings = formData.commonSettings;
+    let init = commonSettings.indexOf('init') > -1 ? `let ${formData.name} = UITextField()\n${formData.name}.contentVerticalAlignment = .center\n${formData.name}.inputAssistantItem.leadingBarButtonGroups = []\n${formData.name}.inputAssistantItem.trailingBarButtonGroups = []\n${formData.name}.autocapitalizationType = .none\n` : '';
+    let addSubView = commonSettings.indexOf('addSubView') > -1 ? `self.addSubview(${formData.name})\n` : '';
+    let frame = commonSettings.indexOf('frame') > -1 ? `${formData.name}.frame = CGRect(x: <#CGFloat#>, y: <#CGFloat#>, width: <#CGFloat#>, height: <#CGFloat#>)\n` : '';
+    let isEnabled = commonSettings.indexOf('enabled') > -1 ? `${formData.name}.isEnabled = false\n` : '';
+    let cornerRadius = commonSettings.indexOf('cornerRadius') > -1 ? `${formData.name}.layer.cornerRadius = ${formData.cornerRadius}\n${formData.name}.layer.masksToBounds = true\n` : '';
+    let backgroundColor = commonSettings.indexOf('backgroundColor') > -1 ? `${formData.name}.backgroundColor = ${$utils.getColor(formData.backgroundColor)}\n` : '';
+    let border = commonSettings.indexOf('border') > -1 ? `${formData.name}.layer.borderColor = ${$utils.getColor(formData.borderColor)}.cgColor\n${formData.name}.layer.borderWidth = 1.0\n` : '';
+
+    let returnKeyType = commonSettings.indexOf('returnKeyType') > -1 ? `${formData.name}.clearButtonMode = .whileEditing\n` : '';
+    let clearButtonMode = commonSettings.indexOf('clearButtonMode') > -1 ? `${formData.name}.returnKeyType = .done\n` : '';
+    let keyboardType = commonSettings.indexOf('keyboardType') > -1 ? `${formData.name}.keyboardType = .numberPad\n` : '';
+
+    let attributedPlaceholder = commonSettings.indexOf('attributedPlaceholder') > -1 ? `${formData.name}.attributedPlaceholder = NSMutableAttributedString(string: DefaultInputHint, attributes: [NSAttributedString.Key.font: GetRegularFont(15), NSAttributedString.Key.foregroundColor: Color_Black_Light])\n` : '';
+    let placeholder = commonSettings.indexOf('placeholder') > -1 ? `${formData.name}.placeholder = ""\n` : '';
+    let haveDelegate = formData.haveDelegate ? getDelegateText(formData.name, formData.delegateSettings) : '';
+
+    let title = formData.haveTitle ? `${formData.name}.text = "${formData.titleName}"\n${formData.name}.textAlignment = .${formData.textAlign}\n${formData.name}.textColor = ${$utils.getColor(formData.titleColor)}\n${formData.name}.font = ${$utils.getFont(formData.titleSize)}\n` : '';
+    let haveAttributedText = formData.haveAttributedText ? $utils.getAttributedText(formData.name + 'AttributedString', formData.attributedTextSettings) + `${formData.name}.attributedText = ${formData.name}AttributedString\n` : '';
+    let masonry = formData.masonrys?.length > 0 ? `${formData.name}.snp.makeConstraints { make in\n${$utils.getMasonrys(formData.masonrys)}\n}\n` : '';
+
+    let result =
+        `${init}${frame}${addSubView}${isEnabled}${returnKeyType}${clearButtonMode}${keyboardType}${placeholder}${attributedPlaceholder}${title}${haveAttributedText}${cornerRadius}${backgroundColor}${border}${masonry}${haveDelegate}\n`;
+
+    console.log(result);
+    form.result = result;
+    emits('create', result);
+    if (needCopy) {
+        $utils.copy(result);
+        form.result = '已复制到剪切板\n' + result;
+    }
+};
+
+
 
 const getDelgeteText = (name, settings) => {
     if (settings.length == 0) {
@@ -274,8 +319,19 @@ const getDelgeteText = (name, settings) => {
         "shouldChangeCharactersInRange": `\n-(BOOL)textField:(UITextField *)textField shouldChangeCharactersInRange:(NSRange)range replacementString:(NSString *)string\n{\n NSMutableString *inputText = textField.text.mutableCopy;\n [inputText replaceCharactersInRange:range withString:string];\n if (inputText.length > 50)\n {\n  return NO;\n }\n return YES;\n}\n`,
         "textFieldShouldReturn": "`- (BOOL)textFieldShouldReturn:(UITextField *)textField {\n [textField resignFirstResponder];\n [self endEditing:YES];\n return YES;\n}\n`"
     };
+
+    if (!$utils.getStorage('isOCTag')) {
+        dict = {
+            "init": "UITextFieldDelegate\n${name}.delegate = self;\n// MARK: - UITextFieldDelegate\n",
+            "textFieldDidChange": "  ${name}.addTarget(self, action: #selector(textFieldDidChange(_:)), for: .editingChanged)\n\n@objc func textFieldDidChange(_ textField: UITextField) {\n  if let range = textField.markedTextRange {\n    // Handle marked text range\n  }\n}\n",
+            "textFieldDidBeginEditing": "@objc func textFieldDidBeginEditing(_ textField: UITextField) {\n  // Handle begin editing\n}\n",
+            "textFieldShouldBeginEditing": "@objc func textFieldShouldBeginEditing(_ textField: UITextField) -> Bool {\n  if textField == categoryField {\n    return false\n  }\n  return true\n}\n",
+            "shouldChangeCharactersInRange": "\n@objc func textField(_ textField: UITextField, shouldChangeCharactersIn range: NSRange, replacementString string: String) -> Bool {\n  var inputText = textField.text ?? \"\"\n  if let textRange = Range(range, in: inputText) {\n    inputText.replaceSubrange(textRange, with: string)\n    if inputText.count > 50 {\n      return false\n    }\n  }\n  return true\n}\n",
+            "textFieldShouldReturn": "@objc func textFieldShouldReturn(_ textField: UITextField) -> Bool {\n  textField.resignFirstResponder()\n  self.endEditing(true)\n  return true\n}\n"
+        };
+    }
     var re = dict['init'];
-    if(settings.length == 1 && settings[0] == "textFieldDidChange"){
+    if (settings.length == 1 && settings[0] == "textFieldDidChange") {
         re = ""
     }
     var i = 0

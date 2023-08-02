@@ -4,11 +4,16 @@
     <el-container>
       <el-header>
         <button class="feedback" @click="goToLink">反馈</button>
+        <button class="setting" @click="goToSetting">个性化设置</button>
         <h1 class="tit">
           WHY iOS creator
+          <el-tooltip class="box-item" effect="dark"
+                        content="生成swift是测试功能，并未进行过完整的测试"
+                        placement="right" :raw-content="true">
           <el-switch v-model="state.isOCTag" class="switch-border" active-text="OC" inactive-text="Swift"
             style="--el-switch-off-color:#ff4949;" />
           <div class="border"></div>
+        </el-tooltip>
         </h1>
 
       </el-header>
@@ -103,7 +108,7 @@ const { proxy } = getCurrentInstance();
 
 // do not use same name with ref
 const state = reactive({
-  isOCTag: proxy.isOCTag,
+  isOCTag: $utils.getStorage('isOCTag'),
   currentShowViews: [],
   leftBtns: [{
     name: "UIView",
@@ -137,13 +142,14 @@ const state = reactive({
     name: "UITextField",
     type: 'UITextField'
   },
-  {
-    name: "代码库",
-    type: 'CodeStoreView'
-  },
+
   {
     name: "代码解析",
     type: 'AnalyCodeView'
+  },
+  {
+    name: "代码库",
+    type: 'CodeStoreView'
   },
   {
     name: "帮帮我",
@@ -154,6 +160,12 @@ const state = reactive({
 })
 
 onMounted(() => {
+  console.log(state.isOCTag,'state.isOCTag');
+  if(state.isOCTag == ''){
+    $utils.setStorage('isOCTag',true)
+  }
+  
+  // state.isOCTag = $utils.getStorage('isOCTag')
   // const that = this
   // alert(that.$route.query)
   // var canRedirect = router.query && router.query.canRedirect ? router.query.canRedirect : true;
@@ -178,9 +190,7 @@ const isCurrentSpecialType = (type) => {
 }
 
 watch(() => state.isOCTag, (newValue, oldValue) => {
-  proxy.isOCTag = newValue;
-  console.log(proxy.isOCTag);
-
+  $utils.setStorage('isOCTag',newValue)
 }, {
   deep: true,
   immediate: true
@@ -241,7 +251,7 @@ const contentViewClick = (item, index) => {
 const settingUpdate = (setting) => {
   if (state.currentSelectIndex > -1) {
     state.currentShowViews[state.currentSelectIndex].setting = setting;
-    state.currentShowViews[state.currentSelectIndex].style = `background-color:${setting.backgroundColor};border-radius:${setting.conrnerRadius}px ;color:${setting.titleColor};`;
+    state.currentShowViews[state.currentSelectIndex].style = `background-color:${setting.backgroundColor};border-radius:${setting.cornerRadius}px ;color:${setting.titleColor};`;
   }
 }
 
@@ -281,6 +291,18 @@ const goToLink = () => {
   // window.location.href = 'https://github.com/whyPeanutbutter/WHYiOSCreatorWeb/issues/1';
 }
 
+const goToSetting = () => {
+  const route = router.resolve({
+      path: '/userSetting',
+      query: { foo: 'bar' }
+    });
+    window.open(route.href, '_blank');
+  // router.push({
+  //     name: 'userSetting'
+  //   })
+
+}
+
 
 </script>
 
@@ -294,7 +316,7 @@ body {
   width: 95%;
   margin-bottom: 5px;
   margin-right: 5px;
-  height: 60px;
+  height: 55px;
   margin-left: 0px !important;
 }
 
@@ -395,6 +417,18 @@ body {
   color: white;
   border-radius: 5px;
   left: 20px;
+    top: 10px;
+}
+
+
+.setting{
+  padding: 7px;
+  position: absolute;
+  background: #409eff;
+  font-size: 16px;
+  color: white;
+  border-radius: 5px;
+  right: 20px;
     top: 10px;
 }
 </style>

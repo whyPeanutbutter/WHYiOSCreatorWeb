@@ -28,8 +28,8 @@
                 </div>
                 <el-checkbox label="click" name="click" />
                 <div class="flex-row">
-                    <el-checkbox label="conrnerRadius" name="conrnerRadius"></el-checkbox>
-                    <el-input class='select-input' placeholder="6" v-model="form.data.conrnerRadius" />
+                    <el-checkbox label="cornerRadius" name="cornerRadius"></el-checkbox>
+                    <el-input class='select-input' placeholder="6" v-model="form.data.cornerRadius" />
                 </div>
                 <div class="flex-row">
                     <el-checkbox label="contentMode" name="contentMode"></el-checkbox>
@@ -90,7 +90,7 @@ var form = reactive({
     data: {
         name: 'ImgView',
         commonSettings: ["addSubView","init"],
-        conrnerRadius: '4',
+        cornerRadius: '4',
         imageName: 'imageName',
         contentMode: 'UIViewContentModeScaleAspectFit',
          masonrys: [],
@@ -105,7 +105,7 @@ const resetForm = () => {
     form.data = {
         name: 'ImgView',
         commonSettings: ["addSubView","init"],
-        conrnerRadius: '4',
+        cornerRadius: '4',
         imageName: 'imageName',
         contentMode: 'UIViewContentModeScaleAspectFit',
          masonrys: [],
@@ -114,6 +114,9 @@ const resetForm = () => {
 };
 
 watch(() => form.data.quickMasonrys, (newValue, oldValue) => {
+   if(newValue == ''){
+        return
+    }
     newValue = newValue.toLocaleLowerCase()
     form.data.quickMasonrys = newValue
     let copy = newValue;
@@ -159,21 +162,26 @@ watch(() => props.form, (newValue, oldValue) => {
 });
 
 const onCreate = (formData, needCopy = false) => {
+
+    if(!$utils.getStorage('isOCTag')){
+        onCreateSwift(formData,needCopy)
+        return
+    }
     let commonSettings = formData.commonSettings;
     let init = commonSettings.indexOf('init') > -1 ?  `UIImageView *${formData.name} = [[UIImageView alloc] init];\n` : '';
     let addSubView = commonSettings.indexOf('addSubView') > -1 ? `[<#self#> addSubview:${formData.name}];\n` : '';
     let frame = commonSettings.indexOf('frame') > -1 ? `${formData.name}.frame = CGRectMake(<#CGFloat x#>, <#CGFloat y#>, <#CGFloat width#>, <#CGFloat height#>);\n` : '';
-    let image = commonSettings.indexOf('image') > -1 ? `${formData.name}.image = [UIImage imageNamed:@"${formData.imageName}"];\n` : '';
+    let image = commonSettings.indexOf('image') > -1 ? `${formData.name}.image = ${$utils.getImage(formData.imageName)};\n` : '';
     let click = commonSettings.indexOf('click') > -1 ? `${formData.name}.userInteractionEnabled = YES;\nUITapGestureRecognizer *${formData.name}TapGestureRecognizer = [[UITapGestureRecognizer alloc]initWithTarget:self action:@selector(${formData.name}Tap:)];\n[${formData.name} addGestureRecognizer:${formData.name}TapGestureRecognizer];\n\n-(void)${formData.name}Tap:(UITapGestureRecognizer *)tap{\ntap.view\n}` : '';
-    let conrnerRadius = commonSettings.indexOf('conrnerRadius') > -1 ? `${formData.name}.layer.cornerRadius = ${formData.conrnerRadius};\n${formData.name}.layer.masksToBounds = YES;\n` : '';
-    let imageUrl = commonSettings.indexOf('imageUrl') > -1 ? `#import "UIImageView+WebCache.h"\n [${formData.name} sd_setImageWithURL:[NSURL URLWithString:${formData.imageName}] placeholderImage:[UIImage imageNamed: @"jsbcDefault"]];\n` : '';
+    let cornerRadius = commonSettings.indexOf('cornerRadius') > -1 ? `${formData.name}.layer.cornerRadius = ${formData.cornerRadius};\n${formData.name}.layer.masksToBounds = YES;\n` : '';
+    let imageUrl = commonSettings.indexOf('imageUrl') > -1 ? `#import "UIImageView+WebCache.h"\n [${formData.name} sd_setImageWithURL:[NSURL URLWithString:${formData.imageName}] placeholderImage:TTIMAGE_PLACE_HOLDER];\n` : '';
     let contentMode = commonSettings.indexOf('contentMode') > -1 ? ` ${formData.name}.contentMode = ${formData.contentMode};\n` : '';
     let mansoryStr = $utils.getMansorys(formData.masonrys);
     let masonry = formData.masonrys?.length > 0 ? `[${formData.name} mas_makeConstraints:^(MASConstraintMaker *make) {
         ${mansoryStr}
     }];\n`: ''
     var result = 
-        `${init}${frame}${image}${imageUrl}${conrnerRadius}${contentMode}${addSubView}${masonry}${click}\n`
+        `${init}${frame}${image}${imageUrl}${cornerRadius}${contentMode}${addSubView}${masonry}${click}\n`
     console.log(result);
     form.result = result;
     emits('create', result)
@@ -182,6 +190,30 @@ const onCreate = (formData, needCopy = false) => {
         form.result = '已复制到剪切板\n' + result;
     }
 };
+
+
+const onCreateSwift = (formData, needCopy = false) => {
+    let commonSettings = formData.commonSettings;
+    let init = commonSettings.indexOf('init') > -1 ?  `let ${formData.name} = UIImageView()\n` : '';
+    let addSubView = commonSettings.indexOf('addSubView') > -1 ? `self.addSubview(${formData.name})\n` : '';
+    let frame = commonSettings.indexOf('frame') > -1 ? `${formData.name}.frame = CGRect(x: <#x#>, y: <#y#>, width: <#width#>, height: <#height#>)\n` : '';
+    let image = commonSettings.indexOf('image') > -1 ? `${formData.name}.image = UIImage(named: "${formData.imageName}")\n` : '';
+    let click = commonSettings.indexOf('click') > -1 ? `let ${formData.name}Tap = UITapGestureRecognizer(target: self, action: #selector(${formData.name}Tapped))\n${formData.name}.addGestureRecognizer(${formData.name}Tap)\n${formData.name}.isUserInteractionEnabled = true\n\n@objc func ${formData.name}Tapped(_ sender: UITapGestureRecognizer) {\n   <#code#>\n}\n` : '';
+    let cornerRadius = commonSettings.indexOf('cornerRadius') > -1 ? `${formData.name}.layer.cornerRadius = ${formData.cornerRadius}\n${formData.name}.clipsToBounds = true\n` : '';
+    let imageUrl = commonSettings.indexOf('imageUrl') > -1 ? `${formData.name}.sd_setImage(with: URL(string: "${formData.imageName}"), placeholderImage: UIImage(named: "<#placeholder#>"))\n` : '';
+    let contentMode = commonSettings.indexOf('contentMode') > -1 ? `${formData.name}.contentMode = .${formData.contentMode}\n` : '';
+    let mansoryStr = $utils.getMansorys(formData.masonrys);
+    let masonry = formData.masonrys?.length > 0 ? `${formData.name}.snp.makeConstraints { make in\n    ${mansoryStr}\n}\n`: ''
+    var result = 
+        `${init}${frame}${image}${imageUrl}${cornerRadius}${contentMode}${addSubView}${masonry}${click}\n`
+    console.log(result);
+    form.result = result;
+    emits('create', result)
+    if (needCopy) {
+        $utils.copy(result)
+        form.result = '已复制到剪切板\n' + result;
+    }
+}
 
 const onReset = () => {
     resetForm()

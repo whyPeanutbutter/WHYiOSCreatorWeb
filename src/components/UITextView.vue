@@ -34,8 +34,8 @@
                 </div>
                 <el-checkbox label="click" name="click" />
                 <div class="flex-row">
-                    <el-checkbox label="conrnerRadius" name="conrnerRadius"></el-checkbox>
-                    <el-input class='select-input' placeholder="6" v-model="form.data.conrnerRadius" />
+                    <el-checkbox label="cornerRadius" name="cornerRadius"></el-checkbox>
+                    <el-input class='select-input' placeholder="6" v-model="form.data.cornerRadius" />
                 </div>editable scrollEnabled placeholder haveDelgete delgeteSettings
             </el-checkbox-group>
         </el-form-item>
@@ -134,7 +134,7 @@ var form = reactive({
     data: {
         name: 'TextView',
         commonSettings: ["addSubView", "init"],
-        conrnerRadius: '4',
+        cornerRadius: '4',
         backgroundColor: '#fff',
         borderColor: 'borderColor',
         haveTitle: false,
@@ -159,7 +159,7 @@ const resetForm = () => {
     form.data = {
         name: 'TextView',
         commonSettings: ["addSubView", "init"],
-        conrnerRadius: '4',
+        cornerRadius: '4',
         backgroundColor: '#fff',
         borderColor: 'borderColor',
         delgeteSettings: [],
@@ -178,6 +178,9 @@ const resetForm = () => {
 };
 
 watch(() => form.data.quickMasonrys, (newValue, oldValue) => {
+   if(newValue == ''){
+        return
+    }
     newValue = newValue.toLocaleLowerCase()
     form.data.quickMasonrys = newValue
     let copy = newValue;
@@ -226,12 +229,17 @@ watch(() => props.form, (newValue, oldValue) => {
 });
 
 const onCreate = (formData, needCopy = false) => {
+
+    if(!$utils.getStorage('isOCTag')){
+        onCreateSwift(formData,needCopy)
+        return
+    }
     let commonSettings = formData.commonSettings;
     let init = commonSettings.indexOf('init') > -1 ? `UITextView *${formData.name} = [[UITextView alloc]init];\n  ${formData.name}.textContainerInset = UIEdgeInsetsMake(0, 0, 0, 0);\n` : '';
     let addSubView = commonSettings.indexOf('addSubView') > -1 ? `[<#self#> addSubview:${formData.name}];\n` : '';
     let frame = commonSettings.indexOf('frame') > -1 ? `${formData.name}.frame = CGRectMake(<#CGFloat x#>, <#CGFloat y#>, <#CGFloat width#>, <#CGFloat height#>);\n` : '';
     let click = commonSettings.indexOf('click') > -1 ? `[${formData.name} addTarget:self action:@selector(<#${formData.name}Clicked:#>) forControlEvents:UIControlEventTouchUpInside];\n\n- (void)${formData.name}Clicked:(UIButton *)button{\n\n}\n` : '';
-    let conrnerRadius = commonSettings.indexOf('conrnerRadius') > -1 ? `${formData.name}.layer.cornerRadius = ${formData.conrnerRadius};\n${formData.name}.layer.masksToBounds = YES;\n` : '';
+    let cornerRadius = commonSettings.indexOf('cornerRadius') > -1 ? `${formData.name}.layer.cornerRadius = ${formData.cornerRadius};\n${formData.name}.layer.masksToBounds = YES;\n` : '';
     let backgroundColor = commonSettings.indexOf('backgroundColor') > -1 ? `${formData.name}.backgroundColor = ${$utils.getColor(formData.backgroundColor)};\n` : '';
     let border = commonSettings.indexOf('border') > -1 ? `[${formData.name}.layer setBorderColor:${$utils.getColor(formData.borderColor)}.CGColor];\n[${formData.name}.layer setBorderWidth:<#1.0#>];\n` : '';
 
@@ -247,7 +255,7 @@ const onCreate = (formData, needCopy = false) => {
         ${mansoryStr}
     }];\n`: ''
     var result =
-        `${init}${frame}${addSubView}${editable}${scrollEnabled}${placeholder}${title}${haveAttributedText}${conrnerRadius}${backgroundColor}${border}${masonry}${click}${haveDelgete}\n`
+        `${init}${frame}${addSubView}${editable}${scrollEnabled}${placeholder}${title}${haveAttributedText}${cornerRadius}${backgroundColor}${border}${masonry}${click}${haveDelgete}\n`
     console.log(result);
     form.result = result;
     emits('create', result)
@@ -256,6 +264,34 @@ const onCreate = (formData, needCopy = false) => {
         form.result = '已复制到剪切板\n' + result;
     }
 };
+
+const onCreateSwift = (formData, needCopy = false) => {
+    let commonSettings = formData.commonSettings;
+    let init = commonSettings.indexOf('init') > -1 ? `let ${formData.name} = UITextView()\n${formData.name}.textContainerInset = UIEdgeInsets(top: 0, left: 0, bottom: 0, right: 0)\n` : '';
+    let addSubView = commonSettings.indexOf('addSubView') > -1 ? `self.addSubview(${formData.name})\n` : '';
+    let frame = commonSettings.indexOf('frame') > -1 ? `${formData.name}.frame = CGRect(x: <#x#>, y: <#y#>, width: <#width#>, height: <#height#>)\n` : '';
+    let click = commonSettings.indexOf('click') > -1 ? `let tapGesture = UITapGestureRecognizer(target: self, action: #selector(${formData.name}Tapped(_:)))\n${formData.name}.addGestureRecognizer(tapGesture)\n\n@objc func ${formData.name}Tapped(_ sender: UITapGestureRecognizer) {\n// Handle tap\n}\n` : '';
+    let cornerRadius = commonSettings.indexOf('cornerRadius') > -1 ? `${formData.name}.layer.cornerRadius = ${formData.cornerRadius}\n${formData.name}.clipsToBounds = true\n` : '';
+    let backgroundColor = commonSettings.indexOf('backgroundColor') > -1 ? `${formData.name}.backgroundColor = ${$utils.getColor(formData.backgroundColor)}\n` : '';
+    let border = commonSettings.indexOf('border') > -1 ? `${formData.name}.layer.borderColor = ${$utils.getColor(formData.borderColor)}.cgColor\n${formData.name}.layer.borderWidth = <#1.0#>\n` : '';
+    let editable = commonSettings.indexOf('editable') > -1 ? `${formData.name}.isEditable = false\n` : '';
+    let scrollEnabled = commonSettings.indexOf('scrollEnabled') > -1 ? `${formData.name}.isScrollEnabled = true\n` : '';
+    let placeholder = commonSettings.indexOf('placeholder') > -1 ? `${formData.name}.text = "<#placeholder#>"\n` : '';
+    let haveDelgete = formData.haveDelgete ? getDelgeteText(formData.name, formData.delgeteSettings) : '';
+    let title = formData.haveTitle ? `${formData.name}.text = "${formData.titleName}"\n${formData.name}.textAlignment = .${formData.textAlign}\n${formData.name}.textColor=${$utils.getColor(formData.titleColor)}\n${formData.name}.font = ${$utils.getFont(formData.titleSize)}\n` : ''
+    let haveAttributedText = formData.haveAttributedText ? $utils.getAttributedText(formData.name + 'AttributedString', formData.attributedTextSettings) + `${formData.name}.attributedText = ${formData.name}AttributedString;\n` : '';
+    let mansoryStr = $utils.getMansorys(formData.masonrys);
+    let masonry = formData.masonrys?.length > 0 ? `${formData.name}.snp.makeConstraints { (make) in\n${mansoryStr}\n}\n` : '';
+    var result = `${init}${frame}${addSubView}${editable}${scrollEnabled}${placeholder}${title}${haveAttributedText}${cornerRadius}${backgroundColor}${border}${masonry}${click}${haveDelgete}\n`;
+    console.log(result);
+    form.result = result;
+    emits('create', result)
+    if (needCopy) {
+        $utils.copy(result)
+        form.result = '已复制到剪切板\n' + result;
+    }
+};
+
 
 const getDelgeteText = (name, settings) => {
     if (settings.length == 0) {
@@ -270,6 +306,18 @@ const getDelgeteText = (name, settings) => {
         "shouldChangeTextInRange": `-(BOOL)textView:(UITextView *)textView shouldChangeTextInRange:(NSRange)range replacementText:(NSString *)text\n{//点击完成操作\n    if ([text isEqualToString:@"\n"]) {\n        [textView resignFirstResponder];\n        return NO;\n    }\n    return YES;\n}`,
         "textViewShouldBeginEditing": "- (BOOL)textViewShouldBeginEditing:(UITextView *)textView\n{\n    return YES;\n}\n\n"
     };
+
+    if(!$utils.getStorage('isOCTag')){
+        dict = {
+        "init": `UITextViewDelegate\n${name}.delegate = self\n`,
+        "textViewDidChange": "func textViewDidChange(_ textView: UITextView) {\n     let textLength = textView.text.length\n}\n",
+        "超链接": `${name}.isEditable = false\n\nlet summary = "bbbbbb联系客服bbbbb"\nlet attributedString = NSMutableAttributedString(string: summary)\nattributedString.addAttribute(.link, value: "http://www.jianshu.com", range: (summary as NSString).range(of: "联系客服"))\n${name}.linkTextAttributes = [NSAttributedString.Key.foregroundColor: UIColor(red: 79/255, green: 224/255, blue: 161/255, alpha: 1)]\n${name}.attributedText = attributedString\n\nfunc textView(_ textView: UITextView, shouldInteractWith URL: URL, in characterRange: NSRange, interaction: UITextItemInteraction) -> Bool {\n    if URL.absoluteString == "http://www.jianshu.com" {\n        // Handle URL interaction\n    }\n    return true\n}\n`,
+        "textViewDidEndEditing": `func textViewDidEndEditing(_ textView: UITextView) {\n\n}\n`,
+        "shouldChangeTextInRange": `func textView(_ textView: UITextView, shouldChangeTextIn range: NSRange, replacementText text: String) -> Bool {\n    if text == "\\n" {\n        textView.resignFirstResponder()\n        return false\n    }\n    return true\n}`,
+        "textViewShouldBeginEditing": "func textViewShouldBeginEditing(_ textView: UITextView) -> Bool {\n    return true\n}\n\n"
+    };
+    }
+   
     var re = dict['init'];
     var i = 0
     for (let str of settings) {

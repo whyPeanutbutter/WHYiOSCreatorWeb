@@ -108,6 +108,9 @@ const resetForm = () => {
 };
 
 watch(() => form.data.quickMasonrys, (newValue, oldValue) => {
+   if(newValue == ''){
+        return
+    }
     newValue = newValue.toLocaleLowerCase()
     form.data.quickMasonrys = newValue
     let copy = newValue;
@@ -153,6 +156,11 @@ watch(() => props.form, (newValue, oldValue) => {
 });
 
 const onCreate = (formData, needCopy = false) => {
+
+    if(!$utils.getStorage('isOCTag')){
+        onCreateSwift(formData,needCopy)
+        return
+    }
     let commonSettings = formData.commonSettings;
     let frame = commonSettings.indexOf('frame') > -1 ? `${formData.name}.frame = CGRectMake(<#CGFloat x#>, <#CGFloat y#>, <#CGFloat width#>, <#CGFloat height#>);\n` : '';
 
@@ -185,6 +193,37 @@ const onCreate = (formData, needCopy = false) => {
         form.result = '已复制到剪切板\n' + result;
     }
 };
+
+
+const onCreateSwift = (formData, needCopy = false) => {
+    let commonSettings = formData.commonSettings;
+    let frame = commonSettings.indexOf('frame') > -1 ? `${formData.name}.frame = CGRect(x: <#CGFloat x#>, y: <#CGFloat y#>, width: <#CGFloat width#>, height: <#CGFloat height#>)\n` : '';
+
+    let init = commonSettings.indexOf('init') > -1 ? `var ${formData.name}: UITableView = {\nlet ${formData.name} = UITableView(frame: .zero, style: .grouped)\n${formData.name}.dataSource = self;\n${formData.name}.delegate = self;\n${formData.name}.separatorStyle = .none\n${formData.name}.showsVerticalScrollIndicator = false\nif #available(iOS 15.0, *) {\n${formData.name}.sectionHeaderTopPadding = 0\n}\nreturn ${formData.name}\n}()\n` : '';
+    let addSubView = commonSettings.indexOf('addSubView') > -1 ? `self.addSubview(${formData.name})\n` : '';
+    let backgroundColor = commonSettings.indexOf('backgroundColor') > -1 ? `${formData.name}.backgroundColor = \(formData.backgroundColor)\n` : '';
+    let upperFirst = formData.name.charAt(0).toUpperCase() + formData.name.slice(1);
+    let estimatedRowHeight = commonSettings.indexOf('estimatedRowHeight') > -1 ? `${formData.name}.estimatedRowHeight = ${formData.estimatedRowHeight};\n${formData.name}.rowHeight = UITableView.automaticDimension\n` : '';
+    let registerClass = commonSettings.indexOf('registerClass') > -1 ? `let ${upperFirst}CellIdentifier = "${upperFirst}CellIdentifier"\n${formData.name}.register(<#${upperFirst}Cell#>.self, forCellReuseIdentifier: ${upperFirst}CellIdentifier)\n` : '';
+    let sectionNum = commonSettings.indexOf('sectionNum') > -1 ? `func numberOfSections(in tableView: UITableView) -> Int {\nreturn 1\n}\n` : '';
+    let rowNum = commonSettings.indexOf('rownNum') > -1 ? `func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {\nreturn .count\n}\n` : '';
+    let rowHeight = commonSettings.indexOf('rowHeight') > -1 ? `func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {\nreturn 103\n}\n` : '';
+    let cellView = commonSettings.indexOf('cellView') > -1 ? `func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {\nlet cell = tableView.dequeueReusableCell(withIdentifier: ${upperFirst}CellIdentifier, for: indexPath) as! <#${upperFirst}Cell#>\nreturn cell\n}\n` : '';
+    let headerView = commonSettings.indexOf('headerView') > -1 ? `func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {\nlet view = UIView()\nreturn view\n}\n\nfunc tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {\nreturn CGFloat.leastNormalMagnitude\n}\n` : '';
+    let footerView = commonSettings.indexOf('footerView') > -1 ? `func tableView(_ tableView: UITableView, viewForFooterInSection section: Int) -> UIView? {\nlet view = UIView()\nreturn view\n}\n\nfunc tableView(_ tableView: UITableView, heightForFooterInSection section: Int) -> CGFloat {\nreturn CGFloat.leastNormalMagnitude\n}\n` : '';
+    let selectCell = commonSettings.indexOf('selectCell') > -1 ? `func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {\ntableView.deselectRow(at: indexPath, animated: false)\n}\n` : '';
+    let cellAction = commonSettings.indexOf('cellAction') > -1 ? `func tableView(_ tableView: UITableView, trailingSwipeActionsConfigurationForRowAt indexPath: IndexPath) -> UISwipeActionsConfiguration? {\nlet delete = UIContextualAction(style: .destructive, title: "删除") { (action, view, completionHandler) in\nself.cellDeleteAction(at: indexPath)\ncompletionHandler(true)\n}\nlet configuration = UISwipeActionsConfiguration(actions: [delete])\nreturn configuration\n}\n\nfunc cellDeleteAction(at indexPath: IndexPath) {\n}\n` : '';
+
+    let masonry = formData.masonrys?.length > -1 ? `${formData.name}.snp.makeConstraints { (make) in\n/* Constraints here */\n}\n` : '';
+    var result = `${init}${addSubView}${estimatedRowHeight}${backgroundColor}${registerClass}${masonry}${sectionNum}${rowNum}${rowHeight}${cellView}${headerView}${footerView}${selectCell}${cellAction}\n`
+    console.log(result);
+    form.result = result;
+    emits('create', result)
+    if (needCopy) {
+        $utils.copy(result)
+        form.result = '已复制到剪切板\n' + result;
+    }
+}
 
 const onReset = () => {
     resetForm()

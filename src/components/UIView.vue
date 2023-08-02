@@ -20,9 +20,10 @@
                 <el-checkbox label="frame" name="frame" />
                 <el-checkbox label="click" name="click" />
                 <el-checkbox label="下侧圆角" name="下侧圆角" />
+                <el-checkbox label="阴影" name="阴影" />
                 <div class="flex-row">
-                    <el-checkbox label="conrnerRadius" name="conrnerRadius"></el-checkbox>
-                    <el-input class='select-input' placeholder="6" v-model="form.data.conrnerRadius" />
+                    <el-checkbox label="cornerRadius" name="cornerRadius"></el-checkbox>
+                    <el-input class='select-input' placeholder="6" v-model="form.data.cornerRadius" />
                 </div>
                 <div class="flex-row">
                     <el-checkbox label="backgroundColor" name="backgroundColor"></el-checkbox>
@@ -64,7 +65,7 @@
 </template>
 
 <script setup>
-import { reactive, watch, defineEmits, defineProps, toRef } from 'vue';
+import { reactive, watch, defineEmits, defineProps, toRef,getCurrentInstance } from 'vue';
 import * as $utils from './Utils';
 
 
@@ -82,7 +83,7 @@ var form = reactive({
     data: {
         name: 'view',
         commonSettings: ["addSubView", "init"],
-        conrnerRadius: '4',
+        cornerRadius: '4',
         backgroundColor: '#fff',
         borderColor: 'borderColor',
          masonrys: [],
@@ -97,7 +98,7 @@ const resetForm = () => {
     form.data = {
         name: 'View',
         commonSettings: ["addSubView", "init"],
-        conrnerRadius: '4',
+        cornerRadius: '4',
         backgroundColor: '#fff',
         borderColor: 'borderColor',
          masonrys: [],
@@ -106,6 +107,9 @@ const resetForm = () => {
 };
 
 watch(() => form.data.quickMasonrys, (newValue, oldValue) => {
+   if(newValue == ''){
+        return
+    }
     newValue = newValue.toLocaleLowerCase()
     form.data.quickMasonrys = newValue
     let copy = newValue;
@@ -152,13 +156,19 @@ watch(() => props.form, (newValue, oldValue) => {
     immediate: true
 });
 
+
+const { proxy } = getCurrentInstance();
 const onCreate = (formData, needCopy = false) => {
+    if(!$utils.getStorage('isOCTag')){
+        onCreateSwift(formData,needCopy)
+        return
+    }
     let commonSettings = formData.commonSettings;
     let init = commonSettings.indexOf('init') > -1 ? `UIView *${formData.name} = [[UIView alloc] init];\n` : '';
     let addSubView = commonSettings.indexOf('addSubView') > -1 ? `[<#self#> addSubview:${formData.name}];\n` : '';
     let frame = commonSettings.indexOf('frame') > -1 ? `${formData.name}.frame = CGRectMake(<#CGFloat x#>, <#CGFloat y#>, <#CGFloat width#>, <#CGFloat height#>);\n` : '';
     let click = commonSettings.indexOf('click') > -1 ? `${formData.name}.userInteractionEnabled = YES;\nUITapGestureRecognizer *${formData.name}TapGestureRecognizer = [[UITapGestureRecognizer alloc]initWithTarget:self action:@selector(${formData.name}Tap:)];\n[${formData.name} addGestureRecognizer:${formData.name}TapGestureRecognizer];\n\n-(void)${formData.name}Tap:(UITapGestureRecognizer *)tap{\ntap.view\n}` : '';
-    let conrnerRadius = commonSettings.indexOf('conrnerRadius') > -1 ? `${formData.name}.layer.cornerRadius = ${formData.conrnerRadius};\n${formData.name}.layer.masksToBounds = YES;\n` : '';
+    let cornerRadius = commonSettings.indexOf('cornerRadius') > -1 ? `${formData.name}.layer.cornerRadius = ${formData.cornerRadius};\n${formData.name}.layer.masksToBounds = YES;\n` : '';
     let backgroundColor = commonSettings.indexOf('backgroundColor') > -1 ? `${formData.name}.backgroundColor = ${$utils.getColor(formData.backgroundColor)};\n` : '';
     let border = commonSettings.indexOf('border') > -1 ? `[${formData.name}.layer setBorderColor:${$utils.getColor(formData.borderColor)}.CGColor];\n[${formData.name}.layer setBorderWidth:<#1.0#>];\n` : '';
     let bottomCor = commonSettings.indexOf('下侧圆角') > -1 ? `  UIBezierPath *maskPath = [UIBezierPath bezierPathWithRoundedRect:${formData.name}.bounds<#CGRectMake(0, 0, 100, 100)#> byRoundingCorners:UIRectCornerBottomLeft | UIRectCornerBottomRight cornerRadii:CGSizeMake(10, 10)];
@@ -166,12 +176,13 @@ const onCreate = (formData, needCopy = false) => {
     maskLayer.frame = ${formData.name}.bounds;
     maskLayer.path = maskPath.CGPath;
     ${formData.name}.layer.mask = maskLayer;` : '';
+    let shadow = commonSettings.indexOf('阴影') > -1 ? ` ${formData.name}.layer.shadowColor = [[UIColor blackColor] CGColor];\n ${formData.name}.layer.shadowOffset = CGSizeMake(0,0);\n ${formData.name}.layer.shadowOpacity = 0.2;\n ${formData.name}.layer.shadowRadius = 6;\n` : '';
     let mansoryStr = $utils.getMansorys(formData.masonrys);
     let masonry = formData.masonrys?.length > 0 ? `[${formData.name} mas_makeConstraints:^(MASConstraintMaker *make) {
         ${mansoryStr}
     }];\n`: ''
     var result =
-        `${init}${frame}${addSubView}${conrnerRadius}${bottomCor}${backgroundColor}${border}${masonry}${click}\n`
+        `${init}${frame}${addSubView}${cornerRadius}${shadow}${bottomCor}${backgroundColor}${border}${masonry}${click}\n`
     console.log(result);
     form.result = result;
     emits('create', result)
@@ -180,6 +191,30 @@ const onCreate = (formData, needCopy = false) => {
         form.result = '已复制到剪切板\n' + result;
     }
 };
+
+const onCreateSwift = (formData, needCopy = false) => {
+    let commonSettings = formData.commonSettings;
+    let init = commonSettings.indexOf('init') > -1 ? `let ${formData.name} = UIView()\n` : '';
+    let addSubView = commonSettings.indexOf('addSubView') > -1 ? `<#self#>.addSubview(${formData.name})\n` : '';
+    let frame = commonSettings.indexOf('frame') > -1 ? `${formData.name}.frame = CGRect(x: <#x#>, y: <#y#>, width: <#width#>, height: <#height#>)\n` : '';
+    let click = commonSettings.indexOf('click') > -1 ? `let tapGesture = UITapGestureRecognizer(target: self, action: #selector(${formData.name}Tapped(_:)))\n${formData.name}.addGestureRecognizer(tapGesture)\n\n@objc func ${formData.name}Tapped(_ sender: UITapGestureRecognizer) {\n// Handle tap\n}\n` : '';
+    let cornerRadius = commonSettings.indexOf('cornerRadius') > -1 ? `${formData.name}.layer.cornerRadius = ${formData.cornerRadius}\n${formData.name}.clipsToBounds = true\n` : '';
+    let backgroundColor = commonSettings.indexOf('backgroundColor') > -1 ? `${formData.name}.backgroundColor = ${$utils.getColor(formData.backgroundColor)}\n` : '';
+    let border = commonSettings.indexOf('border') > -1 ? `${formData.name}.layer.borderColor = ${$utils.getColor(formData.borderColor)}.cgColor\n${formData.name}.layer.borderWidth = <#1.0#>\n` : '';
+    let bottomCor = commonSettings.indexOf('下侧圆角') > -1 ? `let maskPath = UIBezierPath(roundedRect: ${formData.name}.bounds, byRoundingCorners: [.bottomLeft, .bottomRight], cornerRadii: CGSize(width: 10, height: 10))\nlet maskLayer = CAShapeLayer()\nmaskLayer.frame = ${formData.name}.bounds\nmaskLayer.path = maskPath.cgPath\n${formData.name}.layer.mask = maskLayer\n` : '';
+    let shadow = commonSettings.indexOf('阴影') > -1 ? `${formData.name}.layer.shadowColor = UIColor.black.cgColor\n${formData.name}.layer.shadowOffset = CGSize.zero\n${formData.name}.layer.shadowOpacity = 0.2\n${formData.name}.layer.shadowRadius = 6\n` : '';
+    let mansoryStr = $utils.getMansorys(formData.masonrys);
+    let masonry = formData.masonrys?.length > 0 ? `${formData.name}.snp.makeConstraints { (make) in\n${mansoryStr}\n}\n` : '';
+    var result = `${init}${frame}${addSubView}${cornerRadius}${shadow}${bottomCor}${backgroundColor}${border}${masonry}${click}\n`;
+    console.log(result);
+    form.result = result;
+    emits('create', result)
+    if (needCopy) {
+        $utils.copy(result)
+        form.result = '已复制到剪切板\n' + result;
+    }
+};
+
 
 const onReset = () => {
     resetForm()

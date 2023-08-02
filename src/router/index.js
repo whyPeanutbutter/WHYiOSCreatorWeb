@@ -5,6 +5,8 @@ import beibei from '../view/beibei.vue'
 import Home from '../view/home.vue'
 import phoneHome from '../view/phoneHome.vue'
 
+import userSetting from '../view/userSetting.vue'
+
 
 const Router = createRouter({
     history: createWebHashHistory(),
@@ -22,6 +24,11 @@ const Router = createRouter({
         path: '/phoneHome',
         name: 'phoneHome',
         component: phoneHome
+    },
+    {
+        path: '/userSetting',
+        name: 'userSetting',
+        component: userSetting
     }
     ]
 })

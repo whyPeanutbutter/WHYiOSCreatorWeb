@@ -24,8 +24,8 @@
                     <el-input class='select-input' placeholder="imageName" v-model="form.data.imageName" />
                 </div>
                 <div class="flex-row">
-                    <el-checkbox label="conrnerRadius" name="conrnerRadius"></el-checkbox>
-                    <el-input class='select-input' placeholder="6" v-model="form.data.conrnerRadius" />
+                    <el-checkbox label="cornerRadius" name="cornerRadius"></el-checkbox>
+                    <el-input class='select-input' placeholder="6" v-model="form.data.cornerRadius" />
                 </div>
                 <div class="flex-row">
                     <el-checkbox label="backgroundColor" name="backgroundColor"></el-checkbox>
@@ -102,7 +102,7 @@ var form = reactive({
         name: 'Btn',
         commonSettings: ["addSubView","init"],
         imageName: 'imageName',
-        conrnerRadius: '4',
+        cornerRadius: '4',
         backgroundColor: '#fff',
         borderColor: 'borderColor',
         haveTitle: false,
@@ -124,7 +124,7 @@ const resetForm = () => {
         name: 'Btn',
         commonSettings: ["addSubView","init"],
         imageName: 'imageName',
-        conrnerRadius: '4',
+        cornerRadius: '4',
         backgroundColor: '#fff',
         borderColor: 'borderColor',
         haveTitle: false,
@@ -138,6 +138,9 @@ const resetForm = () => {
 };
 
 watch(() => form.data.quickMasonrys, (newValue, oldValue) => {
+   if(newValue == ''){
+        return
+    }
     newValue = newValue.toLocaleLowerCase()
     form.data.quickMasonrys = newValue
     let copy = newValue;
@@ -185,14 +188,21 @@ watch(() => props.form, (newValue, oldValue) => {
     immediate: true
 });
 
+
+
 const onCreate = (formData, needCopy = false) => {
+    if(!$utils.getStorage('isOCTag')){
+        onCreateSwift(formData,needCopy)
+        return
+    }
+
     let commonSettings = formData.commonSettings;
     let init = commonSettings.indexOf('init') > -1 ?  `UIButton *${formData.name} = [UIButton buttonWithType:UIButtonTypeCustom];\n` : '';
     let addSubView = commonSettings.indexOf('addSubView') > -1 ? `[<#self#> addSubview:${formData.name}];\n` : '';
     let frame = commonSettings.indexOf('frame') > -1 ? `${formData.name}.frame = CGRectMake(<#CGFloat x#>, <#CGFloat y#>, <#CGFloat width#>, <#CGFloat height#>);\n` : '';
     let btnClick = commonSettings.indexOf('btnClick') > -1 ? `[${formData.name} addTarget:self action:@selector(<#${formData.name}Clicked:#>) forControlEvents:UIControlEventTouchUpInside];\n\n- (void)${formData.name}Clicked:(UIButton *)button{\n\n}\n` : '';
-    let image = commonSettings.indexOf('image') > -1 ? `[${formData.name} setImage:[UIImage imageNamed:@"${formData.imageName}"] forState:UIControlStateNormal];\n` : '';
-    let conrnerRadius = commonSettings.indexOf('conrnerRadius') > -1 ? `${formData.name}.layer.cornerRadius = ${formData.conrnerRadius};\n${formData.name}.layer.masksToBounds = YES;\n` : '';
+    let image = commonSettings.indexOf('image') > -1 ? `[${formData.name} setImage:${$utils.getImage(formData.imageName)} forState:UIControlStateNormal];\n` : '';
+    let cornerRadius = commonSettings.indexOf('cornerRadius') > -1 ? `${formData.name}.layer.cornerRadius = ${formData.cornerRadius};\n${formData.name}.layer.masksToBounds = YES;\n` : '';
     let backgroundColor = commonSettings.indexOf('backgroundColor') > -1 ? `${formData.name}.backgroundColor = ${$utils.getColor(formData.backgroundColor)};\n` : '';
     let border = commonSettings.indexOf('border') > -1 ? `[${formData.name}.layer setBorderColor:${$utils.getColor(formData.borderColor)}.CGColor];\n[${formData.name}.layer setBorderWidth:<#1.0#>];\n` : '';
     let title = formData.haveTitle ? `[${formData.name} setTitle:@"${formData.titleName}" forState:UIControlStateNormal];\n${formData.name}.titleLabel.textAlignment = NSTextAlignment${formData.textAlign};\n[${formData.name} setTitleColor:${$utils.getColor(formData.titleColor)} forState:UIControlStateNormal];\n${formData.name}.titleLabel.font = ${$utils.getFont(formData.titleSize)};\n` : ''
@@ -201,7 +211,7 @@ const onCreate = (formData, needCopy = false) => {
         ${mansoryStr}
     }];\n`: ''
     var result = 
-        `${init}${frame}${addSubView}${image}${title}${conrnerRadius}${backgroundColor}${border}${masonry}${btnClick}\n`
+        `${init}${frame}${addSubView}${image}${title}${cornerRadius}${backgroundColor}${border}${masonry}${btnClick}\n`
     console.log(result);
     form.result = result;
     emits('create', result)
@@ -210,23 +220,33 @@ const onCreate = (formData, needCopy = false) => {
         form.result = '已复制到剪切板\n' + result;
     }
 };
-// let nameBtn = UIButton(type: .custom)
-// self.addSubview(nameBtn)
-// nameBtn.setImage(UIImage(named: "imageName"), for: .normal)
-// nameBtn.setTitle("文字", for: .normal)
-// nameBtn.titleLabel?.textAlignment = .center
-// nameBtn.setTitleColor(ColorUtility.colorWithString("ffffff"), for: .normal)
-// nameBtn.titleLabel?.font = UIFont.systemFont(ofSize: 14)
-// nameBtn.layer.cornerRadius = 4
-// nameBtn.layer.masksToBounds = true
-// nameBtn.backgroundColor = ColorUtility.colorWithString("#fff")
-// nameBtn.layer.borderColor = ColorUtility.colorWithString("borderColor").cgColor
-// nameBtn.layer.borderWidth = 1.0
-// nameBtn.addTarget(self, action: #selector(nameBtnClicked(_:)), for: .touchUpInside)
 
-// @objc func nameBtnClicked(_ button: UIButton) {
-//     // 按钮点击事件处理
-// }
+
+const onCreateSwift = (formData, needCopy = false) => {
+    let commonSettings = formData.commonSettings;
+    let init = commonSettings.indexOf('init') > -1 ? `let ${formData.name} = UIButton(type: .custom)\n` : '';
+    let addSubView = commonSettings.indexOf('addSubView') > -1 ? `self.addSubview(${formData.name})\n` : '';
+    let frame = commonSettings.indexOf('frame') > -1 ? `${formData.name}.frame = CGRect(x: <#CGFloat x#>, y: <#CGFloat y#>, width: <#CGFloat width#>, height: <#CGFloat height#>)\n` : '';
+    let btnClick = commonSettings.indexOf('btnClick') > -1 ? `${formData.name}.addTarget(self, action: #selector(${formData.name}Clicked(_:)), for: .touchUpInside)\n\n@objc func ${formData.name}Clicked(_ button: UIButton) {\n\n}\n` : '';
+    let image = commonSettings.indexOf('image') > -1 ? `${formData.name}.setImage(UIImage(named: "${formData.imageName}"), for: .normal)\n` : '';
+    let cornerRadius = commonSettings.indexOf('cornerRadius') > -1 ? `${formData.name}.layer.cornerRadius = ${formData.cornerRadius}\n${formData.name}.layer.masksToBounds = true\n` : '';
+    let backgroundColor = commonSettings.indexOf('backgroundColor') > -1 ? `${formData.name}.backgroundColor = ${$utils.getColor(formData.backgroundColor)}\n` : '';
+    let border = commonSettings.indexOf('border') > -1 ? `${formData.name}.layer.borderColor = ${$utils.getColor(formData.borderColor)}.cgColor\n${formData.name}.layer.borderWidth = <#1.0#>\n` : '';
+    let title = formData.haveTitle ? `${formData.name}.setTitle("${formData.titleName}", for: .normal)\n${formData.name}.titleLabel?.textAlignment = .${formData.textAlign}\n${formData.name}.setTitleColor(${$utils.getColor(formData.titleColor)}, for: .normal)\n${formData.name}.titleLabel?.font = ${$utils.getFont(formData.titleSize)}\n` : ''
+    let mansoryStr = $utils.getMansorys(formData.masonrys);
+    let masonry = formData.masonrys?.length > 0 ? `${formData.name}.snp.makeConstraints { make in
+        ${mansoryStr}
+    }\n`: ''
+    var result = 
+        `${init}${frame}${addSubView}${image}${title}${cornerRadius}${backgroundColor}${border}${masonry}${btnClick}\n`
+    console.log(result);
+    form.result = result;
+    emits('create', result)
+    if (needCopy) {
+        $utils.copy(result)
+        form.result = '已复制到剪切板\n' + result;
+    }
+}
 
 const onReset = () => {
     resetForm()

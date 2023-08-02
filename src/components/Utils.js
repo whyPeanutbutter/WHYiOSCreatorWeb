@@ -2,6 +2,20 @@
 import useClipboard from "vue-clipboard3";
 
 
+export const getStorage = (key) => {
+    const inputVal = localStorage.getItem(key) || ''
+    if(!inputVal){
+        return ''
+    }
+    return JSON.parse(inputVal);
+
+
+}
+
+export const setStorage = (key, obj) => {
+    localStorage.setItem(key, JSON.stringify(obj))
+}
+
 export const getMansorys = (mansorys) => {
     if (mansorys.length == 0) {
         return ''
@@ -24,6 +38,26 @@ export const getMansorys = (mansorys) => {
         "right-View": "make.right.equalTo(<#view#>.mas_left).offset(-0);",
         "bottom-View": "make.bottom.equalTo(<#view#>.mas_bottom).offset(-0);"
     };
+    if (!getStorage('isOCTag')) {
+        dict = {
+            "left": "make.left.equalTo(0)",
+            "right": "make.right.equalTo(-0)",
+            "top": "make.top.equalTo(0)",
+            "bottom": "make.bottom.equalTo(-0)",
+            "width": "make.width.equalTo(0)",
+            "height": "make.height.equalTo(0)",
+            "edges": "make.edges.equalTo(0)",
+            "size": "make.size.equalTo(16)",
+            "centerX": "make.centerX.equalTo(0)",
+            "centerY": "make.centerY.equalTo(0)",
+            "center": "make.center.equalTo(0)",
+            "left-View": "make.left.equalTo(<#view#>.snp.right).offset(0)",
+            "top-View": "make.top.equalTo(<#view#>.snp.bottom).offset(0)",
+            "right-View": "make.right.equalTo(<#view#>.snp.left).offset(-0)",
+            "bottom-View": "make.bottom.equalTo(<#view#>.snp.bottom).offset(-0)"
+        };
+
+    }
     var i = 0
     for (let str of mansorys) {
         re = re + (mansorys.indexOf(str) > -1 ? dict[str] : '')
@@ -37,13 +71,45 @@ export const getMansorys = (mansorys) => {
 }
 
 export const getFont = (font) => {
-    return `[UIFont systemFontOfSize:${font}]`
+    var fontSetting = getStorage('fontSetting');
+    if(!fontSetting || fontSetting.length == ''){
+        fontSetting = {
+            left:'[UIFont systemFontOfSize:',
+            right:']'
+        }
+        setStorage('fontSetting',fontSetting)
+    }
+    
+    return `${fontSetting.left}${font}${fontSetting.right}`
 
 }
 
-export const getColor = (color) => {
+export const getImage = (font) => {
+    var imageSetting = getStorage('imageSetting');
+    if(!imageSetting || imageSetting.length == ''){
+        imageSetting = {
+            left:'[UIImage imageNamed: @"',
+            right:'"]'
+        }
+        setStorage('imageSetting',imageSetting)
+    }
+    
+    return `${imageSetting.left}${font}${imageSetting.right}`
 
-    return `[ColorUtility colorWithString:@"${color}"]`
+}
+
+
+export const getColor = (color) => {
+    var colorSetting = getStorage('colorSetting');
+    if(!colorSetting || colorSetting.length == ''){
+        colorSetting = {
+            left:'[UIColor colorWithHexString:',
+            right:']'
+        }
+        setStorage('colorSetting',colorSetting)
+    }
+    
+    return `${colorSetting.left}${color}${colorSetting.right}`
 
 }
 
@@ -66,15 +132,29 @@ export const getAttributedText = (name, attributedTextSettings) => {
     }
 
     let dict = {
-        "init": `NSString * titleString = <#content#>;\nNSMutableAttributedString *${name} = [[NSMutableAttributedString alloc] initWithString:titleString];\n`,
+        "init": `NSString * titleString = <#content#>;\nNSMutableAttributedString *${name} = [[NSMutableAttributedString alloc] initWithString:titleString];\nNSRange range = [content rangeOfString:heightLightcontent];\n`,
         "插入图片": `NSTextAttachment *attchment = [[NSTextAttachment alloc]init];\n    attchment.bounds = CGRectMake(0, -6, 20, 20);\n    attchment.image = [UIImage imageNamed:@"ITLinkIcon"];\n    NSAttributedString *string = [NSAttributedString attributedStringWithAttachment:attchment];\n    [${name} insertAttributedString:string atIndex:0];\n`,
         "局部变色": `[${name} addAttribute:NSForegroundColorAttributeName value:${getColor('')} range:NSMakeRange(0, titleString.length)];\n[${name} addAttribute:NSForegroundColorAttributeName value:${getColor('')} range:NSMakeRange(0, 2)];\n`,
         "paragraphStyle": `NSMutableParagraphStyle *paragraphStyle = [[NSMutableParagraphStyle alloc] init];\nparagraphStyle.lineSpacing = 8;\n//段落间距 \nparagraph.paragraphSpacing = 20;\n[paragraphStyle setFirstLineHeadIndent:32];//首行缩进\n//调整全部文字的缩进像素 paragraph.headIndent = 10;\n[${name} addAttribute:NSParagraphStyleAttributeName value:paragraphStyle range:NSMakeRange(0, titleString.length)];\n`,
         "局部font": `[${name} addAttribute:NSFontAttributeName value:messageLbl.font range:NSMakeRange(0, [titleString length])];\n`,
-        "中划线":` [${name} addAttribute:NSStrikethroughStyleAttributeName value:[NSNumber numberWithInteger:NSUnderlineStyleSingle] range:{0,[titleString length]}];//中划线 [btn setAttributedTitle:${name} forState:UIControlStateNormal];`,
-        "下划线":` [${name} addAttribute:NSUnderlineStyleAttributeName value:[NSNumber numberWithInteger:NSUnderlineStyleSingle] range:{0,[titleString length]}];//下划线 [btn setAttributedTitle:${name} forState:UIControlStateNormal];`,
-        "其他":`NSString *str2 = @"设置字体背景颜色\n";\nNSDictionary *dictAttr2 = @{NSBackgroundColorAttributeName:[UIColor cyanColor]};\nNSAttributedString *attr2 = [[NSAttributedString alloc]initWithString:str2 attributes:dictAttr2];\n[attributedString appendAttributedString:attr2];\n\n/*!\n 注：NSKernAttributeName用来设置字符之间的间距，取值为NSNumber对象（整数），负值间距变窄，正值间距变宽\n */   \n \nNSString *str4 = @"\n设置字符间距";   \nNSDictionary *dictAttr4 = @{NSKernAttributeName:@(4)};\nNSAttributedString *attr4 = [[NSAttributedString alloc]initWithString:str4 attributes:dictAttr4];\n[attributedString appendAttributedString:attr4];\n\n/*!\n NSStrokeWidthAttributeName 设置笔画的宽度，取值为NSNumber对象（整数），负值填充效果，正值是中空效果。NSStrokeColorAttributeName  设置填充部分颜色，取值为UIColor对象。\n 设置中间部分颜色可以使用 NSForegroundColorAttributeName 属性来进行\n */   \n  \nNSString *str6 = @"设置笔画宽度和填充颜色\n";\nNSDictionary *dictAttr6 = @{NSStrokeWidthAttributeName:@(2),NSStrokeColorAttributeName:[UIColor blueColor]};\nNSAttributedString *attr6 = [[NSAttributedString alloc]initWithString:str6 attributes:dictAttr6];\n[attributedString appendAttributedString:attr6];\n\nNSString *str7 = @"设置阴影属性\n";\nNSShadow *shadow = [[NSShadow alloc]init];\nshadow.shadowColor = [UIColor redColor];\nshadow.shadowBlurRadius = 1.0f;\nshadow.shadowOffset = CGSizeMake(1, 1);\nNSDictionary *dictAttr7 = @{NSShadowAttributeName:shadow};\nNSAttributedString *attr7 = [[NSAttributedString alloc]initWithString:str7 attributes:dictAttr7];\n[attributedString appendAttributedString:attr7];\n\n/*!\n NSBaselineOffsetAttributeName 设置基线偏移值\n取值为NSNumber （float），正值上偏，负值下偏\n */     \n\nNSString *str11 = @"添加基线偏移值\n";\nNSDictionary *dictAttr11 = @{NSBaselineOffsetAttributeName:@(-10)};\nNSAttributedString *attr11 = [[NSAttributedString alloc]initWithString:str11 attributes:dictAttr11];\n[attributedString appendAttributedString:attr11];\n\n/*!\nNSObliquenessAttributeName 设置字体倾斜度\n取值为 NSNumber（float），正值右倾，负值左倾\n*/   \n\nNSString *str12 = @"设置字体倾斜度\n";\nNSDictionary *dictAttr12 = @{NSObliquenessAttributeName:@(0.5)};\nNSAttributedString *attr12 = [[NSAttributedString alloc]initWithString:str12 attributes:dictAttr12];\n[attributedString appendAttributedString:attr12];\n\n/*!\nNSExpansionAttributeName 设置字体的横向拉伸，取值为NSNumber （float），正值拉伸 ，负值压缩\n*/   \n   \nNSString *str13 = @"设置字体横向拉伸\n";\nNSDictionary *dictAttr13 = @{NSExpansionAttributeName:@(0.5)};\nNSAttributedString *attr13 = [[NSAttributedString alloc]initWithString:str13 attributes:dictAttr13];\n[attributedString appendAttributedString:attr13];\n\n/*!\n NSWritingDirectionAttributeName 设置文字的书写方向，取值为以下组合\n @[@(NSWritingDirectionLeftToRight | NSWritingDirectionEmbedding)]\n @[@(NSWritingDirectionLeftToRight | NSWritingDirectionOverride)]\n @[@(NSWritingDirectionRightToLeft | NSWritingDirectionEmbedding)]\n @[@(NSWritingDirectionRightToLeft | NSWritingDirectionOverride)]\n*/     \n  \nNSString *str14 = @"设置文字书写方向\n";\nNSDictionary *dictAttr14 = @{NSWritingDirectionAttributeName:@[@(NSWritingDirectionRightToLeft | NSWritingDirectionEmbedding)]};\nNSAttributedString *attr14 = [[NSAttributedString alloc]initWithString:str14 attributes:dictAttr14];\n[attributedString appendAttributedString:attr14];\n\n/*!\n NSVerticalGlyphFormAttributeName 设置文字排版方向\n 取值为NSNumber对象（整数），0表示横排文本，1表示竖排文本  在iOS中只支持0\n */     \nNSString *str15 = @"设置文字排版方向\n";\nNSDictionary *dictAttr15 = @{NSVerticalGlyphFormAttributeName:@(0)};\nNSAttributedString *attr15 = [[NSAttributedString alloc]initWithString:str15 attributes:dictAttr15];\n[attributedString appendAttributedString:attr15];\n`,
+        "中划线": ` [${name} addAttribute:NSStrikethroughStyleAttributeName value:[NSNumber numberWithInteger:NSUnderlineStyleSingle] range:{0,[titleString length]}];//中划线 [btn setAttributedTitle:${name} forState:UIControlStateNormal];`,
+        "下划线": ` [${name} addAttribute:NSUnderlineStyleAttributeName value:[NSNumber numberWithInteger:NSUnderlineStyleSingle] range:{0,[titleString length]}];//下划线 [btn setAttributedTitle:${name} forState:UIControlStateNormal];`,
+        "其他": `NSString *str2 = @"设置字体背景颜色\n";\nNSDictionary *dictAttr2 = @{NSBackgroundColorAttributeName:[UIColor cyanColor]};\nNSAttributedString *attr2 = [[NSAttributedString alloc]initWithString:str2 attributes:dictAttr2];\n[attributedString appendAttributedString:attr2];\n\n/*!\n 注：NSKernAttributeName用来设置字符之间的间距，取值为NSNumber对象（整数），负值间距变窄，正值间距变宽\n */   \n \nNSString *str4 = @"\n设置字符间距";   \nNSDictionary *dictAttr4 = @{NSKernAttributeName:@(4)};\nNSAttributedString *attr4 = [[NSAttributedString alloc]initWithString:str4 attributes:dictAttr4];\n[attributedString appendAttributedString:attr4];\n\n/*!\n NSStrokeWidthAttributeName 设置笔画的宽度，取值为NSNumber对象（整数），负值填充效果，正值是中空效果。NSStrokeColorAttributeName  设置填充部分颜色，取值为UIColor对象。\n 设置中间部分颜色可以使用 NSForegroundColorAttributeName 属性来进行\n */   \n  \nNSString *str6 = @"设置笔画宽度和填充颜色\n";\nNSDictionary *dictAttr6 = @{NSStrokeWidthAttributeName:@(2),NSStrokeColorAttributeName:[UIColor blueColor]};\nNSAttributedString *attr6 = [[NSAttributedString alloc]initWithString:str6 attributes:dictAttr6];\n[attributedString appendAttributedString:attr6];\n\nNSString *str7 = @"设置阴影属性\n";\nNSShadow *shadow = [[NSShadow alloc]init];\nshadow.shadowColor = [UIColor redColor];\nshadow.shadowBlurRadius = 1.0f;\nshadow.shadowOffset = CGSizeMake(1, 1);\nNSDictionary *dictAttr7 = @{NSShadowAttributeName:shadow};\nNSAttributedString *attr7 = [[NSAttributedString alloc]initWithString:str7 attributes:dictAttr7];\n[attributedString appendAttributedString:attr7];\n\n/*!\n NSBaselineOffsetAttributeName 设置基线偏移值\n取值为NSNumber （float），正值上偏，负值下偏\n */     \n\nNSString *str11 = @"添加基线偏移值\n";\nNSDictionary *dictAttr11 = @{NSBaselineOffsetAttributeName:@(-10)};\nNSAttributedString *attr11 = [[NSAttributedString alloc]initWithString:str11 attributes:dictAttr11];\n[attributedString appendAttributedString:attr11];\n\n/*!\nNSObliquenessAttributeName 设置字体倾斜度\n取值为 NSNumber（float），正值右倾，负值左倾\n*/   \n\nNSString *str12 = @"设置字体倾斜度\n";\nNSDictionary *dictAttr12 = @{NSObliquenessAttributeName:@(0.5)};\nNSAttributedString *attr12 = [[NSAttributedString alloc]initWithString:str12 attributes:dictAttr12];\n[attributedString appendAttributedString:attr12];\n\n/*!\nNSExpansionAttributeName 设置字体的横向拉伸，取值为NSNumber （float），正值拉伸 ，负值压缩\n*/   \n   \nNSString *str13 = @"设置字体横向拉伸\n";\nNSDictionary *dictAttr13 = @{NSExpansionAttributeName:@(0.5)};\nNSAttributedString *attr13 = [[NSAttributedString alloc]initWithString:str13 attributes:dictAttr13];\n[attributedString appendAttributedString:attr13];\n\n/*!\n NSWritingDirectionAttributeName 设置文字的书写方向，取值为以下组合\n @[@(NSWritingDirectionLeftToRight | NSWritingDirectionEmbedding)]\n @[@(NSWritingDirectionLeftToRight | NSWritingDirectionOverride)]\n @[@(NSWritingDirectionRightToLeft | NSWritingDirectionEmbedding)]\n @[@(NSWritingDirectionRightToLeft | NSWritingDirectionOverride)]\n*/     \n  \nNSString *str14 = @"设置文字书写方向\n";\nNSDictionary *dictAttr14 = @{NSWritingDirectionAttributeName:@[@(NSWritingDirectionRightToLeft | NSWritingDirectionEmbedding)]};\nNSAttributedString *attr14 = [[NSAttributedString alloc]initWithString:str14 attributes:dictAttr14];\n[attributedString appendAttributedString:attr14];\n\n/*!\n NSVerticalGlyphFormAttributeName 设置文字排版方向\n 取值为NSNumber对象（整数），0表示横排文本，1表示竖排文本  在iOS中只支持0\n */     \nNSString *str15 = @"设置文字排版方向\n";\nNSDictionary *dictAttr15 = @{NSVerticalGlyphFormAttributeName:@(0)};\nNSAttributedString *attr15 = [[NSAttributedString alloc]initWithString:str15 attributes:dictAttr15];\n[attributedString appendAttributedString:attr15];\n`,
     };
+
+
+    if (!getStorage('isOCTag')) {
+        dict = {
+            "init": `let titleString = "<#content#>"\nvar ${name} = NSMutableAttributedString(string: titleString)\n`,
+            "插入图片": `let attachment = NSTextAttachment()\nattachment.bounds = CGRect(x: 0, y: -6, width: 20, height: 20)\nattachment.image = UIImage(named: "ITLinkIcon")\nlet attachmentString = NSAttributedString(attachment: attachment)\n${name}.insert(attachmentString, at: 0)\n`,
+            "局部变色": `${name}.addAttribute(NSAttributedString.Key.foregroundColor, value: ${getColor('')}, range: NSRange(location: 0, length: titleString.count))\n${name}.addAttribute(NSAttributedString.Key.foregroundColor, value: ${getColor('')}, range: NSRange(location: 0, length: 2))\n`,
+            "paragraphStyle": `let paragraphStyle = NSMutableParagraphStyle()\nparagraphStyle.lineSpacing = 8\nparagraphStyle.paragraphSpacing = 20\nparagraphStyle.firstLineHeadIndent = 32\n${name}.addAttribute(NSAttributedString.Key.paragraphStyle, value: paragraphStyle, range: NSRange(location: 0, length: titleString.count))\n`,
+            "局部font": `${name}.addAttribute(NSAttributedString.Key.font, value: messageLbl.font, range: NSRange(location: 0, length: titleString.count))\n`,
+            "中划线": `${name}.addAttribute(NSAttributedString.Key.strikethroughStyle, value: NSUnderlineStyle.single.rawValue, range: NSRange(location: 0, length: titleString.count))\n`,
+            "下划线": `${name}.addAttribute(NSAttributedString.Key.underlineStyle, value: NSUnderlineStyle.single.rawValue, range: NSRange(location: 0, length: titleString.count))\n`,
+            "其他":`import UIKit\n\nlet attributedString = NSMutableAttributedString()\n\n// Setting font background color\nlet str2 = "设置字体背景颜色\n"\nlet dictAttr2: [NSAttributedString.Key: Any] = [.backgroundColor: UIColor.cyan]\nlet attr2 = NSAttributedString(string: str2, attributes: dictAttr2)\nattributedString.append(attr2)\n\n// Setting character kerning (spacing)\nlet str4 = "\n设置字符间距"\nlet dictAttr4: [NSAttributedString.Key: Any] = [.kern: 4]\nlet attr4 = NSAttributedString(string: str4, attributes: dictAttr4)\nattributedString.append(attr4)\n\n// Setting stroke width and color\nlet str6 = "设置笔画宽度和填充颜色\n"\nlet dictAttr6: [NSAttributedString.Key: Any] = [.strokeWidth: 2, .strokeColor: UIColor.blue]\nlet attr6 = NSAttributedString(string: str6, attributes: dictAttr6)\nattributedString.append(attr6)\n\n// Setting shadow attributes\nlet str7 = "设置阴影属性\n"\nlet shadow = NSShadow()\nshadow.shadowColor = UIColor.red\nshadow.shadowBlurRadius = 1.0\nshadow.shadowOffset = CGSize(width: 1, height: 1)\nlet dictAttr7: [NSAttributedString.Key: Any] = [.shadow: shadow]\nlet attr7 = NSAttributedString(string: str7, attributes: dictAttr7)\nattributedString.append(attr7)\n\n// Setting baseline offset\nlet str11 = "添加基线偏移值\n"\nlet dictAttr11: [NSAttributedString.Key: Any] = [.baselineOffset: -10]\nlet attr11 = NSAttributedString(string: str11, attributes: dictAttr11)\nattributedString.append(attr11)\n\n// Setting font obliqueness\nlet str12 = "设置字体倾斜度\n"\nlet dictAttr12: [NSAttributedString.Key: Any] = [.obliqueness: 0.5]\nlet attr12 = NSAttributedString(string: str12, attributes: dictAttr12)\nattributedString.append(attr12)\n\n// Setting font expansion (horizontal stretch)\nlet str13 = "设置字体横向拉伸\n"\nlet dictAttr13: [NSAttributedString.Key: Any] = [.expansion: 0.5]\nlet attr13 = NSAttributedString(string: str13, attributes: dictAttr13)\nattributedString.append(attr13)\n\n// Setting writing direction\nlet str14 = "设置文字书写方向\n"\nlet dictAttr14: [NSAttributedString.Key: Any] = [.writingDirection: [NSNumber(value: NSWritingDirection.rightToLeft.rawValue | NSWritingDirectionFormatType.embedding.rawValue)]]\nlet attr14 = NSAttributedString(string: str14, attributes: dictAttr14)\nattributedString.append(attr14)\n\n// Setting vertical glyph form (iOS supports only horizontal text)\nlet str15 = "设置文字排版方向\n"\nlet dictAttr15: [NSAttributedString.Key: Any] = [.verticalGlyphForm: 0]\nlet attr15 = NSAttributedString(string: str15, attributes: dictAttr15)\nattributedString.append(attr15)\n\n`
+        };
+    }
     var re = dict['init'];
     var i = 0
     for (let str of attributedTextSettings) {
@@ -89,7 +169,7 @@ export const getAttributedText = (name, attributedTextSettings) => {
 
 
 export const analyViewData = (str) => {
-    if(str.indexOf('"baseInfo"') > 0){
+    if (str.indexOf('"baseInfo"') > 0) {
         //nothing
     } else if (str.indexOf('alloc] init]') > 0) {
         return analyOCCode(str);
@@ -105,7 +185,7 @@ export const analyViewData = (str) => {
     let data = dataarr[0]
     result.titleName = data.baseInfo.name;
     if (data.baseInfo.radius.length > 0) {
-        result.conrnerRadius = parseFloat(data.baseInfo.radius);
+        result.cornerRadius = parseFloat(data.baseInfo.radius);
     }
     result.titleColor = findValueOf(data.codeInfo.codes, 'color').slice(0, -1);
     // result.titleSize = findValueOf(data.codeInfo.codes, 'font-size').replace(/[^0-9]/ig, "");
@@ -115,8 +195,8 @@ export const analyViewData = (str) => {
         result.backgroundColor = backgroundColor;
     }
 
-    
-    
+
+
     return result
 };
 
@@ -138,17 +218,17 @@ const analyOCCode = (code) => {
 
     result = /.cornerRadius = \d+(\.\d+)?;/g.exec(code);
     if (result) {
-        var num =  /\d+(\.\d+)?/g.exec(result);
-        console.log(num +'aaaaaaaaaaa');
+        var num = /\d+(\.\d+)?/g.exec(result);
+        console.log(num + 'aaaaaaaaaaa');
         data.cornerRadius = num[0];
     }
- 
+
     result = /NSForegroundColorAttributeName: \[UIColor colorWithRed:(\w+)\/255.0 green:(\w+)\/255.0 blue:(\w+)\/255/.exec(code);
     if (result) {
         data.titleColor = rgbToHex(`rgb(${result[1]},${result[2]},${result[3]})`);
     }
 
-    result = /size: (.*)],/g.exec(code); 
+    result = /size: (.*)],/g.exec(code);
     if (result) {
         data.titleSize = result[1];
     }
