@@ -31,9 +31,7 @@ https://ios-creator-0gx5m3uq05dc1926-1316715867.tcloudbaseapp.com/#/
 ![](./markdown-sources/蓝湖代码.png '代码生成') 
 
 演示视频   
-<video id="video1" controls="" preload="none">
-      <source id="mp41" src="./markdown-sources/UI转代码.mp4" type="video/mp4">
-</videos> 
+https://ios-creator-0gx5m3uq05dc1926-1316715867.tcloudbaseapp.com/videoSources/UI转代码.mp4
   
 ### 2.接口文档生成
 点击 ‘代码解析’ 按钮
@@ -42,9 +40,7 @@ https://ios-creator-0gx5m3uq05dc1926-1316715867.tcloudbaseapp.com/#/
 ![](./markdown-sources/接口转文档.png 'api转换') 
 
 演示视频   
-<video id="video1" controls="" preload="none">
-      <source id="mp41" src="./markdown-sources/API%E8%BD%AC%E5%B1%9E%E6%80%A7.mp4" type="video/mp4">
-</videos> 
+https://ios-creator-0gx5m3uq05dc1926-1316715867.tcloudbaseapp.com/videoSources/API转属性.mp4
 
 
 ### 3.chatGPT访问
