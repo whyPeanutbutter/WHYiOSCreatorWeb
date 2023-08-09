@@ -32,7 +32,10 @@
                     <el-input class='select-input' placeholder="#fff" v-model="form.data.backgroundColor" />
                 </div>
                 <el-checkbox label="sectionNum" />
-                <el-checkbox label="sectionInset" />
+                <el-tooltip content='<img src="https://p1-jj.byteimg.com/tos-cn-i-t2oaga2asx/gold-user-assets/2019/10/16/16dd2b824757ea5f~tplv-t2oaga2asx-zoom-in-crop-mark:4536:0:0:0.image" style="width: 310px;height: 310px;"/>'
+                 raw-content placement="right">
+                    <el-checkbox label="sectionInset" />
+                </el-tooltip>
                 <el-checkbox label="cellNum" />
                 <el-checkbox label="cellSize" />
                 <el-checkbox label="cellView" />

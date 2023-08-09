@@ -287,14 +287,14 @@ const onCreate = (formData, needCopy = false) => {
 
     let attributedPlaceholder = commonSettings.indexOf('attributedPlaceholder') > -1 ? `${formData.name}.attributedPlaceholder = NSMutableAttributedString(string: DefaultInputHint, attributes: [NSAttributedString.Key.font: GetRegularFont(15), NSAttributedString.Key.foregroundColor: Color_Black_Light])\n` : '';
     let placeholder = commonSettings.indexOf('placeholder') > -1 ? `${formData.name}.placeholder = ""\n` : '';
-    let haveDelegate = formData.haveDelegate ? getDelegateText(formData.name, formData.delegateSettings) : '';
+    let haveDelgete = formData.haveDelgete ? getDelgeteText(formData.name, formData.delgeteSettings) : '';
 
     let title = formData.haveTitle ? `${formData.name}.text = "${formData.titleName}"\n${formData.name}.textAlignment = .${formData.textAlign}\n${formData.name}.textColor = ${$utils.getColor(formData.titleColor)}\n${formData.name}.font = ${$utils.getFont(formData.titleSize)}\n` : '';
     let haveAttributedText = formData.haveAttributedText ? $utils.getAttributedText(formData.name + 'AttributedString', formData.attributedTextSettings) + `${formData.name}.attributedText = ${formData.name}AttributedString\n` : '';
     let masonry = formData.masonrys?.length > 0 ? `${formData.name}.snp.makeConstraints { make in\n${$utils.getMansorys(formData.masonrys)}\n}\n` : '';
 
     let result =
-        `${init}${frame}${addSubView}${isEnabled}${returnKeyType}${clearButtonMode}${keyboardType}${placeholder}${attributedPlaceholder}${title}${haveAttributedText}${cornerRadius}${backgroundColor}${border}${masonry}${haveDelegate}\n`;
+        `${init}${frame}${addSubView}${isEnabled}${returnKeyType}${clearButtonMode}${keyboardType}${placeholder}${attributedPlaceholder}${title}${haveAttributedText}${cornerRadius}${backgroundColor}${border}${masonry}${haveDelgete}\n`;
 
     console.log(result);
     form.result = result;
@@ -308,7 +308,7 @@ const onCreate = (formData, needCopy = false) => {
 
 
 const getDelgeteText = (name, settings) => {
-    if (settings.length == 0) {
+    if (!settings || settings.length == 0) {
         return `UITextFieldDelegate\n${name}.delegate = self;\n`
     }
     let dict = {
@@ -334,6 +334,7 @@ const getDelgeteText = (name, settings) => {
     if (settings.length == 1 && settings[0] == "textFieldDidChange") {
         re = ""
     }
+
     var i = 0
     for (let str of settings) {
         re = re + (settings.indexOf(str) > -1 ? dict[str] : '')

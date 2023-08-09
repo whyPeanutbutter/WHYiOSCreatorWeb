@@ -36,7 +36,7 @@
                 <div class="flex-row">
                     <el-checkbox label="cornerRadius" name="cornerRadius"></el-checkbox>
                     <el-input class='select-input' placeholder="6" v-model="form.data.cornerRadius" />
-                </div>editable scrollEnabled placeholder haveDelgete delgeteSettings
+                </div>
             </el-checkbox-group>
         </el-form-item>
         <el-form-item label="delgete">

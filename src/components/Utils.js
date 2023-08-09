@@ -103,8 +103,8 @@ export const getColor = (color) => {
     var colorSetting = getStorage('colorSetting');
     if(!colorSetting || colorSetting.length == ''){
         colorSetting = {
-            left:'[UIColor colorWithHexString:',
-            right:']'
+            left:'[UIColor colorWithHexString:@"',
+            right:'"]'
         }
         setStorage('colorSetting',colorSetting)
     }
