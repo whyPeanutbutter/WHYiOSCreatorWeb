@@ -81,7 +81,8 @@ var form = reactive({
         cornerRadius: '4',
         backgroundColor: '#fff',
          masonrys: [],
-        quickMasonrys: ''
+        quickMasonrys: '',
+frame:[0,0,0,0]
     },
     helpMe:'',
     result: '点击create生成代码'
@@ -95,7 +96,8 @@ const resetForm = () => {
         cornerRadius: '4',
         backgroundColor: '#fff',
          masonrys: [],
-        quickMasonrys: ''
+        quickMasonrys: '',
+frame:[0,0,0,0]
     }
 };
 
@@ -156,11 +158,14 @@ const onCreate = (formData, needCopy = false) => {
     let init = commonSettings.indexOf('init') > -1 ? `UIScrollView *${formData.name} = [[UIScrollView alloc]init];\n${formData.name}.showsVerticalScrollIndicator = NO;\n${formData.name}.showsHorizontalScrollIndicator = NO;\n${formData.name}.bounces = NO;//添加后不支持下拉刷新\n` : '';
     let addSubView = commonSettings.indexOf('addSubView') > -1 ? `[<#self#> addSubview:${formData.name}];\n` : '';
     let aviIOS11 = commonSettings.indexOf('@available(iOS 11.0, *)') > -1 ? `if (@available(iOS 11.0, *)) {\n${formData.name}.insetsLayoutMarginsFromSafeArea = NO;\n${formData.name}.contentInsetAdjustmentBehavior = UIScrollViewContentInsetAdjustmentNever;\n} <#else {\n self.automaticallyAdjustsScrollViewInsets = NO;\n}#>\n` : '';
-    let frame = commonSettings.indexOf('frame') > -1 ? `${formData.name}.frame = CGRectMake(<#CGFloat x#>, <#CGFloat y#>, <#CGFloat width#>, <#CGFloat height#>);\n` : '';
+   if(formData.frame.length < 4){
+        formData.frame = [0,0,0,0]
+    }
+    let frame = commonSettings.indexOf('frame') > -1 ? `${formData.name}.frame = CGRectMake(<#${formData.frame[0]}#>, <#${formData.frame[1]}#>, <#${formData.frame[2]}#>, <#${formData.frame[3]}#>);\n` : '';
     let delegate = commonSettings.indexOf('delegate') > -1 ? `UIScrollViewDelegate \n${formData.name}.delegate = self;\n` : '';
     let cornerRadius = commonSettings.indexOf('cornerRadius') > -1 ? `${formData.name}.layer.cornerRadius = ${formData.cornerRadius};\n${formData.name}.layer.masksToBounds = YES;\n` : '';
     let backgroundColor = commonSettings.indexOf('backgroundColor') > -1 ? `${formData.name}.backgroundColor = ${$utils.getColor(formData.backgroundColor)};\n` : '';
-    let mansoryStr = $utils.getMansorys(formData.masonrys);
+    let mansoryStr = $utils.getMansorys(formData.masonrys,formData.frame);
     let masonry = formData.masonrys?.length > 0 ? `[${formData.name} mas_makeConstraints:^(MASConstraintMaker *make) {
         ${mansoryStr}
     }];\n`: ''
@@ -179,11 +184,14 @@ const onCreateSwift = (formData, needCopy = false) => {
     let init = commonSettings.indexOf('init') > -1 ? `let ${formData.name} = UIScrollView()\n${formData.name}.showsVerticalScrollIndicator = false\n${formData.name}.showsHorizontalScrollIndicator = false\n${formData.name}.bounces = false //添加后不支持下拉刷新\n` : '';
     let addSubView = commonSettings.indexOf('addSubView') > -1 ? `self.addSubview(${formData.name})\n` : '';
     let aviIOS11 = commonSettings.indexOf('@available(iOS 11.0, *)') > -1 ? `if #available(iOS 11.0, *) {\n${formData.name}.insetsLayoutMarginsFromSafeArea = false\n${formData.name}.contentInsetAdjustmentBehavior = .never\n} else {\n self.automaticallyAdjustsScrollViewInsets = false\n}\n` : '';
+   if(formData.frame.length < 4){
+        formData.frame = [0,0,0,0]
+    }
     let frame = commonSettings.indexOf('frame') > -1 ? `${formData.name}.frame = CGRect(x: <#x#>, y: <#y#>, width: <#width#>, height: <#height#>)\n` : '';
     let delegate = commonSettings.indexOf('delegate') > -1 ? `UIScrollViewDelegate \n${formData.name}.delegate = self\n` : '';
     let cornerRadius = commonSettings.indexOf('cornerRadius') > -1 ? `${formData.name}.layer.cornerRadius = ${formData.cornerRadius}\n${formData.name}.layer.masksToBounds = true\n` : '';
     let backgroundColor = commonSettings.indexOf('backgroundColor') > -1 ? `${formData.name}.backgroundColor = ${$utils.getColor(formData.backgroundColor)}\n` : '';
-    let mansoryStr = $utils.getMansorys(formData.masonrys);
+    let mansoryStr = $utils.getMansorys(formData.masonrys,formData.frame);
     let masonry = formData.masonrys?.length > 0 ? `${formData.name}.snp.makeConstraints { make in\n${mansoryStr}\n}\n`: ''
     var result =  `${init}${frame}${addSubView}${cornerRadius}${aviIOS11}${backgroundColor}${delegate}${masonry}\n`
     console.log(result);

@@ -111,7 +111,8 @@ var form = reactive({
         titleName: '',
         textAlign:'Center',
            masonrys: [],
-        quickMasonrys: ''
+        quickMasonrys: '',
+frame:[0,0,0,0]
 
     },
     helpMe:'',
@@ -133,7 +134,8 @@ const resetForm = () => {
         titleName: '',
         textAlign:'Center',
           masonrys: [],
-        quickMasonrys: ''
+        quickMasonrys: '',
+frame:[0,0,0,0]
     }
 };
 
@@ -199,14 +201,17 @@ const onCreate = (formData, needCopy = false) => {
     let commonSettings = formData.commonSettings;
     let init = commonSettings.indexOf('init') > -1 ?  `UIButton *${formData.name} = [UIButton buttonWithType:UIButtonTypeCustom];\n` : '';
     let addSubView = commonSettings.indexOf('addSubView') > -1 ? `[<#self#> addSubview:${formData.name}];\n` : '';
-    let frame = commonSettings.indexOf('frame') > -1 ? `${formData.name}.frame = CGRectMake(<#CGFloat x#>, <#CGFloat y#>, <#CGFloat width#>, <#CGFloat height#>);\n` : '';
+   if(formData.frame.length < 4){
+        formData.frame = [0,0,0,0]
+    }
+    let frame = commonSettings.indexOf('frame') > -1 ? `${formData.name}.frame = CGRectMake(<#${formData.frame[0]}#>, <#${formData.frame[1]}#>, <#${formData.frame[2]}#>, <#${formData.frame[3]}#>);\n` : '';
     let btnClick = commonSettings.indexOf('btnClick') > -1 ? `[${formData.name} addTarget:self action:@selector(<#${formData.name}Clicked:#>) forControlEvents:UIControlEventTouchUpInside];\n\n- (void)${formData.name}Clicked:(UIButton *)button{\n\n}\n` : '';
     let image = commonSettings.indexOf('image') > -1 ? `[${formData.name} setImage:${$utils.getImage(formData.imageName)} forState:UIControlStateNormal];\n` : '';
     let cornerRadius = commonSettings.indexOf('cornerRadius') > -1 ? `${formData.name}.layer.cornerRadius = ${formData.cornerRadius};\n${formData.name}.layer.masksToBounds = YES;\n` : '';
     let backgroundColor = commonSettings.indexOf('backgroundColor') > -1 ? `${formData.name}.backgroundColor = ${$utils.getColor(formData.backgroundColor)};\n` : '';
     let border = commonSettings.indexOf('border') > -1 ? `[${formData.name}.layer setBorderColor:${$utils.getColor(formData.borderColor)}.CGColor];\n[${formData.name}.layer setBorderWidth:<#1.0#>];\n` : '';
     let title = formData.haveTitle ? `[${formData.name} setTitle:@"${formData.titleName}" forState:UIControlStateNormal];\n${formData.name}.titleLabel.textAlignment = NSTextAlignment${formData.textAlign};\n[${formData.name} setTitleColor:${$utils.getColor(formData.titleColor)} forState:UIControlStateNormal];\n${formData.name}.titleLabel.font = ${$utils.getFont(formData.titleSize)};\n` : ''
-    let mansoryStr = $utils.getMansorys(formData.masonrys);
+    let mansoryStr = $utils.getMansorys(formData.masonrys,formData.frame);
     let masonry = formData.masonrys?.length > 0 ? `[${formData.name} mas_makeConstraints:^(MASConstraintMaker *make) {
         ${mansoryStr}
     }];\n`: ''
@@ -226,6 +231,9 @@ const onCreateSwift = (formData, needCopy = false) => {
     let commonSettings = formData.commonSettings;
     let init = commonSettings.indexOf('init') > -1 ? `let ${formData.name} = UIButton(type: .custom)\n` : '';
     let addSubView = commonSettings.indexOf('addSubView') > -1 ? `self.addSubview(${formData.name})\n` : '';
+   if(formData.frame.length < 4){
+        formData.frame = [0,0,0,0]
+    }
     let frame = commonSettings.indexOf('frame') > -1 ? `${formData.name}.frame = CGRect(x: <#CGFloat x#>, y: <#CGFloat y#>, width: <#CGFloat width#>, height: <#CGFloat height#>)\n` : '';
     let btnClick = commonSettings.indexOf('btnClick') > -1 ? `${formData.name}.addTarget(self, action: #selector(${formData.name}Clicked(_:)), for: .touchUpInside)\n\n@objc func ${formData.name}Clicked(_ button: UIButton) {\n\n}\n` : '';
     let image = commonSettings.indexOf('image') > -1 ? `${formData.name}.setImage(UIImage(named: "${formData.imageName}"), for: .normal)\n` : '';
@@ -233,7 +241,7 @@ const onCreateSwift = (formData, needCopy = false) => {
     let backgroundColor = commonSettings.indexOf('backgroundColor') > -1 ? `${formData.name}.backgroundColor = ${$utils.getColor(formData.backgroundColor)}\n` : '';
     let border = commonSettings.indexOf('border') > -1 ? `${formData.name}.layer.borderColor = ${$utils.getColor(formData.borderColor)}.cgColor\n${formData.name}.layer.borderWidth = <#1.0#>\n` : '';
     let title = formData.haveTitle ? `${formData.name}.setTitle("${formData.titleName}", for: .normal)\n${formData.name}.titleLabel?.textAlignment = .${formData.textAlign}\n${formData.name}.setTitleColor(${$utils.getColor(formData.titleColor)}, for: .normal)\n${formData.name}.titleLabel?.font = ${$utils.getFont(formData.titleSize)}\n` : ''
-    let mansoryStr = $utils.getMansorys(formData.masonrys);
+    let mansoryStr = $utils.getMansorys(formData.masonrys,formData.frame);
     let masonry = formData.masonrys?.length > 0 ? `${formData.name}.snp.makeConstraints { make in
         ${mansoryStr}
     }\n`: ''

@@ -89,7 +89,8 @@ var form = reactive({
         backgroundColor: '#fff',
         estimatedRowHeight:'',
          masonrys: [],
-        quickMasonrys: ''
+        quickMasonrys: '',
+frame:[0,0,0,0]
     },
     helpMe:'',
     result: '点击create生成代码'
@@ -103,7 +104,8 @@ const resetForm = () => {
         backgroundColor: '#fff',
         estimatedRowHeight:'',
          masonrys: [],
-        quickMasonrys: ''
+        quickMasonrys: '',
+frame:[0,0,0,0]
     }
 };
 
@@ -162,7 +164,10 @@ const onCreate = (formData, needCopy = false) => {
         return
     }
     let commonSettings = formData.commonSettings;
-    let frame = commonSettings.indexOf('frame') > -1 ? `${formData.name}.frame = CGRectMake(<#CGFloat x#>, <#CGFloat y#>, <#CGFloat width#>, <#CGFloat height#>);\n` : '';
+   if(formData.frame.length < 4){
+        formData.frame = [0,0,0,0]
+    }
+    let frame = commonSettings.indexOf('frame') > -1 ? `${formData.name}.frame = CGRectMake(<#${formData.frame[0]}#>, <#${formData.frame[1]}#>, <#${formData.frame[2]}#>, <#${formData.frame[3]}#>);\n` : '';
 
     let init = commonSettings.indexOf('init') > -1 ? `UITableViewDataSource,UITableViewDelegate\nUITableView *${formData.name} = [[UITableView alloc]initWithFrame:CGRectZero style:UITableViewStyleGrouped];\n${frame}${formData.name}.dataSource = self;\${formData.name}.delegate = self;\n${formData.name}.separatorStyle = UITableViewCellSeparatorStyleNone;\n${formData.name}.showsVerticalScrollIndicator = NO;\nif (@available(iOS 15.0, *)) {\n${formData.name}.sectionHeaderTopPadding = 0;\n}\n` : '';
     let addSubView = commonSettings.indexOf('addSubView') > -1 ? `[<#self#> addSubview:${formData.name}];\n` : '';
@@ -179,7 +184,7 @@ const onCreate = (formData, needCopy = false) => {
     let selectCell = commonSettings.indexOf('selectCell') > -1 ? `- (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {\n[tableView deselectRowAtIndexPath:indexPath animated:NO];\n}\n` : '';
     let cellAction = commonSettings.indexOf('cellAction') > -1 ? `"- (NSArray<UITableViewRowAction *> *)tableView:(UITableView *)tableView editActionsForRowAtIndexPath:(NSIndexPath *)indexPath\n{\n    \n    UITableViewRowAction *action = [UITableViewRowAction rowActionWithStyle:UITableViewRowActionStyleNormal title:@"删除" handler:^(UITableViewRowAction * _Nonnull action, NSIndexPath * _Nonnull indexPath) {\n        [self cellDeleteAction:indexPath];\n    }];\n    action.backgroundColor= Color_Red;\n    return @[action];\n}\n\n\n-(void)cellDeleteAction:(NSIndexPath *)indexPath{\n}\n";` : '';
 
-    let mansoryStr = $utils.getMansorys(formData.masonrys);
+    let mansoryStr = $utils.getMansorys(formData.masonrys,formData.frame);
     let masonry = formData.masonrys?.length > 0 ? `[${formData.name} mas_makeConstraints:^(MASConstraintMaker *make) {
         ${mansoryStr}
     }];\n`: ''
@@ -197,6 +202,9 @@ const onCreate = (formData, needCopy = false) => {
 
 const onCreateSwift = (formData, needCopy = false) => {
     let commonSettings = formData.commonSettings;
+   if(formData.frame.length < 4){
+        formData.frame = [0,0,0,0]
+    }
     let frame = commonSettings.indexOf('frame') > -1 ? `${formData.name}.frame = CGRect(x: <#CGFloat x#>, y: <#CGFloat y#>, width: <#CGFloat width#>, height: <#CGFloat height#>)\n` : '';
 
     let init = commonSettings.indexOf('init') > -1 ? `var ${formData.name}: UITableView = {\nlet ${formData.name} = UITableView(frame: .zero, style: .grouped)\n${formData.name}.dataSource = self;\n${formData.name}.delegate = self;\n${formData.name}.separatorStyle = .none\n${formData.name}.showsVerticalScrollIndicator = false\nif #available(iOS 15.0, *) {\n${formData.name}.sectionHeaderTopPadding = 0\n}\nreturn ${formData.name}\n}()\n` : '';

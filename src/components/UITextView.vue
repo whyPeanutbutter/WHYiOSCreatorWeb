@@ -148,7 +148,8 @@ var form = reactive({
         textAlign: 'Center',
         numberOfLine: '0',
          masonrys: [],
-        quickMasonrys: ''
+        quickMasonrys: '',
+frame:[0,0,0,0]
     },
     helpMe: '',
     result: '点击create生成代码'
@@ -173,7 +174,8 @@ const resetForm = () => {
         textAlign: 'Center',
         numberOfLine: '0',
          masonrys: [],
-        quickMasonrys: ''
+        quickMasonrys: '',
+frame:[0,0,0,0]
     }
 };
 
@@ -237,7 +239,10 @@ const onCreate = (formData, needCopy = false) => {
     let commonSettings = formData.commonSettings;
     let init = commonSettings.indexOf('init') > -1 ? `UITextView *${formData.name} = [[UITextView alloc]init];\n  ${formData.name}.textContainerInset = UIEdgeInsetsMake(0, 0, 0, 0);\n` : '';
     let addSubView = commonSettings.indexOf('addSubView') > -1 ? `[<#self#> addSubview:${formData.name}];\n` : '';
-    let frame = commonSettings.indexOf('frame') > -1 ? `${formData.name}.frame = CGRectMake(<#CGFloat x#>, <#CGFloat y#>, <#CGFloat width#>, <#CGFloat height#>);\n` : '';
+   if(formData.frame.length < 4){
+        formData.frame = [0,0,0,0]
+    }
+    let frame = commonSettings.indexOf('frame') > -1 ? `${formData.name}.frame = CGRectMake(<#${formData.frame[0]}#>, <#${formData.frame[1]}#>, <#${formData.frame[2]}#>, <#${formData.frame[3]}#>);\n` : '';
     let click = commonSettings.indexOf('click') > -1 ? `[${formData.name} addTarget:self action:@selector(<#${formData.name}Clicked:#>) forControlEvents:UIControlEventTouchUpInside];\n\n- (void)${formData.name}Clicked:(UIButton *)button{\n\n}\n` : '';
     let cornerRadius = commonSettings.indexOf('cornerRadius') > -1 ? `${formData.name}.layer.cornerRadius = ${formData.cornerRadius};\n${formData.name}.layer.masksToBounds = YES;\n` : '';
     let backgroundColor = commonSettings.indexOf('backgroundColor') > -1 ? `${formData.name}.backgroundColor = ${$utils.getColor(formData.backgroundColor)};\n` : '';
@@ -250,7 +255,7 @@ const onCreate = (formData, needCopy = false) => {
 
     let title = formData.haveTitle ? `${formData.name}.text = @"${formData.titleName}";\n${formData.name}.textAlignment = NSTextAlignment${formData.textAlign};\n${formData.name}.textColor=${$utils.getColor(formData.titleColor)};\n${formData.name}.font = ${$utils.getFont(formData.titleSize)};\n` : ''
     let haveAttributedText = formData.haveAttributedText ? $utils.getAttributedText(formData.name + 'AttributedString', formData.attributedTextSettings) + `${formData.name}.attributedText = ${formData.name}AttributedString;\n` : '';
-    let mansoryStr = $utils.getMansorys(formData.masonrys);
+    let mansoryStr = $utils.getMansorys(formData.masonrys,formData.frame);
     let masonry = formData.masonrys?.length > 0 ? `[${formData.name} mas_makeConstraints:^(MASConstraintMaker *make) {
         ${mansoryStr}
     }];\n`: ''
@@ -269,6 +274,9 @@ const onCreateSwift = (formData, needCopy = false) => {
     let commonSettings = formData.commonSettings;
     let init = commonSettings.indexOf('init') > -1 ? `let ${formData.name} = UITextView()\n${formData.name}.textContainerInset = UIEdgeInsets(top: 0, left: 0, bottom: 0, right: 0)\n` : '';
     let addSubView = commonSettings.indexOf('addSubView') > -1 ? `self.addSubview(${formData.name})\n` : '';
+   if(formData.frame.length < 4){
+        formData.frame = [0,0,0,0]
+    }
     let frame = commonSettings.indexOf('frame') > -1 ? `${formData.name}.frame = CGRect(x: <#x#>, y: <#y#>, width: <#width#>, height: <#height#>)\n` : '';
     let click = commonSettings.indexOf('click') > -1 ? `let tapGesture = UITapGestureRecognizer(target: self, action: #selector(${formData.name}Tapped(_:)))\n${formData.name}.addGestureRecognizer(tapGesture)\n\n@objc func ${formData.name}Tapped(_ sender: UITapGestureRecognizer) {\n// Handle tap\n}\n` : '';
     let cornerRadius = commonSettings.indexOf('cornerRadius') > -1 ? `${formData.name}.layer.cornerRadius = ${formData.cornerRadius}\n${formData.name}.clipsToBounds = true\n` : '';
@@ -280,7 +288,7 @@ const onCreateSwift = (formData, needCopy = false) => {
     let haveDelgete = formData.haveDelgete ? getDelgeteText(formData.name, formData.delgeteSettings) : '';
     let title = formData.haveTitle ? `${formData.name}.text = "${formData.titleName}"\n${formData.name}.textAlignment = .${formData.textAlign}\n${formData.name}.textColor=${$utils.getColor(formData.titleColor)}\n${formData.name}.font = ${$utils.getFont(formData.titleSize)}\n` : ''
     let haveAttributedText = formData.haveAttributedText ? $utils.getAttributedText(formData.name + 'AttributedString', formData.attributedTextSettings) + `${formData.name}.attributedText = ${formData.name}AttributedString;\n` : '';
-    let mansoryStr = $utils.getMansorys(formData.masonrys);
+    let mansoryStr = $utils.getMansorys(formData.masonrys,formData.frame);
     let masonry = formData.masonrys?.length > 0 ? `${formData.name}.snp.makeConstraints { (make) in\n${mansoryStr}\n}\n` : '';
     var result = `${init}${frame}${addSubView}${editable}${scrollEnabled}${placeholder}${title}${haveAttributedText}${cornerRadius}${backgroundColor}${border}${masonry}${click}${haveDelgete}\n`;
     console.log(result);

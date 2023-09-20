@@ -91,7 +91,7 @@ const onCreate = (formData, needCopy = false) => {
     // switch()
     // let init = analycodeRadioSelect.indexOf('init') > -1 ? `UIView *${formData.name} = [[UIView alloc] init];\n` : '';
     // let addSubView = analycodeRadioSelect.indexOf('addSubView') > -1 ? `[<#self#> addSubview:${formData.name}];\n` : '';
-    // let frame = analycodeRadioSelect.indexOf('frame') > -1 ? `${formData.name}.frame = CGRectMake(<#CGFloat x#>, <#CGFloat y#>, <#CGFloat width#>, <#CGFloat height#>);\n` : '';
+    // let frame = analycodeRadioSelect.indexOf('frame') > -1 ? `${formData.name}.frame = CGRectMake(<#${formData.frame[0]}#>, <#${formData.frame[1]}#>, <#${formData.frame[2]}#>, <#${formData.frame[3]}#>);\n` : '';
     // let click = analycodeRadioSelect.indexOf('click') > -1 ? `${formData.name}.userInteractionEnabled = YES;\nUITapGestureRecognizer *${formData.name}TapGestureRecognizer = [[UITapGestureRecognizer alloc]initWithTarget:self action:@selector(${formData.name}Tap:)];\n[${formData.name} addGestureRecognizer:${formData.name}TapGestureRecognizer];\n\n-(void)${formData.name}Tap:(UITapGestureRecognizer *)tap{\ntap.view\n}` : '';
     // let cornerRadius = analycodeRadioSelect.indexOf('cornerRadius') > -1 ? `${formData.name}.layer.cornerRadius = ${formData.cornerRadius};\n${formData.name}.layer.masksToBounds = YES;\n` : '';
     // let backgroundColor = analycodeRadioSelect.indexOf('backgroundColor') > -1 ? `${formData.name}.backgroundColor = ${$utils.getColor(formData.backgroundColor)};\n` : '';
@@ -101,7 +101,7 @@ const onCreate = (formData, needCopy = false) => {
     // maskLayer.frame = ${formData.name}.bounds;
     // maskLayer.path = maskPath.CGPath;
     // ${formData.name}.layer.mask = maskLayer;` : '';
-    // let mansoryStr = $utils.getMansorys(formData.masonrys);
+    // let mansoryStr = $utils.getMansorys(formData.masonrys,formData.frame);
     // let masonry = formData.masonrys?.length > 0 ? `[${formData.name} mas_makeConstraints:^(MASConstraintMaker *make) {
     //     ${mansoryStr}
     // }];\n`: ''

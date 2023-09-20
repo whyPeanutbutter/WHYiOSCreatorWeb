@@ -106,7 +106,8 @@ var form = reactive({
         registerClassTypes: ['cell'],
         backgroundColor: '#fff',
          masonrys: [],
-        quickMasonrys: ''
+        quickMasonrys: '',
+frame:[0,0,0,0]
     },
     helpMe: '',
     result: '点击create生成代码'
@@ -120,7 +121,8 @@ const resetForm = () => {
         registerClassTypes: ['cell'],
         backgroundColor: '#fff',
          masonrys: [],
-        quickMasonrys: ''
+        quickMasonrys: '',
+frame:[0,0,0,0]
     }
 };
 
@@ -174,7 +176,10 @@ watch(() => props.form, (newValue, oldValue) => {
 
 const onCreate = (formData, needCopy = false) => {
     let commonSettings = formData.commonSettings;
-    let frame = commonSettings.indexOf('frame') > -1 ? `${formData.name}.frame = CGRectMake(<#CGFloat x#>, <#CGFloat y#>, <#CGFloat width#>, <#CGFloat height#>);\n` : '';
+   if(formData.frame.length < 4){
+        formData.frame = [0,0,0,0]
+    }
+    let frame = commonSettings.indexOf('frame') > -1 ? `${formData.name}.frame = CGRectMake(<#${formData.frame[0]}#>, <#${formData.frame[1]}#>, <#${formData.frame[2]}#>, <#${formData.frame[3]}#>);\n` : '';
     let estimatedCellSize = commonSettings.indexOf('estimatedCellSize') > -1 ? `//未测试 \nflowLayout.estimatedItemSize = CGSizeMake(0,0);\nflowLayout.itemSize = UICollectionViewFlowLayoutAutomaticSize;\n\n` : '';
     let init = commonSettings.indexOf('init') > -1 ? `UICollectionViewDelegate, UICollectionViewDataSource\nUICollectionViewFlowLayout *flowLayout = [[UICollectionViewFlowLayout alloc]init];\nflowLayout.minimumLineSpacing = 0;\nflowLayout.minimumInteritemSpacing = 0;\n${estimatedCellSize}flowLayout.sectionInset = UIEdgeInsetsMake(0, 0, 0, 0);\nflowLayout.scrollDirection = UICollectionViewScrollDirectionVertical;\nUICollectionView *${formData.name};\n${formData.name} = [[UICollectionView alloc]initWithFrame:CGRectZero collectionViewLayout:flowLayout];\n${formData.name}.delegate = self;\n${formData.name}.dataSource = self;\n${formData.name}.showsVerticalScrollIndicator = NO;\n${formData.name}.showsHorizontalScrollIndicator = NO;` : '';
     let addSubView = commonSettings.indexOf('addSubView') > -1 ? `[<#self#> addSubview:${formData.name}];\n` : '';
@@ -224,7 +229,7 @@ const onCreate = (formData, needCopy = false) => {
     let minimumInteritemSpacing = commonSettings.indexOf('minimumInteritemSpacing') > -1 ? `- (CGFloat)collectionView:(UICollectionView *)collectionView layout:(UICollectionViewLayout *)collectionViewLayout minimumInteritemSpacingForSectionAtIndex:(NSInteger)section{\n}\n` : '';
     let minimumLineSpacing = commonSettings.indexOf('minimumLineSpacing') > -1 ? `- (CGFloat)collectionView:(UICollectionView *)collectionView layout:(UICollectionViewLayout *)collectionViewLayout minimumLineSpacingForSectionAtIndex:(NSInteger)section{\n}\n` : '';
 
-    let mansoryStr = $utils.getMansorys(formData.masonrys);
+    let mansoryStr = $utils.getMansorys(formData.masonrys,formData.frame);
     let masonry = formData.masonrys?.length > 0 ? `[${formData.name} mas_makeConstraints:^(MASConstraintMaker *make) {
         ${mansoryStr}
     }];\n`: ''

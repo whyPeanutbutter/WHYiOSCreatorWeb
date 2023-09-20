@@ -16,20 +16,23 @@ export const setStorage = (key, obj) => {
     localStorage.setItem(key, JSON.stringify(obj))
 }
 
-export const getMansorys = (mansorys) => {
+export const getMansorys = (mansorys,frame=[0,0,0,0]) => {
     if (mansorys.length == 0) {
         return ''
     }
+    if(frame.length < 4){
+        frame = [0,0,0,0]
+    }
     var re = ''
     let dict = {
-        "left": "make.left.equalTo(@0);",
+        "left": `make.left.equalTo(@${frame[0]});`,
         "right": "make.right.equalTo(@-0);",
-        "top": "make.top.equalTo(@0);",
+        "top": `make.top.equalTo(@${frame[1]});`,
         "bottom": "make.bottom.equalTo(@-0);",
-        "width": "make.width.equalTo(@0);",
-        "height": "make.height.equalTo(@0);",
+        "width": `make.width.equalTo(@${frame[2]});`,
+        "height": `make.height.equalTo(@${frame[3]});`,
         "edges": "make.edges.equalTo(@0);",
-        "size": "make.size.equalTo(@16);",
+        "size": `make.size.equalTo(@${frame[2]});`,
         "centerX": "make.centerX.equalTo(@0);",
         "centerY": "make.centerY.equalTo(@0);",
         "center": "make.center.equalTo(@0);",
@@ -40,14 +43,14 @@ export const getMansorys = (mansorys) => {
     };
     if (!getStorage('isOCTag')) {
         dict = {
-            "left": "make.left.equalTo(0)",
+            "left": `make.left.equalTo(${frame[0]})`,
             "right": "make.right.equalTo(-0)",
-            "top": "make.top.equalTo(0)",
+            "top": `make.top.equalTo(${frame[1]})`,
             "bottom": "make.bottom.equalTo(-0)",
-            "width": "make.width.equalTo(0)",
-            "height": "make.height.equalTo(0)",
+            "width": `make.width.equalTo(${frame[2]})`,
+            "height": `make.height.equalTo(${frame[3]})`,
             "edges": "make.edges.equalTo(0)",
-            "size": "make.size.equalTo(16)",
+            "size": `make.size.equalTo(${frame[2]})`,
             "centerX": "make.centerX.equalTo(0)",
             "centerY": "make.centerY.equalTo(0)",
             "center": "make.center.equalTo(0)",
@@ -241,6 +244,11 @@ const analyOCCode = (code) => {
     result = /borderColor = \[UIColor colorWithRed:(\w+)\/255.0 green:(\w+)\/255.0 blue:(\w+)\/255.0/g.exec(code);
     if (result) {
         data.borderColor = rgbToHex(`rgb(${result[1]},${result[2]},${result[3]})`);
+    }
+/// 匹配字符串frame = CGRectMake();中的数字保留下来，按逗号输出为数组
+    result = /frame = CGRectMake\((.*),(.*),(.*),(.*)\);/g.exec(code);
+    if (result) {
+        data.frame = [result[1], result[2], result[3], result[4]];
     }
     return data;
 }

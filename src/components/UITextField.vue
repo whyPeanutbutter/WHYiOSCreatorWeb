@@ -151,7 +151,8 @@ var form = reactive({
         titleName: '',
         textAlign: 'Center',
         masonrys: [],
-        quickMasonrys: ''
+        quickMasonrys: '',
+frame:[0,0,0,0]
     },
     helpMe: '',
     result: '点击create生成代码'
@@ -175,7 +176,8 @@ const resetForm = () => {
         titleName: '',
         textAlign: 'Center',
         masonrys: [],
-        quickMasonrys: ''
+        quickMasonrys: '',
+frame:[0,0,0,0]
     }
 };
 
@@ -234,7 +236,10 @@ const onCreateSwift = (formData, needCopy = false) => {
     let commonSettings = formData.commonSettings;
     let init = commonSettings.indexOf('init') > -1 ? ` UITextField *${formData.name} = [[UITextField alloc] init)];\n ${formData.name}.contentVerticalAlignment = UIControlContentVerticalAlignmentCenter;\n ${formData.name}.inputAssistantItem.leadingBarButtonGroups = @[];\n ${formData.name}.inputAssistantItem.trailingBarButtonGroups = @[];\n${formData.name}.autocapitalizationType = UITextAutocapitalizationTypeNone;\n` : '';
     let addSubView = commonSettings.indexOf('addSubView') > -1 ? `[<#self#> addSubview:${formData.name}];\n` : '';
-    let frame = commonSettings.indexOf('frame') > -1 ? `${formData.name}.frame = CGRectMake(<#CGFloat x#>, <#CGFloat y#>, <#CGFloat width#>, <#CGFloat height#>);\n` : '';
+   if(formData.frame.length < 4){
+        formData.frame = [0,0,0,0]
+    }
+    let frame = commonSettings.indexOf('frame') > -1 ? `${formData.name}.frame = CGRectMake(<#${formData.frame[0]}#>, <#${formData.frame[1]}#>, <#${formData.frame[2]}#>, <#${formData.frame[3]}#>);\n` : '';
     let enabled = commonSettings.indexOf('enabled') > -1 ? `${formData.name}.enabled = NO;\n` : '';
     let cornerRadius = commonSettings.indexOf('cornerRadius') > -1 ? `${formData.name}.layer.cornerRadius = ${formData.cornerRadius};\n${formData.name}.layer.masksToBounds = YES;\n` : '';
     let backgroundColor = commonSettings.indexOf('backgroundColor') > -1 ? `${formData.name}.backgroundColor = ${$utils.getColor(formData.backgroundColor)};\n` : '';
@@ -250,7 +255,7 @@ const onCreateSwift = (formData, needCopy = false) => {
 
     let title = formData.haveTitle ? `${formData.name}.text = @"${formData.titleName}";\n${formData.name}.textAlignment = NSTextAlignment${formData.textAlign};\n${formData.name}.textColor=${$utils.getColor(formData.titleColor)};\n${formData.name}.font = ${$utils.getFont(formData.titleSize)};\n` : ''
     let haveAttributedText = formData.haveAttributedText ? $utils.getAttributedText(formData.name + 'AttributedString', formData.attributedTextSettings) + `${formData.name}.attributedText = ${formData.name}AttributedString;\n` : '';
-    let mansoryStr = $utils.getMansorys(formData.masonrys);
+    let mansoryStr = $utils.getMansorys(formData.masonrys,formData.frame);
     let masonry = formData.masonrys?.length > 0 ? `[${formData.name} mas_makeConstraints:^(MASConstraintMaker *make) {
         ${mansoryStr}
     }];\n`: ''
@@ -275,6 +280,9 @@ const onCreate = (formData, needCopy = false) => {
     let commonSettings = formData.commonSettings;
     let init = commonSettings.indexOf('init') > -1 ? `let ${formData.name} = UITextField()\n${formData.name}.contentVerticalAlignment = .center\n${formData.name}.inputAssistantItem.leadingBarButtonGroups = []\n${formData.name}.inputAssistantItem.trailingBarButtonGroups = []\n${formData.name}.autocapitalizationType = .none\n` : '';
     let addSubView = commonSettings.indexOf('addSubView') > -1 ? `self.addSubview(${formData.name})\n` : '';
+   if(formData.frame.length < 4){
+        formData.frame = [0,0,0,0]
+    }
     let frame = commonSettings.indexOf('frame') > -1 ? `${formData.name}.frame = CGRect(x: <#CGFloat#>, y: <#CGFloat#>, width: <#CGFloat#>, height: <#CGFloat#>)\n` : '';
     let isEnabled = commonSettings.indexOf('enabled') > -1 ? `${formData.name}.isEnabled = false\n` : '';
     let cornerRadius = commonSettings.indexOf('cornerRadius') > -1 ? `${formData.name}.layer.cornerRadius = ${formData.cornerRadius}\n${formData.name}.layer.masksToBounds = true\n` : '';
@@ -291,7 +299,7 @@ const onCreate = (formData, needCopy = false) => {
 
     let title = formData.haveTitle ? `${formData.name}.text = "${formData.titleName}"\n${formData.name}.textAlignment = .${formData.textAlign}\n${formData.name}.textColor = ${$utils.getColor(formData.titleColor)}\n${formData.name}.font = ${$utils.getFont(formData.titleSize)}\n` : '';
     let haveAttributedText = formData.haveAttributedText ? $utils.getAttributedText(formData.name + 'AttributedString', formData.attributedTextSettings) + `${formData.name}.attributedText = ${formData.name}AttributedString\n` : '';
-    let masonry = formData.masonrys?.length > 0 ? `${formData.name}.snp.makeConstraints { make in\n${$utils.getMansorys(formData.masonrys)}\n}\n` : '';
+    let masonry = formData.masonrys?.length > 0 ? `${formData.name}.snp.makeConstraints { make in\n${$utils.getMansorys(formData.masonrys,formData.frame)}\n}\n` : '';
 
     let result =
         `${init}${frame}${addSubView}${isEnabled}${returnKeyType}${clearButtonMode}${keyboardType}${placeholder}${attributedPlaceholder}${title}${haveAttributedText}${cornerRadius}${backgroundColor}${border}${masonry}${haveDelgete}\n`;

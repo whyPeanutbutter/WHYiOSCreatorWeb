@@ -129,7 +129,8 @@ var form = reactive({
         textAlign:'Center',
         numberOfLine:'0',
          masonrys: [],
-        quickMasonrys: ''
+        quickMasonrys: '',
+frame:[0,0,0,0]
     },
     helpMe:'',
     result: '点击create生成代码'
@@ -152,7 +153,8 @@ const resetForm = () => {
         textAlign:'Center',
         numberOfLine:'0',
          masonrys: [],
-        quickMasonrys: ''
+        quickMasonrys: '',
+frame:[0,0,0,0]
     }
 };
 
@@ -215,7 +217,10 @@ const onCreate = (formData, needCopy = false) => {
     let commonSettings = formData.commonSettings;
     let init = commonSettings.indexOf('init') > -1 ?  `UILabel *${formData.name} = [[UILabel alloc]init];\n` : '';
     let addSubView = commonSettings.indexOf('addSubView') > -1 ? `[<#self#> addSubview:${formData.name}];\n` : '';
-    let frame = commonSettings.indexOf('frame') > -1 ? `${formData.name}.frame = CGRectMake(<#CGFloat x#>, <#CGFloat y#>, <#CGFloat width#>, <#CGFloat height#>);\n` : '';
+   if(formData.frame.length < 4){
+        formData.frame = [0,0,0,0]
+    }
+    let frame = commonSettings.indexOf('frame') > -1 ? `${formData.name}.frame = CGRectMake(<#${formData.frame[0]}#>, <#${formData.frame[1]}#>, <#${formData.frame[2]}#>, <#${formData.frame[3]}#>);\n` : '';
     let click = commonSettings.indexOf('click') > -1 ? `${formData.name}.userInteractionEnabled = YES;\nUITapGestureRecognizer *${formData.name}TapGestureRecognizer = [[UITapGestureRecognizer alloc]initWithTarget:self action:@selector(${formData.name}Tap:)];\n[${formData.name} addGestureRecognizer:${formData.name}TapGestureRecognizer];\n\n-(void)${formData.name}Tap:(UITapGestureRecognizer *)tap{\ntap.view\n}` : '';
     let image = commonSettings.indexOf('image') > -1 ? `[${formData.name} setImage:${$utils.getImage(formData.imageName)} forState:UIControlStateNormal];\n` : '';
     let cornerRadius = commonSettings.indexOf('cornerRadius') > -1 ? `${formData.name}.layer.cornerRadius = ${formData.cornerRadius};\n${formData.name}.layer.masksToBounds = YES;\n` : '';
@@ -224,7 +229,7 @@ const onCreate = (formData, needCopy = false) => {
     let numberOfLine = commonSettings.indexOf('numberOfLine') > -1 ? `${formData.name}.numberOfLines = ${formData.numberOfLine};\n${formData.name}.lineBreakMode = NSLineBreakByTruncatingTail;\n`:'';
     let title = formData.haveTitle ? `${formData.name}.text = @"${formData.titleName}";\n${formData.name}.textAlignment = NSTextAlignment${formData.textAlign};\n${formData.name}.textColor=${$utils.getColor(formData.titleColor)};\n${formData.name}.font = ${$utils.getFont(formData.titleSize)};\n` : ''
     let haveAttributedText = formData.haveAttributedText ? $utils.getAttributedText(formData.name + 'AttributedString',formData.attributedTextSettings) + `${formData.name}.attributedText = ${formData.name}AttributedString;\n`:'';
-    let mansoryStr = $utils.getMansorys(formData.masonrys);
+    let mansoryStr = $utils.getMansorys(formData.masonrys,formData.frame);
     let masonry = formData.masonrys?.length > 0 ? `[${formData.name} mas_makeConstraints:^(MASConstraintMaker *make) {
         ${mansoryStr}
     }];\n`: ''
@@ -244,6 +249,9 @@ const onCreateSwift = (formData, needCopy = false) => {
     let commonSettings = formData.commonSettings;
     let init = commonSettings.indexOf('init') > -1 ?  `let ${formData.name} = UILabel()\n` : '';
     let addSubView = commonSettings.indexOf('addSubView') > -1 ? `self.addSubview(${formData.name})\n` : '';
+   if(formData.frame.length < 4){
+        formData.frame = [0,0,0,0]
+    }
     let frame = commonSettings.indexOf('frame') > -1 ? `${formData.name}.frame = CGRect(x: <#CGFloat x#>, y: <#CGFloat y#>, width: <#CGFloat width#>, height: <#CGFloat height#>)\n` : '';
     let click = commonSettings.indexOf('click') > -1 ? `${formData.name}.addTarget(self, action: #selector(${formData.name}Clicked(_:)), for: .touchUpInside)\n\n@objc func ${formData.name}Clicked(_ button: UIButton) {\n\n}\n` : '';
     let image = commonSettings.indexOf('image') > -1 ? `${formData.name}.setImage(UIImage(named: "${formData.imageName}"), for: .normal)\n` : '';
@@ -253,7 +261,7 @@ const onCreateSwift = (formData, needCopy = false) => {
     let numberOfLine = commonSettings.indexOf('numberOfLine') > -1 ? `${formData.name}.numberOfLines = ${formData.numberOfLine}\n${formData.name}.lineBreakMode = .byTruncatingTail\n`: '';
     let title = formData.haveTitle ? `${formData.name}.text = "${formData.titleName}"\n${formData.name}.textAlignment = .${formData.textAlign}\n${formData.name}.textColor=${$utils.getColor(formData.titleColor)}\n${formData.name}.font = ${$utils.getFont(formData.titleSize)}\n` : ''
     let haveAttributedText = formData.haveAttributedText ? $utils.getAttributedText(formData.name + 'AttributedString',formData.attributedTextSettings) + `${formData.name}.attributedText = ${formData.name}AttributedString\n`: '';
-    let mansoryStr = $utils.getMansorys(formData.masonrys);
+    let mansoryStr = $utils.getMansorys(formData.masonrys,formData.frame);
     let masonry = formData.masonrys?.length > 0 ? `${formData.name}.snp.makeConstraints { make in
         ${mansoryStr}
     }\n`: ''

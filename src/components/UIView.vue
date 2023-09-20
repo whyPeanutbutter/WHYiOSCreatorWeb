@@ -87,7 +87,8 @@ var form = reactive({
         backgroundColor: '#fff',
         borderColor: 'borderColor',
          masonrys: [],
-        quickMasonrys: ''
+        quickMasonrys: '',
+        frame:[0,0,0,0]
     },
     helpMe: '',
     result: '点击create生成代码'
@@ -102,7 +103,8 @@ const resetForm = () => {
         backgroundColor: '#fff',
         borderColor: 'borderColor',
          masonrys: [],
-        quickMasonrys: ''
+        quickMasonrys: '',
+frame:[0,0,0,0]
     }
 };
 
@@ -166,7 +168,10 @@ const onCreate = (formData, needCopy = false) => {
     let commonSettings = formData.commonSettings;
     let init = commonSettings.indexOf('init') > -1 ? `UIView *${formData.name} = [[UIView alloc] init];\n` : '';
     let addSubView = commonSettings.indexOf('addSubView') > -1 ? `[<#self#> addSubview:${formData.name}];\n` : '';
-    let frame = commonSettings.indexOf('frame') > -1 ? `${formData.name}.frame = CGRectMake(<#CGFloat x#>, <#CGFloat y#>, <#CGFloat width#>, <#CGFloat height#>);\n` : '';
+    if(formData.frame.length < 4){
+        formData.frame = [0,0,0,0]
+    }
+    let frame = commonSettings.indexOf('frame') > -1 ? `${formData.name}.frame = CGRectMake(<#${formData.frame[0]}#>, <#${formData.frame[1]}#>, <#${formData.frame[2]}#>, <#${formData.frame[3]}#>);\n` : '';
     let click = commonSettings.indexOf('click') > -1 ? `${formData.name}.userInteractionEnabled = YES;\nUITapGestureRecognizer *${formData.name}TapGestureRecognizer = [[UITapGestureRecognizer alloc]initWithTarget:self action:@selector(${formData.name}Tap:)];\n[${formData.name} addGestureRecognizer:${formData.name}TapGestureRecognizer];\n\n-(void)${formData.name}Tap:(UITapGestureRecognizer *)tap{\ntap.view\n}` : '';
     let cornerRadius = commonSettings.indexOf('cornerRadius') > -1 ? `${formData.name}.layer.cornerRadius = ${formData.cornerRadius};\n${formData.name}.layer.masksToBounds = YES;\n` : '';
     let backgroundColor = commonSettings.indexOf('backgroundColor') > -1 ? `${formData.name}.backgroundColor = ${$utils.getColor(formData.backgroundColor)};\n` : '';
@@ -177,7 +182,7 @@ const onCreate = (formData, needCopy = false) => {
     maskLayer.path = maskPath.CGPath;
     ${formData.name}.layer.mask = maskLayer;` : '';
     let shadow = commonSettings.indexOf('阴影') > -1 ? ` ${formData.name}.layer.shadowColor = [[UIColor blackColor] CGColor];\n ${formData.name}.layer.shadowOffset = CGSizeMake(0,0);\n ${formData.name}.layer.shadowOpacity = 0.2;\n ${formData.name}.layer.shadowRadius = 6;\n` : '';
-    let mansoryStr = $utils.getMansorys(formData.masonrys);
+    let mansoryStr = $utils.getMansorys(formData.masonrys,formData.frame);
     let masonry = formData.masonrys?.length > 0 ? `[${formData.name} mas_makeConstraints:^(MASConstraintMaker *make) {
         ${mansoryStr}
     }];\n`: ''
@@ -196,6 +201,9 @@ const onCreateSwift = (formData, needCopy = false) => {
     let commonSettings = formData.commonSettings;
     let init = commonSettings.indexOf('init') > -1 ? `let ${formData.name} = UIView()\n` : '';
     let addSubView = commonSettings.indexOf('addSubView') > -1 ? `<#self#>.addSubview(${formData.name})\n` : '';
+   if(formData.frame.length < 4){
+        formData.frame = [0,0,0,0]
+    }
     let frame = commonSettings.indexOf('frame') > -1 ? `${formData.name}.frame = CGRect(x: <#x#>, y: <#y#>, width: <#width#>, height: <#height#>)\n` : '';
     let click = commonSettings.indexOf('click') > -1 ? `let tapGesture = UITapGestureRecognizer(target: self, action: #selector(${formData.name}Tapped(_:)))\n${formData.name}.addGestureRecognizer(tapGesture)\n\n@objc func ${formData.name}Tapped(_ sender: UITapGestureRecognizer) {\n// Handle tap\n}\n` : '';
     let cornerRadius = commonSettings.indexOf('cornerRadius') > -1 ? `${formData.name}.layer.cornerRadius = ${formData.cornerRadius}\n${formData.name}.clipsToBounds = true\n` : '';
@@ -203,7 +211,7 @@ const onCreateSwift = (formData, needCopy = false) => {
     let border = commonSettings.indexOf('border') > -1 ? `${formData.name}.layer.borderColor = ${$utils.getColor(formData.borderColor)}.cgColor\n${formData.name}.layer.borderWidth = <#1.0#>\n` : '';
     let bottomCor = commonSettings.indexOf('下侧圆角') > -1 ? `let maskPath = UIBezierPath(roundedRect: ${formData.name}.bounds, byRoundingCorners: [.bottomLeft, .bottomRight], cornerRadii: CGSize(width: 10, height: 10))\nlet maskLayer = CAShapeLayer()\nmaskLayer.frame = ${formData.name}.bounds\nmaskLayer.path = maskPath.cgPath\n${formData.name}.layer.mask = maskLayer\n` : '';
     let shadow = commonSettings.indexOf('阴影') > -1 ? `${formData.name}.layer.shadowColor = UIColor.black.cgColor\n${formData.name}.layer.shadowOffset = CGSize.zero\n${formData.name}.layer.shadowOpacity = 0.2\n${formData.name}.layer.shadowRadius = 6\n` : '';
-    let mansoryStr = $utils.getMansorys(formData.masonrys);
+    let mansoryStr = $utils.getMansorys(formData.masonrys,formData.frame);
     let masonry = formData.masonrys?.length > 0 ? `${formData.name}.snp.makeConstraints { (make) in\n${mansoryStr}\n}\n` : '';
     var result = `${init}${frame}${addSubView}${cornerRadius}${shadow}${bottomCor}${backgroundColor}${border}${masonry}${click}\n`;
     console.log(result);
