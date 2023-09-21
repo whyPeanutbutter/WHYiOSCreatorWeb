@@ -4,7 +4,18 @@
             设置
         </div>
         <el-form-item label="名称">
-            <el-input v-model="form.data.name" />
+            <div class="flex-row">
+               <el-input v-model="form.data.name" />
+               <el-select v-model="form.data.type">
+                    <el-option
+                    v-for="item in $utils.typeOptions()"
+                    :key="item"
+                    :label="item"
+                    :value="item"
+                    :disabled="form.data.type == item"
+                    />
+                </el-select>
+            </div>
         </el-form-item>
           <el-form-item label="帮我解析">
             <div class="flex-row">
@@ -53,7 +64,8 @@ var form = reactive({
     data: {
         name: 'tableViewCell',
         commonSettings: ["addSubView","init"],
-        haveDelegate: false
+        haveDelegate: false,
+type: 'UITableViewCell',
     },
     helpMe:'',
     result: '点击create生成代码'
@@ -64,22 +76,42 @@ const resetForm = () => {
     form.data = {
         name: 'TableViewCell',
         commonSettings: ["addSubView","init"],
-        haveDelegate: false
+        haveDelegate: false,
+type: 'UITableViewCell',
     }
 };
 
+
+const onHelpMe = async() => {
+    let re = $utils.analyViewData(form.helpMe)
+    console.log(re);
+    for (let key in form.data) {
+  if (re.hasOwnProperty(key)) {
+    form.data[key] = re[key];
+    console.log(key);
+  }
+}
+};
+
 watch(() => props.form, (newValue, oldValue) => {
-    if (newValue.name) {
-        form.data = newValue
-    } else {
-        resetForm()
+    resetForm()
+    if(newValue.clipText && newValue.clipText.length > 0){
+        form.helpMe = newValue.clipText
+        onHelpMe()
+    } else if (newValue.name) {
+        for (let key in newValue) {
+            form.data[key] = newValue[key];
         }
+    } 
 }, {
     deep: true,
     immediate: true
 });
 
 const onCreate = (formData, needCopy = false) => {
+    if(!formData.commonSettings){
+        return
+    }
     let commonSettings = formData.commonSettings;
     let upperFirst = formData.name.charAt(0).toUpperCase()+ formData.name.slice(1);
     let lowerFirst = formData.name.charAt(0).toLowerCase()+ formData.name.slice(1);
@@ -130,16 +162,6 @@ const onAddClip = async() => {
     onHelpMe()
 };
 
-const onHelpMe = async() => {
-    let re = $utils.analyViewData(form.helpMe)
-    console.log(re);
-    for (let key in form.data) {
-  if (re.hasOwnProperty(key)) {
-    form.data[key] = re[key];
-    console.log(key);
-  }
-}
-};
 
 </script>
 

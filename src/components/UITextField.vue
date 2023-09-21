@@ -5,7 +5,18 @@
             设置
         </div>
         <el-form-item label="名称">
-            <el-input v-model="form.data.name" />
+            <div class="flex-row">
+               <el-input v-model="form.data.name" />
+               <el-select v-model="form.data.type">
+                    <el-option
+                    v-for="item in $utils.typeOptions()"
+                    :key="item"
+                    :label="item"
+                    :value="item"
+                    :disabled="form.data.type == item"
+                    />
+                </el-select>
+            </div>
         </el-form-item>
         <el-form-item label="帮我解析">
             <div class="flex-row">
@@ -152,7 +163,8 @@ var form = reactive({
         textAlign: 'Center',
         masonrys: [],
         quickMasonrys: '',
-frame:[0,0,0,0]
+frame:[0,0,0,0],
+type: 'UITextField',
     },
     helpMe: '',
     result: '点击create生成代码'
@@ -177,12 +189,24 @@ const resetForm = () => {
         textAlign: 'Center',
         masonrys: [],
         quickMasonrys: '',
-frame:[0,0,0,0]
+frame:[0,0,0,0],
+type: 'UITextField',
     }
 };
 
+const onHelpMe = async() => {
+    let re = $utils.analyViewData(form.helpMe)
+    console.log(re);
+    for (let key in form.data) {
+  if (re.hasOwnProperty(key)) {
+    form.data[key] = re[key];
+    console.log(key);
+  }
+}
+};
+
 watch(() => form.data.quickMasonrys, (newValue, oldValue) => {
-    if (newValue == '') {
+    if (!newValue || newValue == '') {
         return
     }
     newValue = newValue.toLocaleLowerCase()
@@ -219,14 +243,15 @@ watch(() => form.data.quickMasonrys, (newValue, oldValue) => {
     immediate: true
 });
 watch(() => props.form, (newValue, oldValue) => {
-    console.log('props');
-    console.log(newValue);
-    if (newValue.name) {
-        form.data = newValue
-    } else {
-        resetForm()
-        console.log('reset');
-    }
+    resetForm()
+    if(newValue.clipText && newValue.clipText.length > 0){
+        form.helpMe = newValue.clipText
+        onHelpMe()
+    } else if (newValue.name) {
+        for (let key in newValue) {
+            form.data[key] = newValue[key];
+        }
+    } 
 }, {
     deep: true,
     immediate: true
@@ -272,6 +297,9 @@ const onCreateSwift = (formData, needCopy = false) => {
 
 
 const onCreate = (formData, needCopy = false) => {
+    if(!formData.commonSettings){
+        return
+    }
 
     if (!$utils.getStorage('isOCTag')) {
         onCreateSwift(formData, needCopy)
@@ -375,18 +403,6 @@ const onAddClip = async () => {
     form.helpMe = await navigator.clipboard.readText()
     onHelpMe()
 };
-
-const onHelpMe = async () => {
-    let re = $utils.analyViewData(form.helpMe)
-    console.log(re);
-    for (let key in form.data) {
-        if (re.hasOwnProperty(key)) {
-            form.data[key] = re[key];
-            console.log(key);
-        }
-    }
-};
-
 
 </script>
 

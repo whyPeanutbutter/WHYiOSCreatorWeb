@@ -56,11 +56,9 @@
             <UITextField v-if="state.currentShowViews[state.currentSelectIndex].type == 'UITextField'"
               :form="state.currentShowViews[state.currentSelectIndex].setting" @update="settingUpdate"
               @delete="settingDelete" @create="settingCreate" />
-
             <CodeStoreView v-if="state.currentShowViews[state.currentSelectIndex].type == 'CodeStoreView'" />
             <HelpMeView v-if="state.currentShowViews[state.currentSelectIndex].type == 'HelpMe'" />
             <AnalyCodeView v-if="state.currentShowViews[state.currentSelectIndex].type == 'AnalyCodeView'" />
-
           </div>
           <div class="flex-col"
             v-if="(state.currentShowViews && state.currentShowViews.length > 0 && state.currentShowViews[state.currentSelectIndex].type != 'CodeStoreView' && state.currentShowViews[state.currentSelectIndex].type != 'HelpMe' && state.currentShowViews[state.currentSelectIndex].type != 'AnalyCodeView')">
@@ -78,7 +76,17 @@
               <el-button size="large" @click="onDeleteAll()">删除所有</el-button>
             </div>
           </div>
-
+          <div class="flex-col"
+            v-if=" (!state.currentShowViews || state.currentShowViews.length == 0)||(state.currentShowViews && state.currentShowViews.length > 0 && state.currentShowViews[state.currentSelectIndex].type != 'CodeStoreView' && state.currentShowViews[state.currentSelectIndex].type != 'HelpMe' && state.currentShowViews[state.currentSelectIndex].type != 'AnalyCodeView')">
+            <div class="main-clip">
+              <el-input v-model="state.clipText" type="textarea" :rows="40" placeholder="在此输入蓝湖或者慕客控件iOS代码数据,支持一次输入多个"/>
+            </div>
+            <div>
+              <el-button @click="onAddClip">粘贴</el-button>
+              <el-button type="primary" @click="onMergeAnalyCode()">合并解析</el-button>
+              <el-button @click="state.clipText=''">清空</el-button>
+            </div>
+          </div>
         </el-main>
       </el-container>
     </el-container>
@@ -157,6 +165,7 @@ const state = reactive({
   }
   ],
   currentSelectIndex: -1,
+  clipText :'',
 })
 
 onMounted(() => {
@@ -201,47 +210,19 @@ const leftBtnClick = (item) => {
   // if(item.type == 'AnalyCodeView' || item.type == 'HelpMe'){
   //   return
   // }
-  if (state.currentShowViews.length > 0) {
-    let end = state.currentShowViews[state.currentShowViews.length - 1];
-    let position = calcPosition(end)
     state.currentShowViews.push({
       type: item.type,
-      setting: {},
+      setting: {
+        clipText: item.clipText,
+        name: item.name,
+      },
       style: '',
       createResult: '',
-      postion: {
-        top: 0,
-        left: 0,
-        width: 100,
-        height: 100
-      }
     })
-  } else {
-    state.currentShowViews.push({
-      type: item.type,
-      setting: {},
-      style: '',
-      createResult: '',
-      postion: {
-        top: 0,
-        left: 0,
-        width: 100,
-        height: 100
-      }
-    })
-  }
   console.log(state.currentShowViews);
   contentViewClick(state.currentShowViews[state.currentShowViews.length - 1], state.currentShowViews.length - 1)
 }
 
-const calcPosition = (past) => {
-  return {
-    top: 0,
-    left: 0,
-    width: 100,
-    height: 100
-  }
-}
 
 const contentViewClick = (item, index) => {
   state.currentSelectIndex = index;
@@ -250,6 +231,9 @@ const contentViewClick = (item, index) => {
 
 const settingUpdate = (setting) => {
   if (state.currentSelectIndex > -1) {
+    if(setting.type && setting.type.length > 0){
+    state.currentShowViews[state.currentSelectIndex].type = setting.type;
+    }
     state.currentShowViews[state.currentSelectIndex].setting = setting;
     state.currentShowViews[state.currentSelectIndex].style = `background-color:${setting.backgroundColor};border-radius:${setting.cornerRadius}px ;color:${setting.titleColor};`;
   }
@@ -284,6 +268,40 @@ const onDeleteAll = () => {
   state.currentShowViews = [];
   state.currentSelectIndex = -1;
 }
+
+const onMergeAnalyCode = () =>{
+
+  var result = state.clipText.split(/(UIView \*view =|UILabel \*label =)/); 
+  let filtered = [];
+
+for (let i = 0; i < result.length; i++) {
+  if (result[i] === 'UIView *view =' || result[i] === 'UILabel *label =') {
+    filtered.push(result[i]);
+  } else {
+    filtered[filtered.length - 1] += result[i]; 
+  }
+}
+console.log(filtered);
+for (let i = 0; i < filtered.length; i++) {
+  if (filtered[i].startsWith('UIView *view =')) {
+  leftBtnClick({
+    type:'UIView',
+    name:'view',
+    clipText:filtered[i]
+  })
+} else if (filtered[i].startsWith('UILabel *label =')) {
+  leftBtnClick({
+    type:'UILabel',
+    name:'label',
+    clipText:filtered[i]
+  })
+}
+}
+}
+
+const onAddClip = async () => {
+  state.clipText += await navigator.clipboard.readText()
+};
 
 const goToLink = () => {
   window.open("https://github.com/whyPeanutbutter/WHYiOSCreatorWeb/issues/1", "_blank");
@@ -344,7 +362,25 @@ body {
   flex-direction: row;
   flex-wrap: wrap;
   align-content: flex-start;
+  margin-right: 10px;
 
+}
+
+.main-clip{
+  min-height: calc(100vh - 200px);
+  border: 2px solid #000;
+  background: #e7e5e5;
+  width: 400px;
+  box-sizing: border-box;
+  position: relative;
+
+  display: flex;
+  align-items: flex-start;
+  justify-content: flex-start;
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-content: flex-start;
+  margin-right: 10px;
 }
 
 .flex-col {

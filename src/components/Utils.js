@@ -2,14 +2,29 @@
 import useClipboard from "vue-clipboard3";
 
 
+
+export const typeOptions = () => {
+
+    return [
+        'UIView',
+        'UIButton',
+        'UILabel',
+        'UIImageView',
+        'UIScrollView',
+        'UITableView',
+        'UITableViewCell',
+        'UICollectionView',
+        'UITextView',
+        'UITextField'
+    ];
+}
+
 export const getStorage = (key) => {
     const inputVal = localStorage.getItem(key) || ''
     if(!inputVal){
         return ''
     }
     return JSON.parse(inputVal);
-
-
 }
 
 export const setStorage = (key, obj) => {
@@ -23,6 +38,7 @@ export const getMansorys = (mansorys,frame=[0,0,0,0]) => {
     if(frame.length < 4){
         frame = [0,0,0,0]
     }
+    
     var re = ''
     let dict = {
         "left": `make.left.equalTo(@${frame[0]});`,
@@ -231,7 +247,8 @@ const analyOCCode = (code) => {
         data.titleColor = rgbToHex(`rgb(${result[1]},${result[2]},${result[3]})`);
     }
 
-    result = /size: (.*)],/g.exec(code);
+    //按照最少字符串匹配 'size:'和'],'之间的数字
+    result = /size: (\d+(\.\d+)?)],/g.exec(code);
     if (result) {
         data.titleSize = result[1];
     }
@@ -250,6 +267,7 @@ const analyOCCode = (code) => {
     if (result) {
         data.frame = [result[1], result[2], result[3], result[4]];
     }
+    
     return data;
 }
 
