@@ -284,15 +284,19 @@ for (let i = 0; i < result.length; i++) {
 console.log(filtered);
 for (let i = 0; i < filtered.length; i++) {
   if (filtered[i].startsWith('UIView *view =')) {
-  leftBtnClick({
+
+    var result = /frame = CGRectMake\((.*),(.*),(.*),(.*)\);/g.exec(code);
+    var item = {
     type:'UIView',
-    name:'view',
     clipText:filtered[i]
-  })
+    }
+    if (result && result[3] == result[5]) {
+      item.type == 'UIImageView';
+    }
+  leftBtnClick(item)
 } else if (filtered[i].startsWith('UILabel *label =')) {
   leftBtnClick({
     type:'UILabel',
-    name:'label',
     clipText:filtered[i]
   })
 }

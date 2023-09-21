@@ -164,7 +164,8 @@ frame:[0,0,0,0],
 type: 'UITextView',
     },
     helpMe: '',
-    result: '点击create生成代码'
+    result: '点击create生成代码',
+    firstLoad:true,
 });
 
 const resetForm = () => {
@@ -250,6 +251,7 @@ watch(() => props.form, (newValue, oldValue) => {
             form.data[key] = newValue[key];
         }
     } 
+    form.firstLoad = true
 }, {
     deep: true,
     immediate: true
@@ -376,7 +378,13 @@ const onDelete = () => {
 
 
 watch(() => form.data, (newValue, oldValue) => {
-    emits('update', newValue)
+    if(!form.firstLoad){
+            if(!form.firstLoad){
+        emits('update', newValue)
+    } 
+    form.firstLoad = false
+    } 
+    form.firstLoad = false
     onCreate(newValue, false)
 }, {
     deep: true,
