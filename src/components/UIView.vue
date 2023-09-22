@@ -268,7 +268,7 @@ const onDelete = () => {
 };
 
 watch(() => form.data, (newValue, oldValue) => {
-        if(!form.firstLoad){
+    if(!form.firstLoad){
         emits('update', newValue)
     } 
     form.firstLoad = false

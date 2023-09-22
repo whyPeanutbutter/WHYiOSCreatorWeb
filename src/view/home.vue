@@ -214,7 +214,6 @@ const leftBtnClick = (item) => {
       type: item.type,
       setting: {
         clipText: item.clipText,
-        name: item.name,
       },
       style: '',
       createResult: '',
@@ -285,13 +284,13 @@ console.log(filtered);
 for (let i = 0; i < filtered.length; i++) {
   if (filtered[i].startsWith('UIView *view =')) {
 
-    var result = /frame = CGRectMake\((.*),(.*),(.*),(.*)\);/g.exec(code);
+    var result = /frame = CGRectMake\((.*),(.*),(.*),(.*)\);/g.exec(filtered[i]);
     var item = {
     type:'UIView',
     clipText:filtered[i]
     }
-    if (result && result[3] == result[5]) {
-      item.type == 'UIImageView';
+    if (result && result[3] == result[4]) {
+      item.type = 'UIImageView';
     }
   leftBtnClick(item)
 } else if (filtered[i].startsWith('UILabel *label =')) {
